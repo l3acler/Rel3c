@@ -1,0 +1,32 @@
+{
+  "name": "mini-framework",
+  "version": "0.1.0",
+  "description": "Deterministic reactive frontend framework built from scratch in vanilla JavaScript",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "node scripts/dev-server.js",
+    "test": "node --test 'tests/**/*.test.js'",
+    "test:spikes": "node --test 'spikes/**/*.test.js'",
+    "bench:spikes": "node scripts/bench-spikes.js",
+    "smoke": "node scripts/smoke.js"
+  },
+  "keywords": [
+    "framework",
+    "reactive",
+    "deterministic",
+    "vanilla-js"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
