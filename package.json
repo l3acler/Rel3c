@@ -20,7 +20,11 @@
     "bench:spikes:browser": "node scripts/bench-spikes-browser.js",
     "test:benchmarks": "node --test 'benchmarks/**/*.test.js'",
     "check:view-syntax": "node scripts/check-view-syntax.js",
+    "test:types": "node scripts/check-action-types.js",
     "smoke": "node scripts/smoke.js"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
   },
   "keywords": [
     "framework",

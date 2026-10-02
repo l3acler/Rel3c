@@ -53,7 +53,7 @@ Instead of relying on a virtual DOM (vDOM) diffing tree or generic state contain
   - [x] **0.5 Correctness & Identity Comparison**: Stable graph identities, exact invalidation metadata, and independent seeded correctness checks. See the [comparison report](docs/reports/task-0.5-correctness.md).
   - [x] **0.6 Workload Measurements**: Equivalent Node/browser timing, memory/GC observations, and median/p95 results. See the [measurement report](docs/reports/task-0.6-measurements.md).
   - [x] **0.7 View Syntax Evaluation**: Element functions with binding tokens selected; optional templates deferred. See the [syntax ADR](docs/adr/0001-view-syntax.md) and [browser evidence](docs/reports/task-0.7-view-syntax.md).
-  - [ ] **0.8 Action Schema & Serialization**: Typing, validation, and snapshot encoding.
+  - [x] **0.8 Action Schema & Serialization**: Typed named actions, independent runtime payload validation, and alias-preserving canonical snapshots; cycles rejected. See the [schema ADR](docs/adr/0002-action-schema-serialization.md) and [evidence report](docs/reports/task-0.8-actions-serialization.md).
   - [ ] **0.9 Architecture Decision Record (ADR)**: Evidence-backed engine and syntax selection.
 
 > [!NOTE]
@@ -70,6 +70,7 @@ In compliance with `TECH-1` and `PACK-1`:
   - `node:test` and `node:assert`: Built-in Node.js test runner for unit tests and smoke verification.
   - `node:http` and `node:fs`: Built-in Node.js modules for the local development server (`scripts/dev-server.js`).
   - Installed headless Google Chrome: isolated temporary-profile browser checks/measurements; no signed-in browser or frontend library is used.
+  - TypeScript **5.9.3**: pinned development-only type checker for positive/negative fixtures. It emits no application code and supplies no framework behavior. Install it with `npm ci`; the lockfile records the exact dependency.
 
 ---
 
@@ -77,7 +78,7 @@ In compliance with `TECH-1` and `PACK-1`:
 
 ### Prerequisites
 - Node.js >= 18.0.0 (tested on Node.js v26)
-- No `npm install` required for development or running tests!
+- No installation required for root startup, Node correctness tests, or smoke checks. Type fixtures require `npm ci` to install the development-only checker.
 
 ### 1. Run the Development Server
 Starts the local dev server and serves the root browser verification page:
@@ -127,6 +128,16 @@ npm run check:view-syntax
 
 Requires installed Chrome (override with `MINI_FRAMEWORK_CHROME_PATH`). `-- --quick` shortens measurements. For the runnable syntax examples, open `http://localhost:3000/spikes/view-syntax/` after `npm run dev`. These use spike exports, not the placeholder public runtime. See the [spike guide](spikes/view-syntax/README.md).
 
+Task 0.8 adds 111 action/serialization tests, plus strict positive TypeScript and checked-JavaScript fixtures with 25 independently checked negative lines:
+
+```bash
+npm ci
+npm run test:types
+npm run test:spikes
+```
+
+The action harness and codec run as plain JavaScript without compilation. Snapshots preserve aliases, holes, undefined, negative zero and property order; cycles and unsupported input types are rejected. These are experimental data snapshots, not replay checkpoints or public exports. Existing transaction assignment/type-validation gaps are recorded for task 0.9/core adoption. See the [action/serialization spike guide](spikes/action-schema/README.md).
+
 ---
 
 ## Repository Structure
@@ -137,7 +148,8 @@ mini-framework/
 ├── Framework_PRD.md           # Product Requirements Document (PRD v2.2)
 ├── DEVELOPMENT_PLAN.md        # Implementation backlog and task tracking
 ├── README.md                  # Framework documentation & quickstart
-├── package.json               # Package definition (ES modules, zero dependencies)
+├── package.json               # ES modules, zero runtime dependencies; dev type checker
+├── package-lock.json          # Pinned development-tool installation
 ├── src/
 │   ├── index.js               # Documented public entry point
 │   ├── index.d.ts             # Public TypeScript declarations

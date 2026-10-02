@@ -1,6 +1,6 @@
 # Framework development plan
 
-**Status:** Phase 0 in progress; tasks 0.1–0.7 complete. Later milestones remain planned.
+**Status:** Phase 0 in progress; tasks 0.1–0.8 complete. Later milestones remain planned.
 
 **Created:** 30 September 2026.
 
@@ -12,7 +12,7 @@
 
 This document turns the product requirements into an implementation backlog. The framework is the product: its state engine, DOM abstraction, event system, router, scheduler, deterministic runtime, tools, package, and documentation. Small examples validate public APIs. The assignment's separate demonstration application is a later integration task and must not determine the framework architecture.
 
-The repository contains a root ES module scaffold, placeholder public exports, a development server/example, tested transaction spikes, and equivalent-work Node/browser measurements. Tasks 0.1–0.6 are complete; the measured eager-clone baseline and raw results are available, while production engine selection remains pending task 0.9. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
+The repository contains a root ES module scaffold, placeholder public exports, a development server/example, tested transaction/view/action-schema spikes, equivalent-work Node/browser measurements, and typed dispatch/graph snapshot evidence. Tasks 0.1–0.8 are complete; production engine selection and review of the recorded type/assignment findings remain task 0.9. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
 
 The PRD remains the source of truth for acceptance criteria. Changes to product scope or execution contracts require corresponding PRD changes and an explanation. Architecture choices require an architecture decision record (ADR), supporting tests, and measurements where applicable.
 
@@ -105,8 +105,8 @@ These are responsibility boundaries, not a requirement to create every directory
 - [x] **0.5 — Compare correctness and identity.** Dependencies: 0.3, 0.4. Add randomized nested/collection transitions, alias mutation cases, repeated writes, failure injection, and exact invalidation checks. Acceptance: both implementations match reference state and affected-property sets; moved items retain stable identities rather than depend on mutable JSON paths. Evidence: [correctness and identity report](docs/reports/task-0.5-correctness.md).
 - [x] **0.6 — Measure equivalent workloads.** Dependencies: 0.5. Measure sparse nested updates, repeated writes, dense updates, large array insertions/reorders, alias edits, and rollback. Report allocation proxies or profiler observations, retained memory, GC observations, median/p95 update time, and browser frame scripting tails. Include machine, runtime/browser version, warmup, repetitions, workload source, and raw results. Acceptance: comparisons do equal work, separate instrumentation overhead, and explain unavailable metrics rather than invent them. Evidence: [measurement report and raw datasets](docs/reports/task-0.6-measurements.md).
 - [x] **0.7 — Prototype element and tagged-template syntax.** Dependencies: 0.1. Build equivalent form/list/event examples using element functions and optional `html` templates. Evaluate readability, cached parse cost, escaping, dynamic attributes, handler ownership, and disposal. Acceptance: ordinary `onclick` attributes cannot bypass framework event handling; an ADR selects element functions and records whether templates meet the adoption gate. Templates may be omitted if the prototype does not justify shipping them. Evidence: [ADR 0001](docs/adr/0001-view-syntax.md) and [syntax report](docs/reports/task-0.7-view-syntax.md). Elements/tokens selected; eager templates fail exact-binding capture, optional public templates deferred.
-- [ ] **0.8 — Prototype typed actions and serialization.** Dependencies: 0.2. Test inference of action names and payload types while keeping plain JavaScript usable. Evaluate a supported state/payload type matrix and alias-preserving snapshot encoding; decide whether cycles are supported or rejected. Acceptance: valid and invalid dispatch type fixtures behave as expected, runtime validation remains required, and serialization does not silently change graph meaning.
-- [ ] **0.9 — Record architecture decisions.** Dependencies: 0.6–0.8. Write ADRs for transaction choice, object identity, supported types, view syntax, action/schema shape, and proposed browser/input support. Document measured tradeoffs and unresolved decisions. Acceptance: the selected engine satisfies all correctness gates; costs and limitations are supported by results. If neither engine passes, continue the spike instead of declaring a winner.
+- [x] **0.8 — Prototype typed actions and serialization.** Dependencies: 0.2. Test inference of action names and payload types while keeping plain JavaScript usable. Evaluate a supported state/payload type matrix and alias-preserving snapshot encoding; decide whether cycles are supported or rejected. Acceptance: valid and invalid dispatch type fixtures behave as expected, runtime validation remains required, and serialization does not silently change graph meaning. Evidence: [ADR 0002](docs/adr/0002-action-schema-serialization.md) and [type/serialization report](docs/reports/task-0.8-actions-serialization.md). Explicit payload modes, correlated dispatch types and graph snapshots prototyped; cycles rejected. Legacy assignment normalization/DAG validation findings are carried into 0.9/core acceptance.
+- [ ] **0.9 — Record architecture decisions.** Dependencies: 0.6–0.8. Write ADRs for transaction choice, object identity, supported types, view syntax, action/schema shape, and proposed browser/input support. Document measured tradeoffs and unresolved decisions. Review task 0.8 findings: reject unsupported assignment prototypes before normalization and memoize completed DAG validation nodes before adopting the core type policy. Acceptance: the selected engine satisfies all correctness gates; costs and limitations are supported by results. If neither engine passes, continue the spike instead of declaring a winner.
 
 ### Exit gate and artifacts
 
@@ -271,7 +271,7 @@ Test tooling can supply a runner, browser automation, assertions, and serving. I
 
 ### Planned command contract
 
-Choose exact tools in 0.1. The intended script names below are a planning contract; they do not exist yet. The README must publish actual commands and prerequisites once implemented.
+The table below is the intended command contract. Root startup, smoke, spike tests/measurements, and type checks now exist; later browser/replay/final benchmark commands remain planned. The README publishes actual commands and prerequisites as they are implemented.
 
 | Planned command | Purpose | Introduced |
 | --- | --- | --- |
@@ -492,6 +492,39 @@ Remaining limitations / blocking dependency: one browser; no universal XSS,
   remain later work. Task 0.8 precedes transaction/schema decisions in 0.9.
 ```
 
+```text
+Task ID: 0.8
+Status / owner: done / Codex
+Change reference: spikes/action-schema/, scripts/check-action-types.js,
+  package.json/package-lock.json, docs/adr/0002-action-schema-serialization.md,
+  docs/reports/task-0.8-actions-serialization.md, README.md
+Observable behavior delivered:
+  - Explicit no-payload/payload action modes and schema versions, typed draft /
+    read-only state/payloads, inferred wrappers and correlated dispatch tuples.
+  - Positive TypeScript/checked JavaScript and 25 independently verified negative
+    type lines; runtime remains plain JS and independently validates untyped data.
+  - Canonical versioned graph snapshots preserve aliases, distinct nodes, holes,
+    undefined, -0, null prototypes, custom array keys and ordered own properties.
+  - Cycles/unsupported inputs reject; malformed/unsafe/noncanonical/versioned
+    imports and byte/node/property/depth/per-array/aggregate-slot limits checked.
+  - 40 seeded alias-graph round trips and action adapters for all three engines.
+  - Audited legacy Array-subclass normalization and repeated DAG validation;
+    neither is approved as production behavior. Engine sources unchanged.
+Verification commands and results:
+  - npm run test:types: positive TS/JS pass; 25 negative lines reject; no emit.
+  - Node combined suite: 286/286 pass (275 spike, 8 workload, 3 scaffold tests).
+  - npm run smoke: root startup/public import checks pass.
+  - npm ls --omit=dev: empty runtime dependency tree.
+Environment / browser checks: Node v26.3.0, npm 11.16.0, TypeScript 5.9.3,
+  Darwin 24.6.0 arm64. No new browser behavior/performance claim. TypeScript was
+  installed from local cache as development tooling, without install scripts.
+Documentation or ADR updated: schema/snapshot ADR, type matrix/evidence report,
+  spike guide, root setup/tooling/status and this log. Public entry/PRD unchanged.
+Remaining limitations / blocking dependency: production assignment/validation
+  fixes, engine selection (0.9), nested/no-op policy (A.3), declarations (B.9),
+  final checkpoint/control-service/version/recording contracts (C.1–C.9).
+```
+
 Release candidates should progress through the Phase A core gate, Phase B auditor gate, Phase C replay gate, and Phase D product gate. Releases explicitly state completed phases. No package publication, deployment, or separate demonstration-app work is implied by this planning document.
 
 ## 14. Completion checklist
@@ -507,4 +540,4 @@ Release candidates should progress through the Phase A core gate, Phase B audito
 - [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Next implementation task:** 0.8. Prototype typed actions and serialization: infer names/payloads, keep runtime validation, and test alias-preserving snapshot encoding and supported types/cycle policy.
+**Next implementation task:** 0.9. Review the measured engine/identity tradeoffs, adopt type/schema and view decisions, record browser/input support, and resolve or explicitly gate the task 0.8 assignment/validation findings before Phase A.
