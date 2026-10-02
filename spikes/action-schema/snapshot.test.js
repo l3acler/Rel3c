@@ -92,12 +92,15 @@ test('rejects object and array cycles while allowing repeated DAG nodes', () => 
   const text = encodeSnapshot(graph); assert.equal(JSON.parse(text).nodes.length, 31);
   assertGraphEqual(graph, decodeSnapshot(text)); // Oracle memoizes both directions too.
 });
-test('audit finding: legacy type validator revisits shared nodes once per path', () => {
-  let reads = 0;
-  const leaf = new Proxy({ value: 1 }, { get(target, key) { if (key === 'value') reads++; return target[key]; } });
+test('0.9 regression: type validation memoizes completed DAG nodes without value gets', () => {
+  let reads = 0; let descriptions = 0;
+  const leaf = new Proxy({ value: 1 }, {
+    get(target, key) { if (key === 'value') reads++; return target[key]; },
+    getOwnPropertyDescriptor(target, key) { descriptions++; return Reflect.getOwnPropertyDescriptor(target, key); },
+  });
   let graph = leaf;
   for (let level = 0; level < 8; level++) graph = { left: graph, right: graph };
-  validateStateValue(graph); assert.equal(reads, 256);
+  validateStateValue(graph); assert.equal(reads, 0); assert.equal(descriptions, 1);
   // Snapshot encoding instead visits nine graph nodes and reads data descriptors.
   const before = reads; assert.equal(JSON.parse(encodeSnapshot(graph)).nodes.length, 9); assert.equal(reads, before);
 });

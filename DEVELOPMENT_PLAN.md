@@ -1,18 +1,18 @@
 # Framework development plan
 
-**Status:** Phase 0 in progress; tasks 0.1–0.8 complete. Later milestones remain planned.
+**Status:** Phase 0 complete; tasks 0.1–0.9 verified. Phase A is next; later milestones remain planned.
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.2, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.3, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** Phase 0 — architecture spikes.
+**Current milestone:** Phase A — core runtime (planned; next task A.1).
 
 ## 1. Purpose and scope
 
 This document turns the product requirements into an implementation backlog. The framework is the product: its state engine, DOM abstraction, event system, router, scheduler, deterministic runtime, tools, package, and documentation. Small examples validate public APIs. The assignment's separate demonstration application is a later integration task and must not determine the framework architecture.
 
-The repository contains a root ES module scaffold, placeholder public exports, a development server/example, tested transaction/view/action-schema spikes, equivalent-work Node/browser measurements, and typed dispatch/graph snapshot evidence. Tasks 0.1–0.8 are complete; production engine selection and review of the recorded type/assignment findings remain task 0.9. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
+The repository contains a root ES module scaffold, placeholder public exports, a development server/example, tested transaction/view/action-schema spikes, equivalent-work Node/browser measurements, and typed dispatch/graph snapshot evidence. Phase 0 is complete: copy-on-write is selected for Phase A, with stable graph IDs, explicit action inputs, acyclic supported data, element/binding syntax and proposed browser/input qualification recorded in ADRs. Task 0.8's shared validation findings were corrected and remeasured in 0.9. The public core is not implemented. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
 
 The PRD remains the source of truth for acceptance criteria. Changes to product scope or execution contracts require corresponding PRD changes and an explanation. Architecture choices require an architecture decision record (ADR), supporting tests, and measurements where applicable.
 
@@ -106,11 +106,13 @@ These are responsibility boundaries, not a requirement to create every directory
 - [x] **0.6 — Measure equivalent workloads.** Dependencies: 0.5. Measure sparse nested updates, repeated writes, dense updates, large array insertions/reorders, alias edits, and rollback. Report allocation proxies or profiler observations, retained memory, GC observations, median/p95 update time, and browser frame scripting tails. Include machine, runtime/browser version, warmup, repetitions, workload source, and raw results. Acceptance: comparisons do equal work, separate instrumentation overhead, and explain unavailable metrics rather than invent them. Evidence: [measurement report and raw datasets](docs/reports/task-0.6-measurements.md).
 - [x] **0.7 — Prototype element and tagged-template syntax.** Dependencies: 0.1. Build equivalent form/list/event examples using element functions and optional `html` templates. Evaluate readability, cached parse cost, escaping, dynamic attributes, handler ownership, and disposal. Acceptance: ordinary `onclick` attributes cannot bypass framework event handling; an ADR selects element functions and records whether templates meet the adoption gate. Templates may be omitted if the prototype does not justify shipping them. Evidence: [ADR 0001](docs/adr/0001-view-syntax.md) and [syntax report](docs/reports/task-0.7-view-syntax.md). Elements/tokens selected; eager templates fail exact-binding capture, optional public templates deferred.
 - [x] **0.8 — Prototype typed actions and serialization.** Dependencies: 0.2. Test inference of action names and payload types while keeping plain JavaScript usable. Evaluate a supported state/payload type matrix and alias-preserving snapshot encoding; decide whether cycles are supported or rejected. Acceptance: valid and invalid dispatch type fixtures behave as expected, runtime validation remains required, and serialization does not silently change graph meaning. Evidence: [ADR 0002](docs/adr/0002-action-schema-serialization.md) and [type/serialization report](docs/reports/task-0.8-actions-serialization.md). Explicit payload modes, correlated dispatch types and graph snapshots prototyped; cycles rejected. Legacy assignment normalization/DAG validation findings are carried into 0.9/core acceptance.
-- [ ] **0.9 — Record architecture decisions.** Dependencies: 0.6–0.8. Write ADRs for transaction choice, object identity, supported types, view syntax, action/schema shape, and proposed browser/input support. Document measured tradeoffs and unresolved decisions. Review task 0.8 findings: reject unsupported assignment prototypes before normalization and memoize completed DAG validation nodes before adopting the core type policy. Acceptance: the selected engine satisfies all correctness gates; costs and limitations are supported by results. If neither engine passes, continue the spike instead of declaring a winner.
+- [x] **0.9 — Record architecture decisions.** Dependencies: 0.6–0.8. Write ADRs for transaction choice, object identity, supported types, view syntax, action/schema shape, and proposed browser/input support. Document measured tradeoffs and unresolved decisions. Review task 0.8 findings: reject unsupported assignment prototypes before normalization and memoize completed DAG validation nodes before adopting the core type policy. Acceptance: the selected engine satisfies all correctness gates; costs and limitations are supported by results. If neither engine passes, continue the spike instead of declaring a winner. Evidence: [ADR 0003](docs/adr/0003-transaction-engine-identity.md), [ADR 0004](docs/adr/0004-browser-input-support.md) and [architecture review/fresh measurements](docs/reports/task-0.9-architecture-review.md). Shared type-policy gaps fixed; COW selected, measured counterevidence/production adaptation gates documented.
 
 ### Exit gate and artifacts
 
 Deliver the root scaffold, isolated prototypes, shared fixture suite, reproducible measurements, syntax/type fixtures, and ADRs. Run spike tests and the root startup smoke test. Approve the engine gate only after correctness, aliases/arrays, rollback, exact invalidation, allocation, GC observations, and median/p95 measurements are reviewed together.
+
+**Gate passed (task 0.9):** corrected prototypes pass 303 total Node tests and fresh equivalent-work Node/Chrome comparisons; 25 negative type fixtures, positive TS/JS, 40 DOM checks and root smoke pass. COW is the implementation basis, not a completed public runtime or universal speed/memory winner. Required production port/queue/no-op/version/state-budget work remains A.1–A.3.
 
 ## 6. Phase A — core runtime
 
@@ -119,7 +121,7 @@ Deliver the root scaffold, isolated prototypes, shared fixture suite, reproducib
 ### Tasks
 
 - [ ] **A.1 — Establish application ownership and public entry.** Dependencies: 0.9. Define create/mount/dispose lifecycle, app-owned store, action registry, view invocation context, and development error reporting. Acceptance: a public-import example mounts and disposes; applications need no internal imports.
-- [ ] **A.2 — Implement production transactions.** Dependencies: A.1. Adapt the selected strategy into runtime code with read-only committed views, deep transactions, stable object identity, and validation. Acceptance: prototype correctness fixtures pass against the runtime; nested writes, add/delete, aliases, and array changes publish atomically; leaked drafts reject use after commit/abort.
+- [ ] **A.2 — Implement production transactions.** Dependencies: A.1. Adapt COW per ADR 0003 into runtime code with read-only committed views, deep transactions, stable object identity, original-prototype rejection, descriptor validation and active/completed DAG traversal. Define production growth/depth limits or safe traversal; codec budgets do not bound the backend. Acceptance: prototype correctness/type-policy fixtures pass against the runtime; nested writes, add/delete, aliases, and array changes publish atomically; leaked drafts reject use after commit/abort. Remeasure materialization/indexing changes before cost claims.
 - [ ] **A.3 — Implement named dispatch and ordering.** Dependencies: A.2. Validate names/payloads, reject async/thenable actions, assign committed versions, and queue nested dispatches. Decide FIFO ordering, error propagation, and whether nested dispatches from a failed parent are discarded before implementation. Acceptance: observers see complete versions only; throwing or Promise-returning actions publish none; ordering fixtures include successful and failed parents and children.
 - [ ] **A.4 — Track exact dependencies.** Dependencies: A.2. Track object-property reads, property existence, key iteration, array length/structure, and item-property reads. Replace stale dependency sets when branches change. Acceptance: unrelated properties invalidate different observers, alias writes find the same dependencies, and item edits do not invalidate unrelated items or list structure.
 - [ ] **A.5 — Implement computed values.** Dependencies: A.4. Add lazy caching, chained dependencies, dynamic dependency replacement, disposal, and cycle detection. Acceptance: unobserved dirty computations remain lazy, observed values recompute only as needed, and cycles fail with a useful error.
@@ -231,7 +233,7 @@ Additional PRD gates: transaction comparison is covered by 0.2–0.6/0.9; tagged
 
 ## 11. Decision register
 
-These are open decisions, not assumed public contracts. Record the choice and rationale in an ADR at the named gate.
+This register tracks recorded Phase 0 choices and later open decisions, not shipped public contracts. Phase 0 choices are in ADRs 0001–0004: elements/binding tokens, explicit action modes/acyclic data, COW/logical identity, and browser/input qualification targets. Queue failure details, public API integration, final formats and release compatibility remain later gates below.
 
 | Decision | Evidence needed | Decision gate |
 | --- | --- | --- |
@@ -525,11 +527,49 @@ Remaining limitations / blocking dependency: production assignment/validation
   final checkpoint/control-service/version/recording contracts (C.1–C.9).
 ```
 
+```text
+Task ID: 0.9
+Status / owner: done / Codex
+Change reference: shared spike contract/type-policy tests; ADRs 0003/0004;
+  docs/reports/task-0.9-architecture-review.md; fresh Node/Chrome/DOM JSON results;
+  PRD v2.3, README/guides, decision/status tracking
+Observable behavior delivered:
+  - Committed task 0.8 separately as 515f406; task 0.9 is a separate change set.
+    No push or Phase A implementation is included.
+  - Fixed original Array-prototype rejection and completed-DAG memoization before
+    selection; all three engines enforce the adopted ordinary data policy.
+  - 17 new regression tests; descriptor-based validation avoids ordinary getter
+    execution and preserves aliases while still rejecting active cycles.
+  - Selected COW/logical object IDs with explicit timing/memory counterevidence;
+    adopted existing view/action/type ADRs, proposed browser/native-input matrix.
+  - Fresh full Node and Chrome measurements on corrected sources; historical
+    artifacts unchanged. Production no-op versions/queues and remaining gates
+    are explicit; public runtime remains a scaffold.
+Verification commands and results:
+  - Combined Node suite: 303/303 pass (292 spike, 8 workload, 3 scaffold).
+  - npm run test:types: positive TS/JS pass; 25 negative lines reject, no emit.
+  - npm run bench:spikes: 126 timing trials / 7,560 samples + 42 memory/GC profiles.
+  - npm run bench:spikes:browser: 126 rAF trials / 3,780 callback samples.
+  - Both full comparisons: all equivalent-work checks pass, source hashes match.
+  - npm run check:view-syntax -- --quick: 40 DOM checks pass, measurements smoke-only.
+  - npm run smoke: pass; npm ls --omit=dev: empty; links/diff checks pass.
+Environment / browser checks: Apple M4, 10 cores, 16 GiB, Darwin 24.6.0 arm64;
+  Node v26.3.0/V8 14.6.202.34-node.20, Chrome 154.0.8037.93/V8 15.4.80.19;
+  TypeScript 5.9.3 development-only. Approved isolated Chrome/local server runs;
+  no signed-in browser; profiles/servers cleaned by runners.
+Documentation or ADR updated: ADRs/review, historical evidence follow-up notes,
+  spike/benchmark guides, PRD/source-of-truth decisions, root milestones/setup.
+Remaining limitations / blocking dependency: A.1 is next. No production core,
+  queue/scheduler/computed/router, broad browser/real IME support, final formats,
+  controlled services, history or replay implemented. Exact allocation/browser
+  GC/whole-frame paint metrics unavailable. Existing ADR 0001 edit preserved.
+```
+
 Release candidates should progress through the Phase A core gate, Phase B auditor gate, Phase C replay gate, and Phase D product gate. Releases explicitly state completed phases. No package publication, deployment, or separate demonstration-app work is implied by this planning document.
 
 ## 14. Completion checklist
 
-- [ ] Both transaction strategies were measured on equivalent workloads; the selected strategy has an evidence-backed ADR.
+- [x] Both transaction strategies were measured on equivalent workloads; the selected strategy has an evidence-backed ADR (0003, task 0.9).
 - [ ] All 24 PRD functional requirements have implemented public contracts, documentation, and passing acceptance evidence.
 - [ ] A clean checkout runs from the root and an auditor builds the documented form/list/routed interface using only public imports.
 - [ ] Click, scroll, key, and semantic text inputs work with native focus/form behavior and verified cleanup.
@@ -540,4 +580,4 @@ Release candidates should progress through the Phase A core gate, Phase B audito
 - [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Next implementation task:** 0.9. Review the measured engine/identity tradeoffs, adopt type/schema and view decisions, record browser/input support, and resolve or explicitly gate the task 0.8 assignment/validation findings before Phase A.
+**Next implementation task:** A.1. Establish app ownership and the public create/mount/dispose lifecycle using the Phase 0 decisions; keep production modules independent of spikes and verify a public-import mount/dispose example.

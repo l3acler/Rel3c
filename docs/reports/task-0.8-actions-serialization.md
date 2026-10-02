@@ -3,6 +3,12 @@
 Completed: 2026-10-02 (Bahrain). See [ADR 0002](../adr/0002-action-schema-serialization.md)
 and the [runnable spike guide](../../spikes/action-schema/README.md).
 
+Historical scope note: task 0.8 was committed as 515f406. Task 0.9 fixes the
+two shared transaction validation findings recorded below and changes their
+audit tests into regressions. See the [follow-up review](task-0.9-architecture-review.md)
+for fresh engine measurements, current verification totals and the COW selection.
+The original task 0.8 counts/findings remain its historical evidence.
+
 ## Scope
 
 `spikes/action-schema/` adds a pure JavaScript named-action harness, adjacent

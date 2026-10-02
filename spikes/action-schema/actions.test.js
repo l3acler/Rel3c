@@ -165,15 +165,15 @@ test('state initialization validates and copies without freezing the caller', ()
 test('checked JavaScript fixture runs without TypeScript compilation', () => {
   const app = exerciseJavaScript(); assert.deepEqual(app.state, { count: 1, name: 'Grace' }); assert.equal(app.version, 3);
 });
-test('audit finding: legacy engine assignment normalizes Array subclasses, unlike codec boundary', () => {
+test('0.9 regression: action assignment rejects Array subclasses before normalization', () => {
   class Rows extends Array {}
   const schema = createActionSchema()(({ action }) => ({ replace: action(draft => { draft.rows = new Rows(1, 2); }) }));
   for (const engineFactory of [createReferenceEngine, createCowEngine, createStagedEngine]) {
     assert.throws(() => createActionSpike({ schema, engineFactory, initialState: { rows: new Rows() } }), /ordinary arrays/);
-    const app = createActionSpike({ schema, engineFactory, initialState: { rows: [] } }); app.actions.replace();
-    assert.equal(Object.getPrototypeOf(app.state.rows), Array.prototype);
-    assert.deepEqual(app.state.rows, [1, 2]);
+    const app = createActionSpike({ schema, engineFactory, initialState: { rows: [] } });
+    const before = app.state; const version = app.version;
+    assert.throws(() => app.actions.replace(), /ordinary arrays/);
+    assert.equal(app.state, before); assert.equal(app.version, version);
   }
-  // This records the existing prototype gap; it does not approve normalization
-  // for the proposed production type policy. Fix before core type acceptance.
+  // Both codec and engine boundaries now enforce the adopted type policy.
 });

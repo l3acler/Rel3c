@@ -2,6 +2,11 @@
 
 Status: accepted Phase 0 prototype recommendation, not a public/stable API.
 
+Task 0.9 follow-up: this type/action recommendation is adopted by
+[ADR 0003](0003-transaction-engine-identity.md). The two shared engine validation
+findings below are corrected and remeasured in the spikes; production adaptation
+and queue/checkpoint contracts remain later gates.
+
 Date: 2026-10-02 (Bahrain). Task: 0.8. Sources: Framework_PRD.md §3, §5, §7;
 ACTION-1, STATE-1/STATE-2, RECORD-1/REPLAY-1; development plan tasks 0.8/0.9/C.1.
 
@@ -71,21 +76,23 @@ No allocation, throughput, browser timing or engine speedup claim is made here.
 
 ## Audit findings and required follow-up
 
-- **Array prototype normalization:** current transaction assignment imports turn
+- **Array prototype normalization (task 0.8 finding):** the then-current assignment imports turned
   Array subclasses into ordinary arrays. The new codec instead rejects them at
   initial-state/payload boundaries. A dedicated audit test records this mismatch.
   The production membrane must reject unsupported assignment prototypes before
   normalization; do not silently declare subclasses supported.
-- **Repeated DAG validation:** the transaction validator has path-based cycle
+- **Repeated DAG validation (task 0.8 finding):** the then-current validator had path-based cycle
   detection without completed-node memoization. An eight-level shared DAG reads
   its leaf value 256 times, whereas the graph encoder records nine nodes. Add
   separate active/completed sets to production validation without confusing
   aliases with cycles. Codec count/depth limits alone do not bound all work in
   the existing transaction backend or arbitrary validator/action callbacks.
 
-Existing engine sources and task 0.6 benchmark fingerprints are preserved. These
-findings belong in the task 0.9 decision/core adaptation checklist rather than
-being hidden by changing old evidence or claiming production readiness.
+Task 0.8 preserved existing engine sources/fingerprints. Task 0.9 changes only
+the shared validation implementation, preserves historical datasets, and collects
+fresh fingerprinted comparisons. Original-prototype checks and active/completed
+descriptor traversal now pass across all three backends. Production port/type
+budgets still require A.2 acceptance; no public readiness is implied.
 
 ## Alternatives and consequences
 

@@ -3,6 +3,12 @@
 Completed: 2026-10-02 (Bahrain). Result: element functions selected for the core;
 optional templates deferred. See [ADR 0001](../adr/0001-view-syntax.md).
 
+Historical measurement note: the shared transaction validator is corrected in
+task 0.9. Its [follow-up review](task-0.9-architecture-review.md) records 40 passing
+DOM regressions on the corrected sources/Chrome patch. The original full timing
+dataset here remains unchanged and fingerprinted; quick follow-up timings are
+smoke-only and are not a new full syntax-performance comparison.
+
 ## Scope and reproduction
 
 `spikes/view-syntax/` contains an isolated browser renderer, read-only dependency

@@ -106,15 +106,16 @@ budget, heap-accounting guarantee, sandbox for hostile live Proxies, or history 
 
 ## Remaining architecture work
 
-The reference/COW/staged transaction engines are unchanged. An audit fixture
-records that they normalize Array subclasses during action assignment, whereas
-the codec rejects such input graphs. Their shared validator also revisits DAG
-nodes per path. Reject unsupported prototypes before importing assignments and
-memoize completed validation nodes before adopting the production type policy.
-See [ADR 0002](../../docs/adr/0002-action-schema-serialization.md).
+Task 0.8 audited Array-subclass normalization and repeated DAG validation in
+all three backends. Task 0.9 fixes their shared validator: reject unsupported
+original prototypes before assignment import, inspect own data descriptors, and
+memoize completed nodes separately from active cycle detection. The audit tests
+now verify the corrected policy. See [ADR 0002](../../docs/adr/0002-action-schema-serialization.md)
+and [ADR 0003 / production adaptation gates](../../docs/adr/0003-transaction-engine-identity.md).
+Codec limits still do not bound arbitrary actions or the whole backend.
 
 This harness rejects nested dispatch rather than implementing the Phase A.3
 queue, inherits the old no-op version policy, and has no controlled clock/random
 services. Data snapshot restore creates a new engine/version space; it does not
 restore tick/PRNG/clock state, logical runtime object IDs or recordings. Those
-contracts remain tasks 0.9, A.3 and C.1–C.9. The format is not stable/public.
+contracts remain tasks A.2/A.3 and C.1–C.9. The format is not stable/public.

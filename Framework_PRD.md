@@ -2,8 +2,8 @@
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
 **Status:** Product definition
-**Version:** 2.2
-**Date:** 30 September 2026
+**Version:** 2.3
+**Date:** 2 October 2026
 **Working name:** Undecided
 
 ## 1. Product overview
@@ -45,6 +45,8 @@ flowchart TD
 
 **State contract.** Application code reads the latest committed state. A named action executes synchronously against a writable transaction view. Successful completion publishes one state version; an exception leaves committed state unchanged. Subscribers and visual bindings never observe partial changes. Nested dispatches are queued in defined order after the current action. The transaction implementation (copy-on-write, staged operations, or another design) is decided by a measured prototype, not fixed by this PRD. External side effects performed by user code cannot be rolled back.
 
+**Phase 0 architecture decisions.** [ADR 0003](docs/adr/0003-transaction-engine-identity.md) selects copy-on-write as the Phase A implementation basis using corrected, remeasured prototypes; this is not a shipped runtime or a universal performance claim. [ADR 0002](docs/adr/0002-action-schema-serialization.md) defines the initial supported data policy: null/undefined, booleans, strings, finite numbers (including negative zero), same-realm ordinary objects/arrays and null-prototype objects, including array holes and enumerable custom properties. Application state roots are objects/arrays; payloads may be supported primitives. Preserve acyclic aliases and distinct object identity; reject cycles, unsupported prototypes/native values, symbols, accessors and nonenumerable data except array length. Snapshot validation remains separate from application-specific state schemas and final replay checkpoint metadata. [ADR 0004](docs/adr/0004-browser-input-support.md) records proposed browser/input targets and unverified release gates.
+
 **Render contract.** The dependency graph tracks state properties used by computed values and individual DOM bindings. A commit marks affected work dirty. Before an appropriate browser paint, the scheduler evaluates each dirty visual binding from committed state and writes its latest value at most once in that render batch. Render computations cannot mutate state.
 
 **Time contract.** Optional fixed-duration simulation ticks have monotonically increasing IDs. Inputs assigned to a tick are processed in stable recorded order; tick logic operates on a logical clock. The browser can render more or fewer frames than there are ticks. Several ticks can contribute to one visual commit. Visual interpolation between committed ticks is optional and never changes authoritative state.
@@ -53,7 +55,9 @@ flowchart TD
 
 ### Illustrative API
 
-**Candidate A: Native Tagged Template Literals (Preferred, No Build Step)**
+These are illustrative design sketches, not implemented public exports. Phase 0 selects element functions with explicit binding tokens; the exact application/action registration surface remains to be integrated in Phase A.
+
+**Candidate A: Native Tagged Template Literals (Evaluated; Public Adoption Deferred)**
 ```js
 import { createApp, html } from 'mini-framework';
 
@@ -75,7 +79,7 @@ const app = createApp({
 });
 ```
 
-**Candidate B: Ergonomic Element Functions (Alternative)**
+**Candidate B: Ergonomic Element Functions (Selected for Phase A)**
 ```js
 import { createApp, div, button, span } from 'mini-framework';
 
@@ -95,7 +99,7 @@ const app = createApp({
 });
 ```
 
-These candidate syntax shapes represent the public ergonomic targets. Candidate A provides an intuitive, JSX-like developer experience natively in browsers without compilers or bundlers, while Candidate B provides a zero-parse functional alternative. Both avoid mandatory arrow-function ceremonies (`() => state.count`) and boilerplate empty attribute objects (`{}`). Their exact performance, parsing cost, and caching behavior will be evaluated in the Phase 0 syntax prototype (Task 0.7) before freezing the public API.
+These candidate syntax shapes represent the public ergonomic targets. Both avoid mandatory arrow-function ceremonies for simple properties and boilerplate empty attribute objects. The completed Phase 0 prototype found that arbitrary eager `${state.prop}` interpolations do not retain expression boundaries needed for exact per-binding dependencies. [ADR 0001](docs/adr/0001-view-syntax.md) therefore selects element functions with `bind.prop` tokens and explicit derived bindings, and defers public templates. Token-based templates remain a viable experiment, but no compiler, primitive boxing, or whole-view tracking relaxation is adopted. The exact public API is not frozen, and the original template requirements remain the gate for any later adoption.
 
 ## 4. Functional requirements
 

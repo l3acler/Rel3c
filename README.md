@@ -17,9 +17,9 @@ A standalone JavaScript frontend framework built from scratch on a **determinist
 
 ## Overview & Purpose
 
-`mini-framework` is a product-grade, zero-dependency frontend framework designed for applications where state transitions must be reproducible, fine-grained, and strictly auditable.
+`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes are complete; the public runtime is still a scaffold.
 
-Instead of relying on a virtual DOM (vDOM) diffing tree or generic state containers, `mini-framework` provides:
+The planned runtime uses the following capabilities; they are not yet shipped public features:
 1. **Fine-Grained Reactive Bindings (`DOM-1`, `DOM-2`)**: State properties track which exact DOM nodes or computed values depend on them. Updating one property touches only its bound DOM node, leaving unaffected nodes and browser focus untouched.
 2. **Transactional State Actions (`ACTION-1`, `STATE-1`)**: Synchronous actions execute against a draft transaction view. Successful actions publish one immutable version atomically; throwing actions roll back completely without partial leakage.
 3. **Frame-Coalesced Rendering (`SCHED-1`)**: State mutations coalesce so that multiple commits before a render frame result in at most one latest-value DOM update per dirty binding.
@@ -45,7 +45,7 @@ Instead of relying on a virtual DOM (vDOM) diffing tree or generic state contain
 
 ## Current Milestone Status
 
-- **Phase 0 — Architecture Spikes (In Progress)**:
+- **Phase 0 — Architecture Spikes (Complete)**:
   - [x] **0.1 Root Scaffold**: Browser-native ES module setup, public entry placeholder, zero-dependency dev server, minimal browser example, and smoke test runner.
   - [x] **0.2 Prototype Contract**: Tiny begin/read/write/commit/abort transaction interface and shared test fixtures.
   - [x] **0.3 Copy-on-Write Prototype**: Structural sharing and property-level change tracking.
@@ -54,7 +54,9 @@ Instead of relying on a virtual DOM (vDOM) diffing tree or generic state contain
   - [x] **0.6 Workload Measurements**: Equivalent Node/browser timing, memory/GC observations, and median/p95 results. See the [measurement report](docs/reports/task-0.6-measurements.md).
   - [x] **0.7 View Syntax Evaluation**: Element functions with binding tokens selected; optional templates deferred. See the [syntax ADR](docs/adr/0001-view-syntax.md) and [browser evidence](docs/reports/task-0.7-view-syntax.md).
   - [x] **0.8 Action Schema & Serialization**: Typed named actions, independent runtime payload validation, and alias-preserving canonical snapshots; cycles rejected. See the [schema ADR](docs/adr/0002-action-schema-serialization.md) and [evidence report](docs/reports/task-0.8-actions-serialization.md).
-  - [ ] **0.9 Architecture Decision Record (ADR)**: Evidence-backed engine and syntax selection.
+  - [x] **0.9 Architecture Review & Selection**: COW selected after validation fixes and fresh equivalent-work benchmarks. Stable graph IDs, data/action/view decisions and proposed browser/input targets are documented. See [engine ADR](docs/adr/0003-transaction-engine-identity.md), [browser/input ADR](docs/adr/0004-browser-input-support.md), and [review/evidence](docs/reports/task-0.9-architecture-review.md).
+
+Next: **A.1 — application ownership and public lifecycle**. The public entry remains a scaffold; no production engine, router, recording or replay is shipped yet.
 
 > [!NOTE]
 > Per the project instructions, planned features for Phases A–D (core runtime, router, deterministic ticks, replay, inspector) are currently under development or scheduled. They are not claimed as shipped until their respective acceptance gates pass.
@@ -118,7 +120,7 @@ npm run test:spikes
 npm run test:benchmarks
 ```
 
-Task 0.5 verifies 157 spike tests, including 12 seeded sequences and 5,760 programmed transaction attempts across reference, copy-on-write, and staged-operation engines. The engines remain isolated in `spikes/`; no production engine has been selected.
+Task 0.5 verifies 157 transaction tests, including 12 seeded sequences and 5,760 programmed transaction attempts across reference, copy-on-write, and staged-operation engines. Task 0.9 selects COW as the Phase A basis and adds 17 type-policy tests; the engines remain isolated in `spikes/`, not shipped public runtime code.
 
 Task 0.7 adds seven Node syntax tests and 40 browser checks, with three-round mount/update/reorder/dispose measurements. Run:
 
@@ -136,7 +138,7 @@ npm run test:types
 npm run test:spikes
 ```
 
-The action harness and codec run as plain JavaScript without compilation. Snapshots preserve aliases, holes, undefined, negative zero and property order; cycles and unsupported input types are rejected. These are experimental data snapshots, not replay checkpoints or public exports. Existing transaction assignment/type-validation gaps are recorded for task 0.9/core adoption. See the [action/serialization spike guide](spikes/action-schema/README.md).
+The action harness and codec run as plain JavaScript without compilation. Snapshots preserve aliases, holes, undefined, negative zero and property order; cycles and unsupported input types are rejected. These are experimental data snapshots, not replay checkpoints or public exports. Task 0.9 fixes the shared assignment/DAG validation gaps and remeasures both strategies. Current totals: 292 spike tests, eight workload tests, three scaffold tests, 25 negative type lines and 40 Chrome DOM checks. See the [action/serialization spike guide](spikes/action-schema/README.md).
 
 ---
 
@@ -145,7 +147,7 @@ The action harness and codec run as plain JavaScript without compilation. Snapsh
 ```text
 mini-framework/
 ├── AGENTS.md                  # Project rules, constraints, and work order
-├── Framework_PRD.md           # Product Requirements Document (PRD v2.2)
+├── Framework_PRD.md           # Product Requirements Document (PRD v2.3)
 ├── DEVELOPMENT_PLAN.md        # Implementation backlog and task tracking
 ├── README.md                  # Framework documentation & quickstart
 ├── package.json               # ES modules, zero runtime dependencies; dev type checker

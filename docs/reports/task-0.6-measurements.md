@@ -2,6 +2,11 @@
 
 **Date:** 2 October 2026 (Bahrain). **Status:** measurement task complete; production engine selection is still task 0.9.
 
+Historical evidence note: task 0.9 corrects the shared validator and selects COW
+using [fresh full comparisons and correctness review](task-0.9-architecture-review.md).
+This report's numbers and raw artifacts remain unchanged; their fingerprints
+describe the earlier sources retained in git, not the corrected current contract.
+
 The two prototypes and eager reference finish every measured workload with matching alias/identity-aware state hashes, versions, and invalidation totals. The results show workload-dependent tradeoffs. They do not establish a general speedup, near-zero allocation, or a selected engine.
 
 ## Dataset and reproduction
