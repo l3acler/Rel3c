@@ -1,6 +1,6 @@
 # Framework development plan
 
-**Status:** Planned; no implementation task is complete.
+**Status:** Phase 0 in progress; tasks 0.1–0.7 complete. Later milestones remain planned.
 
 **Created:** 30 September 2026.
 
@@ -12,7 +12,7 @@
 
 This document turns the product requirements into an implementation backlog. The framework is the product: its state engine, DOM abstraction, event system, router, scheduler, deterministic runtime, tools, package, and documentation. Small examples validate public APIs. The assignment's separate demonstration application is a later integration task and must not determine the framework architecture.
 
-The repository currently contains the PRD, agent instructions, a `.gitignore`, and a placeholder README. There is no runtime, package configuration, test suite, or measured benchmark baseline. All tasks below start unchecked. Proposed paths and command names describe future deliverables, not existing functionality.
+The repository contains a root ES module scaffold, placeholder public exports, a development server/example, tested transaction spikes, and equivalent-work Node/browser measurements. Tasks 0.1–0.6 are complete; the measured eager-clone baseline and raw results are available, while production engine selection remains pending task 0.9. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
 
 The PRD remains the source of truth for acceptance criteria. Changes to product scope or execution contracts require corresponding PRD changes and an explanation. Architecture choices require an architecture decision record (ADR), supporting tests, and measurements where applicable.
 
@@ -49,7 +49,7 @@ Phase A includes minimal click handling and frame batching to prove the core ver
 
 ### Task tracking
 
-Task IDs are stable references for changes, tests, ADRs, and review notes. Check a task only when its deliverable and acceptance checks pass. Record status as `planned`, `in progress`, `blocked`, or `done`; include the owner, change reference, verification command/results, and remaining limitations in the implementation log. Initial status for every task is `planned`, with no assigned owner.
+Task IDs are stable references for changes, tests, ADRs, and review notes. Check a task only when its deliverable and acceptance checks pass. Record status as `planned`, `in progress`, `blocked`, or `done`; include the owner, change reference, verification command/results, and remaining limitations in the implementation log. Unchecked tasks remain planned; completed tasks have evidence in the log.
 
 Each task below specifies dependencies, work, and evidence. Tasks sharing satisfied dependencies may proceed independently; phase gates control integration. Calendar estimates should follow the Phase 0 findings rather than assume the engine or browser-testing cost.
 
@@ -99,12 +99,12 @@ These are responsibility boundaries, not a requirement to create every directory
 ### Tasks
 
 - [x] **0.1 — Scaffold the root project.** Dependencies: none. Add browser-native module configuration, a documented public entry placeholder, a minimal root-run browser page, and test/benchmark scripts. Choose and disclose development tooling. Acceptance: a documented root command starts the page; a clean setup can execute a minimal test without a frontend runtime dependency.
-- [ ] **0.2 — Specify the prototype contract.** Dependencies: 0.1. Define the same tiny begin/read/write/commit/abort interface for both engines, without making it public. Specify property addition/deletion, array structure, aliases, snapshot reads, unsupported types, no-op actions, and transaction lifetime. Acceptance: shared fixtures and a reference evaluator define observable behavior independently of either prototype.
-- [ ] **0.3 — Prototype copy-on-write transactions.** Dependencies: 0.2. Implement writable transaction views, structural sharing, immutable publication, rollback, and property-level change metadata. Acceptance: nested edits, aliases, insert/remove/reorder, and throw rollback match the reference fixtures; committed state cannot be changed through a leaked draft.
-- [ ] **0.4 — Prototype staged-operation transactions.** Dependencies: 0.2. Implement staged writes/deletes and read-your-writes behavior, atomic publication, rollback, and equivalent change metadata. Acceptance: the exact fixtures used for 0.3 pass without relaxing semantics or excluding a workload.
-- [ ] **0.5 — Compare correctness and identity.** Dependencies: 0.3, 0.4. Add randomized nested/collection transitions, alias mutation cases, repeated writes, failure injection, and exact invalidation checks. Acceptance: both implementations match reference state and affected-property sets; moved items retain stable identities rather than depend on mutable JSON paths.
-- [ ] **0.6 — Measure equivalent workloads.** Dependencies: 0.5. Measure sparse nested updates, repeated writes, dense updates, large array insertions/reorders, alias edits, and rollback. Report allocation proxies or profiler observations, retained memory, GC observations, median/p95 update time, and browser frame scripting tails. Include machine, runtime/browser version, warmup, repetitions, workload source, and raw results. Acceptance: comparisons do equal work, separate instrumentation overhead, and explain unavailable metrics rather than invent them.
-- [ ] **0.7 — Prototype element and tagged-template syntax.** Dependencies: 0.1. Build equivalent form/list/event examples using element functions and optional `html` templates. Evaluate readability, cached parse cost, escaping, dynamic attributes, handler ownership, and disposal. Acceptance: ordinary `onclick` attributes cannot bypass framework event handling; an ADR selects element functions and records whether templates meet the adoption gate. Templates may be omitted if the prototype does not justify shipping them.
+- [x] **0.2 — Specify the prototype contract.** Dependencies: 0.1. Define the same tiny begin/read/write/commit/abort interface for both engines, without making it public. Specify property addition/deletion, array structure, aliases, snapshot reads, unsupported types, no-op actions, and transaction lifetime. Acceptance: shared fixtures and a reference evaluator define observable behavior independently of either prototype.
+- [x] **0.3 — Prototype copy-on-write transactions.** Dependencies: 0.2. Implement writable transaction views, structural sharing, immutable publication, rollback, and property-level change metadata. Acceptance: nested edits, aliases, insert/remove/reorder, and throw rollback match the reference fixtures; committed state cannot be changed through a leaked draft.
+- [x] **0.4 — Prototype staged-operation transactions.** Dependencies: 0.2. Implement staged writes/deletes and read-your-writes behavior, atomic publication, rollback, and equivalent change metadata. Acceptance: the exact fixtures used for 0.3 pass without relaxing semantics or excluding a workload.
+- [x] **0.5 — Compare correctness and identity.** Dependencies: 0.3, 0.4. Add randomized nested/collection transitions, alias mutation cases, repeated writes, failure injection, and exact invalidation checks. Acceptance: both implementations match reference state and affected-property sets; moved items retain stable identities rather than depend on mutable JSON paths. Evidence: [correctness and identity report](docs/reports/task-0.5-correctness.md).
+- [x] **0.6 — Measure equivalent workloads.** Dependencies: 0.5. Measure sparse nested updates, repeated writes, dense updates, large array insertions/reorders, alias edits, and rollback. Report allocation proxies or profiler observations, retained memory, GC observations, median/p95 update time, and browser frame scripting tails. Include machine, runtime/browser version, warmup, repetitions, workload source, and raw results. Acceptance: comparisons do equal work, separate instrumentation overhead, and explain unavailable metrics rather than invent them. Evidence: [measurement report and raw datasets](docs/reports/task-0.6-measurements.md).
+- [x] **0.7 — Prototype element and tagged-template syntax.** Dependencies: 0.1. Build equivalent form/list/event examples using element functions and optional `html` templates. Evaluate readability, cached parse cost, escaping, dynamic attributes, handler ownership, and disposal. Acceptance: ordinary `onclick` attributes cannot bypass framework event handling; an ADR selects element functions and records whether templates meet the adoption gate. Templates may be omitted if the prototype does not justify shipping them. Evidence: [ADR 0001](docs/adr/0001-view-syntax.md) and [syntax report](docs/reports/task-0.7-view-syntax.md). Elements/tokens selected; eager templates fail exact-binding capture, optional public templates deferred.
 - [ ] **0.8 — Prototype typed actions and serialization.** Dependencies: 0.2. Test inference of action names and payload types while keeping plain JavaScript usable. Evaluate a supported state/payload type matrix and alias-preserving snapshot encoding; decide whether cycles are supported or rejected. Acceptance: valid and invalid dispatch type fixtures behave as expected, runtime validation remains required, and serialization does not silently change graph meaning.
 - [ ] **0.9 — Record architecture decisions.** Dependencies: 0.6–0.8. Write ADRs for transaction choice, object identity, supported types, view syntax, action/schema shape, and proposed browser/input support. Document measured tradeoffs and unresolved decisions. Acceptance: the selected engine satisfies all correctness gates; costs and limitations are supported by results. If neither engine passes, continue the spike instead of declaring a winner.
 
@@ -336,6 +336,162 @@ Documentation or ADR updated: README.md updated with execution model, architectu
 Remaining limitations / blocking dependency: Task 0.2 (Specify the prototype contract) is the next milestone. State transaction engines are placeholders awaiting 0.2–0.6 spikes.
 ```
 
+```text
+Task ID: 0.2
+Status / owner: done / agent
+Change reference: spikes/transactions/contract.js, spikes/transactions/reference-evaluator.js, spikes/transactions/fixtures.js, spikes/transactions/contract.test.js
+Observable behavior delivered:
+  - Specified the internal transaction interface (begin, read, write, commit, abort, run) and error hierarchy (TransactionActiveError, TransactionCompletedError, DraftRevokedError, UnsupportedTypeError, CircularReferenceError).
+  - Defined supported type system (plain objects, arrays, serializable primitives) and explicit rejections (functions, symbols, DOM nodes, promises, circular references, non-finite numbers).
+  - Implemented Reference Transaction Evaluator (createReferenceEngine) as an independent ground-truth oracle preserving graph aliases and enforcing leaked draft revocation.
+  - Built comprehensive shared fixture suite (28 fixtures across 10 categories) covering primitive updates, nested objects, additions/deletions, arrays (push/pop/splice/sort/reverse/item edits), graph aliases (shared references across multiple paths), snapshot isolation, unsupported types, no-op commits, atomic rollback, and draft lifecycle.
+Verification commands and results:
+  - npm run test:spikes: 29 tests pass in 80ms validating all contract fixtures against the reference evaluator.
+  - npm test: 3 smoke tests pass.
+  - npm run smoke: dev server and root browser imports pass.
+Environment / browser checks: Node.js v26.3.0, Darwin arm64.
+Documentation or ADR updated: DEVELOPMENT_PLAN.md task 0.2 marked complete.
+Remaining limitations / blocking dependency: Task 0.3 (Prototype copy-on-write transactions) and Task 0.4 (Prototype staged-operation transactions) will now implement concrete engines against this fixture suite.
+```
+
+```text
+Task ID: 0.3
+Status / owner: done / agent
+Change reference: spikes/transactions/cow-engine.js, spikes/transactions/cow.test.js
+Observable behavior delivered:
+  - Built Copy-on-Write (COW) transaction engine (createCowEngine) with lazy shallow-copying on write.
+  - Implemented true structural sharing: untouched object branches and untouched array elements retain strict reference equality (===) across versions.
+  - Graph aliases and multi-parent nodes maintained: mutations via one alias immediately reflect across all alias paths during transaction, and committed tree preserves reference identity (state.primary === state.secondary).
+  - Array mutations (push, pop, shift, unshift, splice, sort, reverse, index assignment) executed natively on COW copies with length tracking and change recording.
+  - Property-level change metadata (type, path, key, oldValue, value) and normalized affected path collection.
+  - Instant draft revocation on commit or abort via transaction lifetime token; leaked draft access throws DraftRevokedError.
+Verification commands and results:
+  - npm run test:spikes: 60/60 tests pass in 80ms (29 contract/evaluator tests + 31 COW tests).
+  - Passed all 28 shared contract fixtures identically to the reference evaluator.
+  - Dedicated structural sharing tests confirm untouched object properties (user.preferences, settings.features) and array items (list[0], list[2]) retain exact reference identity.
+  - npm test: 3 smoke tests pass.
+  - npm run smoke: root dev server and browser imports pass with exit code 0.
+Environment / browser checks: Node.js v26.3.0, Darwin arm64.
+Documentation or ADR updated: DEVELOPMENT_PLAN.md task 0.3 marked complete.
+Remaining limitations / blocking dependency: Task 0.4 (Prototype staged-operation transactions) is the next milestone to build the competing engine for comparative benchmarking in 0.5–0.6.
+```
+
+```text
+Task ID: 0.4
+Status / owner: done / agent
+Change reference: spikes/transactions/staged-engine.js, spikes/transactions/staged.test.js
+Observable behavior delivered:
+  - Built Staged-Operation transaction engine (createStagedEngine) using a target-keyed overlay and change journal.
+  - Implemented read-your-writes overlay without immediate object cloning on write; mutations are staged in StagedRecord entries.
+  - Array operations (push, pop, shift, unshift, splice, sort, reverse, index assignment) operate on a staged buffer, tracking length deltas and affected paths.
+  - Target-keyed staging preserves graph aliases across multi-parent nodes and array elements during reads, writes, and commit materialization (state.primary === state.secondary).
+  - Materialization at commit time constructs new state versions with full structural sharing (untouched subtrees and array elements maintain === reference equality).
+  - Zero-cost rollback: abort() simply clears staging maps without leaving heap garbage from preemptive object copies.
+  - Instant draft revocation on commit or abort via transaction lifetime token; leaked draft access throws DraftRevokedError.
+Verification commands and results:
+  - npm run test:spikes: 91/91 tests pass in 84ms (29 contract/evaluator tests + 31 COW tests + 31 Staged tests).
+  - Passed all 28 shared contract fixtures identically to the reference evaluator and COW engine without relaxing semantics.
+  - Dedicated structural sharing tests confirm untouched object branches and array items preserve strict reference identity.
+  - npm test: 3 smoke tests pass.
+  - npm run smoke: dev server and root browser imports pass with exit code 0.
+Environment / browser checks: Node.js v26.3.0, Darwin arm64.
+Documentation or ADR updated: DEVELOPMENT_PLAN.md task 0.4 marked complete.
+Remaining limitations / blocking dependency: Task 0.5 (Compare correctness and identity) and Task 0.6 (Measure equivalent workloads) will now run automated randomized fixtures and comparative performance benchmarks between COW and Staged-Ops.
+```
+
+```text
+Task ID: 0.5
+Status / owner: done / Codex
+Change reference: spikes/transactions/comparison.test.js, comparison-fixtures.js,
+  graph.js, draft-view.js, engine-shell.js, updated engine/contract modules,
+  spikes/transactions/README.md, docs/reports/task-0.5-correctness.md
+Observable behavior delivered:
+  - Reproduced and fixed 10 failures in the initial identity regressions.
+  - Preserved unread aliases, held/moved/reinserted items, sparse arrays and keys.
+  - Added engine-local stable object IDs and exact net property invalidations.
+  - Added independent native state/observer oracle and 12 seeded sequences:
+    5,760 programmed attempts plus 2,880 rollback-recovery no-ops.
+  - Checked rollback on throw/abort/thenable/unsupported assignment/commit cycle,
+    snapshot isolation, revocation, structural sharing, and alias graph topology.
+Verification commands and results:
+  - npm run test:spikes: 157/157 pass.
+  - npm test: 3/3 pass.
+  - npm run smoke: pass (localhost listen required sandbox escalation).
+Environment / browser checks: Node.js v26.3.0, Darwin arm64; HTTP/module startup
+  smoke only, no browser DOM behavior claimed.
+Documentation or ADR updated: comparison report, spike README, root milestone
+  status, task checklist, and this log. Production API/PRD unchanged by task 0.5.
+Remaining limitations / blocking dependency: task 0.6 measurements and task 0.9
+  selection remain pending. Commit/delta scans and temporary allocations must be
+  benchmarked; previous zero-cost rollback descriptions are unmeasured.
+```
+
+```text
+Task ID: 0.6
+Status / owner: done / Codex
+Change reference: benchmarks/transactions/, benchmarks/results/, scripts/bench-spikes.js,
+  scripts/bench-spikes-worker.js, scripts/bench-spikes-browser.js, package.json,
+  benchmarks/README.md, docs/reports/task-0.6-measurements.md
+Observable behavior delivered:
+  - Seven identical, bounded workloads at 128/1,024 rows across reference/COW/staged.
+  - 126 isolated clean Node timing trials (7,560 samples) and 42 separate memory/GC
+    profiles, with raw heap/RSS traces, natural GC entries and forced-GC timings.
+  - 126 Chrome rAF trials (3,780 callback samples), frame interval observations,
+    browser/machine versions, configuration and source SHA-256 fingerprints.
+  - Matching alias/identity-aware hashes, versions and invalidation totals for all
+    measured groups; independent native-model workload tests.
+  - Published median/p95, memory/churn proxies, GC observations and limitations;
+    no production engine selection or universal speedup claim.
+Verification commands and results:
+  - npm run test:benchmarks: 8/8 pass.
+  - npm run test:spikes: 157/157 pass.
+  - npm test: 3/3 pass.
+  - npm run smoke: pass.
+  - npm run bench:spikes and npm run bench:spikes:browser: full runs complete,
+    equivalent-work checks pass; quick harness runs also pass.
+Environment / browser checks: Apple M4, 10 cores, 16 GiB RAM, Darwin 24.6.0 arm64;
+  Node v26.3.0/V8 14.6.202.34-node.20; isolated headless Chrome 154.0.8037.92/
+  V8 15.4.80.19. Browser/localhost execution used approved sandbox escalation;
+  no signed-in browser/profile used. Temporary browser profile removed by runner.
+Documentation or ADR updated: measurement report, benchmark/spike READMEs, root
+  README, checklist/status, and log. Public runtime and PRD unchanged by task 0.6.
+Remaining limitations / blocking dependency: exact allocation, transient heap
+  peaks, browser GC events, total traced frame/paint cost unavailable. Memory is
+  one instrumented trial per case and includes harness/JIT noise. Tasks 0.7/0.8
+  precede task 0.9 engine/syntax/schema decisions.
+```
+
+```text
+Task ID: 0.7
+Status / owner: done / Codex
+Change reference: spikes/view-syntax/, scripts/check-view-syntax.js,
+  benchmarks/results/view-syntax-1790896108425-a49740a2.json, package.json,
+  docs/adr/0001-view-syntax.md, docs/reports/task-0.7-view-syntax.md
+Observable behavior delivered:
+  - Equivalent native form/list examples: elements, token templates, eager templates.
+  - Exact token-binding tracking, safe dynamic text/attributes, owned events,
+    cached static template parsing, conditional/keyed scopes and resource cleanup.
+  - 40 browser checks, including trusted Enter/Tab, keyed focus/selection,
+    rollback/coalescing, aliases, selective invalidation and rejected inline events.
+  - 18 rotated-order measurement trials, 1,440 mount/update/reverse/dispose spans,
+    separate cold parse/cache-hit/clone batches and source fingerprints.
+  - ADR selects elements + bind.prop; optional templates deferred because eager
+    expression provenance does not satisfy exact per-binding dependency tracking.
+Verification commands and results:
+  - npm run test:spikes: 164/164 pass (157 transaction + 7 syntax).
+  - npm run check:view-syntax: 40/40 browser checks and full measurements pass.
+  - npm run test:benchmarks: 8/8 pass; npm test: 3/3 pass.
+  - npm run smoke: pass; quick browser harness also verified.
+Environment / browser checks: Apple M4, Darwin 24.6.0 arm64, Chrome 154.0.8037.92 /
+  V8 15.4.80.19, Node v26.3.0. Approved localhost/isolated-profile execution;
+  no signed-in browser/profile used; temporary profile cleaned by runner.
+Documentation or ADR updated: syntax ADR/report/spike guide, root README,
+  checklist/status and this log. Public runtime/PRD unchanged by this task.
+Remaining limitations / blocking dependency: one browser; no universal XSS,
+  allocation/GC/paint or usability claims. IME/router/nested action scheduling
+  remain later work. Task 0.8 precedes transaction/schema decisions in 0.9.
+```
+
 Release candidates should progress through the Phase A core gate, Phase B auditor gate, Phase C replay gate, and Phase D product gate. Releases explicitly state completed phases. No package publication, deployment, or separate demonstration-app work is implied by this planning document.
 
 ## 14. Completion checklist
@@ -351,5 +507,4 @@ Release candidates should progress through the Phase A core gate, Phase B audito
 - [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Next implementation task:** 0.2. Define prototype contract and shared fixtures before choosing an engine or freezing public syntax.
-
+**Next implementation task:** 0.8. Prototype typed actions and serialization: infer names/payloads, keep runtime validation, and test alias-preserving snapshot encoding and supported types/cycle policy.

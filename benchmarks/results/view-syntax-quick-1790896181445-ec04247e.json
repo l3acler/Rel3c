@@ -1,0 +1,608 @@
+{
+  "formatVersion": 1,
+  "kind": "view-syntax-spike",
+  "recordedAt": "2026-10-01T23:09:41.445Z",
+  "quick": true,
+  "config": {
+    "sizes": [
+      4
+    ],
+    "warmup": 1,
+    "samples": 3,
+    "rounds": 1
+  },
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/154.0.8037.92",
+    "revision": "@334b65d254ccc35df4fca82706d1753227b01039",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "jsVersion": "15.4.80.19"
+  },
+  "browserEnvironment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "platform": "MacIntel",
+    "hardwareConcurrency": 10,
+    "visibility": "visible",
+    "memoryApi": true
+  },
+  "machine": {
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "totalMemoryBytes": 17179869184,
+    "platform": "darwin",
+    "release": "24.6.0",
+    "arch": "arm64"
+  },
+  "chromeFlags": [
+    "--headless=new",
+    "--remote-debugging-pipe",
+    "--no-first-run",
+    "--no-default-browser-check",
+    "--disable-extensions",
+    "--disable-background-timer-throttling",
+    "--disable-renderer-backgrounding",
+    "--disable-backgrounding-occluded-windows",
+    "--enable-precise-memory-info"
+  ],
+  "sourceFiles": [
+    {
+      "file": "scripts/check-view-syntax.js",
+      "sha256": "913eb274d413e8a206fef001babf96ce89d147d8f0dede95fc724193fc59cc64"
+    },
+    {
+      "file": "scripts/dev-server.js",
+      "sha256": "ec2e25bc7552de8f2003009c5517c075058154c4212e8f00d8a8655f7f74f15f"
+    },
+    {
+      "file": "spikes/view-syntax/bindings.js",
+      "sha256": "5947f809c31013a03cf4ab3f473426d1be69f5f9e7ea58bf5f5319be77f062a0"
+    },
+    {
+      "file": "spikes/view-syntax/nodes.js",
+      "sha256": "d754111b096cb496aaaa97727eff8047d9af7c8089e82ed2a0ec0d66ff4ef001"
+    },
+    {
+      "file": "spikes/view-syntax/reactivity.js",
+      "sha256": "c06abdf01aca43c988ba790f8c916af1e248f940002cca0b99cbee91178fee99"
+    },
+    {
+      "file": "spikes/view-syntax/events.js",
+      "sha256": "42ef00fcdbc5ccad6146def68c4091876ea6cc3bb9084295a6068064c943831b"
+    },
+    {
+      "file": "spikes/view-syntax/security.js",
+      "sha256": "00b651deefed9caddf3e42d32d617aec7678f939571ad61e6d68e709e16732e5"
+    },
+    {
+      "file": "spikes/view-syntax/templates.js",
+      "sha256": "66c2f8f783f4be3028ad3c1777c2ef49c2659163b28c1bff5e7cf765f613ae42"
+    },
+    {
+      "file": "spikes/view-syntax/renderer.js",
+      "sha256": "23b431a4775eb8517998aafd6eedfa58a5a1c25e7db6a494fce75991f391c268"
+    },
+    {
+      "file": "spikes/view-syntax/index.js",
+      "sha256": "489ca0f59bcdc64cf3d9e843991fe81acd17c015fbe6999f1940a77b540d8233"
+    },
+    {
+      "file": "spikes/view-syntax/examples.js",
+      "sha256": "e67b4a7aa8cda8314aa0290afc2a82e5857bd5b54431f5c262830d50fca5095e"
+    },
+    {
+      "file": "spikes/view-syntax/browser-tests.js",
+      "sha256": "04d80a4f7a222178bfae0e8a24c33dcd318ddaeabf9a5c8af175e372641331ea"
+    },
+    {
+      "file": "spikes/view-syntax/measurements.js",
+      "sha256": "df938dc2cef06ca0064591196bc58f943adfdf38c8bd8b852cf9be00d04b0b94"
+    },
+    {
+      "file": "spikes/view-syntax/index.html",
+      "sha256": "06840e50dc854eae1835748db6742b8c61bc27e2fef2c337c34f67f64c0a64c4"
+    },
+    {
+      "file": "spikes/transactions/contract.js",
+      "sha256": "9662c16b120bc203b20cc7a41ee9d8b2cfb0ee5ca8d23634834d94d0a76c77a6"
+    },
+    {
+      "file": "spikes/transactions/graph.js",
+      "sha256": "fa3124030e8dbb79cd25667c7b51d3a36bcc5d5a6ade0b7c765e83209afbc960"
+    },
+    {
+      "file": "spikes/transactions/draft-view.js",
+      "sha256": "b99f2e85d78e2b2ad08bedcc3f58a903bf442fb09255ea15c2b7af5089bb7e36"
+    },
+    {
+      "file": "spikes/transactions/engine-shell.js",
+      "sha256": "41d8a3e85d1ad3e0e2e68ab27d630f73c4da4653646c759f29580c100c83688d"
+    },
+    {
+      "file": "spikes/transactions/reference-evaluator.js",
+      "sha256": "32d2e9f6506ce8114cc7df88fe4f9de7c488cea09ba99217b9ee09c8657b4c3d"
+    },
+    {
+      "file": "spikes/transactions/cow-engine.js",
+      "sha256": "1fa22c2e9bf63f68b8712c90b2e219753108237e5a32fefa0ddf73e80fb78b2a"
+    },
+    {
+      "file": "spikes/transactions/staged-engine.js",
+      "sha256": "a5e85ab767dc841e3ad4a32ed4145aecef9104419a6cf5733b51d00df3baf592"
+    }
+  ],
+  "tests": {
+    "passed": 40,
+    "results": [
+      {
+        "name": "elements: native form, event ownership, exact changed writes",
+        "passed": true
+      },
+      {
+        "name": "elements: coalescing, rollback, readonly and async rejection",
+        "passed": true
+      },
+      {
+        "name": "elements: keyed reorder, insertion, row invalidation and focused identity",
+        "passed": true
+      },
+      {
+        "name": "elements: conditional and full resource disposal",
+        "passed": true
+      },
+      {
+        "name": "template-bind: native form, event ownership, exact changed writes",
+        "passed": true
+      },
+      {
+        "name": "template-bind: coalescing, rollback, readonly and async rejection",
+        "passed": true
+      },
+      {
+        "name": "template-bind: keyed reorder, insertion, row invalidation and focused identity",
+        "passed": true
+      },
+      {
+        "name": "template-bind: conditional and full resource disposal",
+        "passed": true
+      },
+      {
+        "name": "template-eager: native form, event ownership, exact changed writes",
+        "passed": true
+      },
+      {
+        "name": "template-eager: coalescing, rollback, readonly and async rejection",
+        "passed": true
+      },
+      {
+        "name": "template-eager: keyed reorder, insertion, row invalidation and focused identity",
+        "passed": true
+      },
+      {
+        "name": "template-eager: conditional and full resource disposal",
+        "passed": true
+      },
+      {
+        "name": "createCowEngine: shared renderer adapter",
+        "passed": true
+      },
+      {
+        "name": "createStagedEngine: shared renderer adapter",
+        "passed": true
+      },
+      {
+        "name": "text and quoted attributes never become markup",
+        "passed": true
+      },
+      {
+        "name": "one property evaluates/writes one text binding, not the unrelated binding",
+        "passed": true
+      },
+      {
+        "name": "equal-valued eager expressions remain correct through conservative capture",
+        "passed": true
+      },
+      {
+        "name": "deep bindings, replacement and alias identity invalidate exact leaves",
+        "passed": true
+      },
+      {
+        "name": "dynamic attributes remove cleanly and safe links retain native semantics",
+        "passed": true
+      },
+      {
+        "name": "keyed eager closures receive updated captures without replacing nodes",
+        "passed": true
+      },
+      {
+        "name": "reject inline template event and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject element inline event and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject dynamic event string and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject script tag and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject javascript URL and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject static javascript URL and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject comment slot and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject dynamic attribute name and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject raw styles and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject raw function child and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject render dispatch and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject render state mutation and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject duplicate keys and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "reject missing keys and clean failed mount",
+        "passed": true
+      },
+      {
+        "name": "style objects, derived expressions and mixed attributes",
+        "passed": true
+      },
+      {
+        "name": "scroll, keyboard, bubbling cancellation and unmount handlers",
+        "passed": true
+      },
+      {
+        "name": "conditional handler cleanup and cached template clones",
+        "passed": true
+      },
+      {
+        "name": "automatic requestAnimationFrame rendering",
+        "passed": true
+      },
+      {
+        "name": "repeated mount/conditional cycles do not grow owned resources",
+        "passed": true
+      },
+      {
+        "name": "trusted Enter activation and Tab focus navigation",
+        "passed": true
+      }
+    ]
+  },
+  "summaries": [
+    {
+      "mode": "elements",
+      "size": 4,
+      "mountMs": {
+        "median": 0.10000002384185791,
+        "p95": 0.20000004768371582
+      },
+      "updateMs": {
+        "median": 0,
+        "p95": 0.09999996423721313
+      },
+      "reorderMs": {
+        "median": 0,
+        "p95": 0.09999996423721313
+      },
+      "disposeMs": {
+        "median": 0,
+        "p95": 0
+      },
+      "updateCounts": {
+        "evaluations": 2,
+        "viewEvaluations": 0,
+        "valueWrites": 2,
+        "structuralWrites": 0,
+        "templateParses": 0,
+        "templateClones": 0,
+        "elementCreates": 0,
+        "textCreates": 0,
+        "effects": 0,
+        "handlers": 0,
+        "listeners": 0,
+        "subscriptions": 0
+      }
+    },
+    {
+      "mode": "template-bind",
+      "size": 4,
+      "mountMs": {
+        "median": 0.19999998807907104,
+        "p95": 0.19999998807907104
+      },
+      "updateMs": {
+        "median": 0,
+        "p95": 0
+      },
+      "reorderMs": {
+        "median": 0.10000002384185791,
+        "p95": 0.30000001192092896
+      },
+      "disposeMs": {
+        "median": 0,
+        "p95": 0.09999996423721313
+      },
+      "updateCounts": {
+        "evaluations": 2,
+        "viewEvaluations": 0,
+        "valueWrites": 2,
+        "structuralWrites": 0,
+        "templateParses": 0,
+        "templateClones": 0,
+        "elementCreates": 0,
+        "textCreates": 0,
+        "effects": 0,
+        "handlers": 0,
+        "listeners": 0,
+        "subscriptions": 0
+      }
+    },
+    {
+      "mode": "template-eager",
+      "size": 4,
+      "mountMs": {
+        "median": 0.19999998807907104,
+        "p95": 0.19999998807907104
+      },
+      "updateMs": {
+        "median": 0,
+        "p95": 0
+      },
+      "reorderMs": {
+        "median": 0.10000002384185791,
+        "p95": 0.10000002384185791
+      },
+      "disposeMs": {
+        "median": 0,
+        "p95": 0
+      },
+      "updateCounts": {
+        "evaluations": 6,
+        "viewEvaluations": 1,
+        "valueWrites": 2,
+        "structuralWrites": 0,
+        "templateParses": 0,
+        "templateClones": 0,
+        "elementCreates": 0,
+        "textCreates": 0,
+        "effects": 0,
+        "handlers": 0,
+        "listeners": 0,
+        "subscriptions": 0
+      }
+    }
+  ],
+  "results": [
+    {
+      "mode": "elements",
+      "size": 4,
+      "round": 0,
+      "mountSamples": [
+        0.10000002384185791,
+        0,
+        0.20000004768371582
+      ],
+      "updateSamples": [
+        0,
+        0.09999996423721313,
+        0
+      ],
+      "reorderSamples": [
+        0.09999996423721313,
+        0,
+        0
+      ],
+      "disposeSamples": [
+        0,
+        0,
+        0
+      ],
+      "updateCounts": {
+        "evaluations": 2,
+        "viewEvaluations": 0,
+        "valueWrites": 2,
+        "structuralWrites": 0,
+        "templateParses": 0,
+        "templateClones": 0,
+        "elementCreates": 0,
+        "textCreates": 0,
+        "effects": 0,
+        "handlers": 0,
+        "listeners": 0,
+        "subscriptions": 0
+      },
+      "mountMs": {
+        "median": 0.10000002384185791,
+        "p95": 0.20000004768371582
+      },
+      "updateMs": {
+        "median": 0,
+        "p95": 0.09999996423721313
+      },
+      "reorderMs": {
+        "median": 0,
+        "p95": 0.09999996423721313
+      },
+      "disposeMs": {
+        "median": 0,
+        "p95": 0
+      }
+    },
+    {
+      "mode": "template-bind",
+      "size": 4,
+      "round": 0,
+      "mountSamples": [
+        0.19999998807907104,
+        0.19999998807907104,
+        0.19999998807907104
+      ],
+      "updateSamples": [
+        0,
+        0,
+        0
+      ],
+      "reorderSamples": [
+        0.10000002384185791,
+        0.10000002384185791,
+        0.30000001192092896
+      ],
+      "disposeSamples": [
+        0,
+        0,
+        0.09999996423721313
+      ],
+      "updateCounts": {
+        "evaluations": 2,
+        "viewEvaluations": 0,
+        "valueWrites": 2,
+        "structuralWrites": 0,
+        "templateParses": 0,
+        "templateClones": 0,
+        "elementCreates": 0,
+        "textCreates": 0,
+        "effects": 0,
+        "handlers": 0,
+        "listeners": 0,
+        "subscriptions": 0
+      },
+      "mountMs": {
+        "median": 0.19999998807907104,
+        "p95": 0.19999998807907104
+      },
+      "updateMs": {
+        "median": 0,
+        "p95": 0
+      },
+      "reorderMs": {
+        "median": 0.10000002384185791,
+        "p95": 0.30000001192092896
+      },
+      "disposeMs": {
+        "median": 0,
+        "p95": 0.09999996423721313
+      }
+    },
+    {
+      "mode": "template-eager",
+      "size": 4,
+      "round": 0,
+      "mountSamples": [
+        0.19999998807907104,
+        0.09999996423721313,
+        0.19999998807907104
+      ],
+      "updateSamples": [
+        0,
+        0,
+        0
+      ],
+      "reorderSamples": [
+        0.10000002384185791,
+        0.10000002384185791,
+        0
+      ],
+      "disposeSamples": [
+        0,
+        0,
+        0
+      ],
+      "updateCounts": {
+        "evaluations": 6,
+        "viewEvaluations": 1,
+        "valueWrites": 2,
+        "structuralWrites": 0,
+        "templateParses": 0,
+        "templateClones": 0,
+        "elementCreates": 0,
+        "textCreates": 0,
+        "effects": 0,
+        "handlers": 0,
+        "listeners": 0,
+        "subscriptions": 0
+      },
+      "mountMs": {
+        "median": 0.19999998807907104,
+        "p95": 0.19999998807907104
+      },
+      "updateMs": {
+        "median": 0,
+        "p95": 0
+      },
+      "reorderMs": {
+        "median": 0.10000002384185791,
+        "p95": 0.10000002384185791
+      },
+      "disposeMs": {
+        "median": 0,
+        "p95": 0
+      }
+    }
+  ],
+  "templateCache": {
+    "batch": 100,
+    "parsing": [
+      0.01100000023841858,
+      0.01,
+      0.008999999761581421
+    ],
+    "lookup": [
+      0,
+      0,
+      0
+    ],
+    "cloning": [
+      0.0019999998807907105,
+      0.0010000002384185792,
+      0.0019999998807907105
+    ],
+    "parseMs": {
+      "median": 0.01,
+      "p95": 0.01100000023841858
+    },
+    "lookupMs": {
+      "median": 0,
+      "p95": 0
+    },
+    "cloneMs": {
+      "median": 0.0019999998807907105,
+      "p95": 0.0019999998807907105
+    },
+    "parses": 1,
+    "clones": 400
+  },
+  "methodology": {
+    "timing": "Synchronous JS+DOM mount, transaction/flush update, reorder and disposal; not paint latency. Warmup excluded.",
+    "ordering": "Modes rotated by round, one isolated headless browser/profile. Reference engine for all timed modes.",
+    "cache": "100-operation batches; separate cold compiler/parse, same native site cache lookup, and clone+slot-path resolution.",
+    "memory": "Owned live resource counters and disposal checks, not exact heap allocation or GC measurements.",
+    "scope": "Syntax prototypes only; no production API or transaction engine selection."
+  }
+}

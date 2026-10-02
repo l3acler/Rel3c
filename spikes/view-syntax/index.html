@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Task 0.7 view syntax spike</title>
+<style>body{font:16px system-ui;margin:2rem}section{margin-block:2rem;padding:1rem;border:1px solid #ccc}input,button{margin:.3rem}</style></head>
+<body><h1>View syntax spike (not public runtime)</h1><p>Three equivalent forms/lists. No build step. Tests and measurements run from the root command.</p>
+<script type="module">
+import { createSyntaxApp } from './index.js';
+import { modes, initialState, actions, exampleView } from './examples.js';
+import { runSyntaxTests } from './browser-tests.js';
+import { runSyntaxMeasurements } from './measurements.js';
+window.runSyntaxTests = runSyntaxTests;
+window.runSyntaxMeasurements = runSyntaxMeasurements;
+if (!location.search.includes('runner')) for (const mode of modes) {
+  const heading = document.createElement('h2'); heading.textContent = mode; document.body.append(heading);
+  const target = document.createElement('section'); document.body.append(target);
+  createSyntaxApp({ target, initialState: initialState(), actions, view: exampleView(mode) });
+}
+</script></body></html>

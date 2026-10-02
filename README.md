@@ -47,12 +47,12 @@ Instead of relying on a virtual DOM (vDOM) diffing tree or generic state contain
 
 - **Phase 0 — Architecture Spikes (In Progress)**:
   - [x] **0.1 Root Scaffold**: Browser-native ES module setup, public entry placeholder, zero-dependency dev server, minimal browser example, and smoke test runner.
-  - [ ] **0.2 Prototype Contract**: Tiny begin/read/write/commit/abort transaction interface and shared test fixtures.
-  - [ ] **0.3 Copy-on-Write Prototype**: Structural sharing and property-level change tracking.
-  - [ ] **0.4 Staged-Operation Prototype**: Change-log staging and read-your-writes semantics.
-  - [ ] **0.5 Correctness & Identity Comparison**: Alias preservation and collection reordering.
-  - [ ] **0.6 Workload Measurements**: Memory, GC observations, and median/p95 latency benchmarks.
-  - [ ] **0.7 View Syntax Evaluation**: Element functions vs optional tagged templates.
+  - [x] **0.2 Prototype Contract**: Tiny begin/read/write/commit/abort transaction interface and shared test fixtures.
+  - [x] **0.3 Copy-on-Write Prototype**: Structural sharing and property-level change tracking.
+  - [x] **0.4 Staged-Operation Prototype**: Change-log staging and read-your-writes semantics.
+  - [x] **0.5 Correctness & Identity Comparison**: Stable graph identities, exact invalidation metadata, and independent seeded correctness checks. See the [comparison report](docs/reports/task-0.5-correctness.md).
+  - [x] **0.6 Workload Measurements**: Equivalent Node/browser timing, memory/GC observations, and median/p95 results. See the [measurement report](docs/reports/task-0.6-measurements.md).
+  - [x] **0.7 View Syntax Evaluation**: Element functions with binding tokens selected; optional templates deferred. See the [syntax ADR](docs/adr/0001-view-syntax.md) and [browser evidence](docs/reports/task-0.7-view-syntax.md).
   - [ ] **0.8 Action Schema & Serialization**: Typing, validation, and snapshot encoding.
   - [ ] **0.9 Architecture Decision Record (ADR)**: Evidence-backed engine and syntax selection.
 
@@ -69,6 +69,7 @@ In compliance with `TECH-1` and `PACK-1`:
 - **Development Tooling**:
   - `node:test` and `node:assert`: Built-in Node.js test runner for unit tests and smoke verification.
   - `node:http` and `node:fs`: Built-in Node.js modules for the local development server (`scripts/dev-server.js`).
+  - Installed headless Google Chrome: isolated temporary-profile browser checks/measurements; no signed-in browser or frontend library is used.
 
 ---
 
@@ -102,6 +103,29 @@ Runs the architecture spike benchmark harness:
 ```bash
 npm run bench:spikes
 ```
+
+This runs seven equivalent workloads across eager reference, copy-on-write, and staged engines at 128/1,024 rows, with separate timing and memory/GC processes. Raw results are written to unique JSON files under `benchmarks/results/`. Browser frame-callback measurements use an installed Chrome and an isolated temporary profile:
+
+```bash
+npm run bench:spikes:browser
+```
+
+Use `-- --quick` on either benchmark command for a harness smoke check. See [benchmark prerequisites and methodology](benchmarks/README.md) and the [measured results and limitations](docs/reports/task-0.6-measurements.md). No engine has been selected; these are transaction spikes, not a renderer benchmark. Run workload and transaction correctness separately:
+
+```bash
+npm run test:spikes
+npm run test:benchmarks
+```
+
+Task 0.5 verifies 157 spike tests, including 12 seeded sequences and 5,760 programmed transaction attempts across reference, copy-on-write, and staged-operation engines. The engines remain isolated in `spikes/`; no production engine has been selected.
+
+Task 0.7 adds seven Node syntax tests and 40 browser checks, with three-round mount/update/reorder/dispose measurements. Run:
+
+```bash
+npm run check:view-syntax
+```
+
+Requires installed Chrome (override with `MINI_FRAMEWORK_CHROME_PATH`). `-- --quick` shortens measurements. For the runnable syntax examples, open `http://localhost:3000/spikes/view-syntax/` after `npm run dev`. These use spike exports, not the placeholder public runtime. See the [spike guide](spikes/view-syntax/README.md).
 
 ---
 
@@ -143,71 +167,77 @@ mini-framework/
 
 ## Planned API Contracts & Examples
 
-The following examples demonstrate the intended public API contracts to be delivered in Phase A and Phase B.
+The following are design sketches, not implemented public APIs. Task 0.7 selected element functions with explicit binding tokens for Phase A. Optional templates remain deferred: eager state expressions capture whole views rather than exact individual binding dependencies. The public entry remains a scaffold placeholder; runnable syntax examples use the separate spike entry. Routing remains Phase B work.
 
-### 1. Creating Elements, Nesting, IDs, Classes, and Attributes
-Elements are declared via clean element factory functions without requiring a compiler or JSX:
-
-```js
-import { div, h1, p, span, button } from 'mini-framework';
-
-const view = div({ id: 'main-container', class: 'card-view' },
-  h1({ class: 'title' }, 'Application Dashboard'),
-  p({ 'data-section': 'intro' },
-    'Nested text and ',
-    span({ class: 'highlight' }, 'inline elements.')
-  )
-);
-```
-
-### 2. Attaching Event Handlers and Dispatching Actions
-Event handlers are passed via declarative attributes. The framework handles delegation, bubbling, and unmount cleanup:
+### 1. Tagged Template Syntax (Evaluated Prototype, Deferred)
+The eager prototype runs natively without arrow wrappers, but its conservative whole-view tracking does not meet the exact-binding adoption gate. This preserves the evaluated PRD candidate for reference, not as a promised public API:
 
 ```js
-import { createApp, div, button, text } from 'mini-framework';
+import { createApp, html } from 'mini-framework';
 
 const app = createApp({
   target: document.querySelector('#app'),
   initialState: { count: 0 },
   actions: {
-    increment(draft) {
-      draft.count += 1;
-    },
-    decrement(draft) {
-      draft.count -= 1;
-    }
+    increment(draft) { draft.count += 1; },
+    decrement(draft) { draft.count -= 1; }
   },
-  view: ({ state, dispatch }) =>
-    div({ class: 'counter' },
-      button({ on: { click: () => dispatch('decrement') } }, '-'),
-      text(() => `Current Count: ${state.count}`),
-      button({ on: { click: () => dispatch('increment') } }, '+')
+  view: ({ state, actions }) => html`
+    <div class="counter-card">
+      <button @click=${actions.decrement}>-</button>
+      <span>Current Count: ${state.count}</span>
+      <button @click=${actions.increment}>+</button>
+    </div>
+  `
+});
+```
+
+### 2. Ergonomic Element Functions (Selected Core Direction)
+Element functions eliminate boilerplate empty `{}` objects and support direct binding tokens with exact property/binding tracking:
+
+```js
+import { createApp, div, button, span } from 'mini-framework';
+
+const app = createApp({
+  target: document.querySelector('#app'),
+  initialState: { count: 0 },
+  actions: {
+    increment(draft) { draft.count += 1; },
+    decrement(draft) { draft.count -= 1; }
+  },
+  view: ({ state, bind, actions }) =>
+    div({ class: 'counter-card' },
+      button({ onClick: actions.decrement }, '-'),
+      span('Current Count: ', bind.count),
+      button({ onClick: actions.increment }, '+')
     )
 });
 ```
 
 ### 3. Application-Wide Shared State Across Routes
-Routed views share a single top-level application store. State survives navigation without resetting:
+Planned routed views share a single top-level application store, retaining state across navigation. This template-based example is a historical design sketch; the router and template API are not implemented public exports:
 
 ```js
-import { createApp, createRouter, div, a, text } from 'mini-framework';
+import { createApp, createRouter, html } from 'mini-framework';
 
 const router = createRouter([
   {
     path: '/',
-    view: ({ state, dispatch }) =>
-      div({},
-        text(() => `Welcome! User: ${state.user.name}`),
-        a({ href: '/settings' }, 'Go to Settings')
-      )
+    view: ({ state, actions }) => html`
+      <div class="page">
+        <h2>Welcome, ${state.user.name}!</h2>
+        <a href="/settings">Go to Settings</a>
+      </div>
+    `
   },
   {
     path: '/settings',
-    view: ({ state, dispatch }) =>
-      div({},
-        text(() => `Editing settings for: ${state.user.name}`),
-        a({ href: '/' }, 'Back Home')
-      )
+    view: ({ state, actions }) => html`
+      <div class="page">
+        <h2>Editing Settings for: ${state.user.name}</h2>
+        <a href="/">Back Home</a>
+      </div>
+    `
   }
 ]);
 
@@ -231,4 +261,6 @@ Every milestone is verified through executable tests, reproducible benchmarks, a
 | **Scaffold & Import** | `npm run smoke` | Server boots, root routes, and public imports work in clean checkout |
 | **Unit Correctness** | `npm test` | Public APIs, immutability, zero-dependency requirements pass |
 | **Spike Comparison** | `npm run test:spikes` | COW and Staged-Ops prototypes pass identical verification fixtures |
-| **Spike Benchmarks** | `npm run bench:spikes` | Measured latency, memory allocation, and GC pause times recorded |
+| **Spike Measurements** | `npm run bench:spikes` | Equivalent transaction latency, sampled heap/retention, and GC observations |
+| **Browser Spike Measurements** | `npm run bench:spikes:browser` | Real rAF callback median/p95 and interval observations in isolated Chrome |
+| **Benchmark Correctness** | `npm run test:benchmarks` | Equivalent workload state, identity, exact invalidations, and summary calculations |

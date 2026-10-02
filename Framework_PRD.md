@@ -53,23 +53,49 @@ flowchart TD
 
 ### Illustrative API
 
+**Candidate A: Native Tagged Template Literals (Preferred, No Build Step)**
 ```js
+import { createApp, html } from 'mini-framework';
+
 const app = createApp({
   target: document.querySelector("#app"),
   initialState: { count: 0 },
   seed: 1234,
   actions: {
-    increment(draft) { draft.count += 1; }
+    increment(draft) { draft.count += 1; },
+    decrement(draft) { draft.count -= 1; }
   },
-  view: ({ state, dispatch }) =>
-    div({},
-      button({ on: { click: () => dispatch("increment") } }, "+"),
-      text(() => state.count)
+  view: ({ state, actions }) => html`
+    <div class="counter">
+      <button @click=${actions.decrement}>-</button>
+      <span>Current Count: ${state.count}</span>
+      <button @click=${actions.increment}>+</button>
+    </div>
+  `
+});
+```
+
+**Candidate B: Ergonomic Element Functions (Alternative)**
+```js
+import { createApp, div, button, span } from 'mini-framework';
+
+const app = createApp({
+  target: document.querySelector("#app"),
+  initialState: { count: 0 },
+  actions: {
+    increment(draft) { draft.count += 1; },
+    decrement(draft) { draft.count -= 1; }
+  },
+  view: ({ state, bind, actions }) =>
+    div({ class: "counter" },
+      button({ onClick: actions.decrement }, "-"),
+      span("Current Count: ", bind.count),
+      button({ onClick: actions.increment }, "+")
     )
 });
 ```
 
-This is an API sketch. Names and syntax can change after usability testing, but the execution contracts above must remain explicit.
+These candidate syntax shapes represent the public ergonomic targets. Candidate A provides an intuitive, JSX-like developer experience natively in browsers without compilers or bundlers, while Candidate B provides a zero-parse functional alternative. Both avoid mandatory arrow-function ceremonies (`() => state.count`) and boilerplate empty attribute objects (`{}`). Their exact performance, parsing cost, and caching behavior will be evaluated in the Phase 0 syntax prototype (Task 0.7) before freezing the public API.
 
 ## 4. Functional requirements
 
@@ -147,7 +173,13 @@ For visual properties that benefit from smoothing, the render scheduler exposes 
 - Keep an importable public entry point separate from implementation internals. A clean checkout must be runnable from the root using one documented command or a clearly specified browser-module procedure. The auditor must be able to write a small app against public exports without modifying runtime files.
 - Provide clear development errors for unknown actions, invalid/nonserializable payloads, state mutation outside an action, computed cycles, render-time mutation, missing list keys, and replay divergence.
 - Design action/state payload schemas so TypeScript declarations can infer dispatch names and payload types from the start. Runtime serialization validation remains necessary because types do not validate imported recordings.
-- Prototype an optional tagged-template `html` syntax alongside element functions. Decide whether to ship it after testing readability, parsing/cache cost, safe escaping, dynamic attributes, and integration with framework-owned event handlers. It must work without a compiler if adopted; ordinary `onclick` attribute syntax must not bypass the event system.
+- Prototype an optional tagged-template `html` syntax alongside element functions (Task 0.7). Requirements for the tagged-template prototype:
+  - **Zero Compilation**: Must run natively in modern browsers via standard `TemplateStringsArray` without Babel, Webpack, or compilers.
+  - **Automatic Dependency Tracking**: Eliminate mandatory `${() => state.prop}` arrow wrappers by capturing reactive property accesses during template evaluation.
+  - **O(1) Template Caching**: Use a `WeakMap` keyed by `TemplateStringsArray` to cache parsed HTML `<template>` blueprints and native `cloneNode(true)` operations, ensuring zero re-parsing on subsequent renders.
+  - **XSS Immunity by Design**: Bind text slots via `Node.data` / `textContent` and attributes via `setAttribute`, strictly preventing unescaped `innerHTML` injection.
+  - **Event Delegation Integration**: Parse `@event` directives directly into framework-owned event delegation, ensuring automatic unmount cleanup and bypassing insecure inline `onclick` attributes.
+  - **Ergonomic Element Function Alternative**: Provide clean element functions (`div`, `p`, `button`) supporting direct property bindings (`bind.prop`) and flat props (`onClick`), eliminating empty attribute objects (`{}`).
 - Preserve native HTML semantics, accessibility, focus, keyboard behavior, labels, and form submission.
 - Ship TypeScript declarations with the first stable API release while keeping plain JavaScript fully supported.
 

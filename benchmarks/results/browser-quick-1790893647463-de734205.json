@@ -1,0 +1,1663 @@
+{
+  "formatVersion": 1,
+  "kind": "browser-transaction-spikes",
+  "workloadVersion": 1,
+  "recordedAt": "2026-10-01T22:27:27.462Z",
+  "quick": true,
+  "config": {
+    "sizes": [
+      32
+    ],
+    "warmup": 2,
+    "samples": 4,
+    "rounds": 1
+  },
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/154.0.8037.92",
+    "revision": "@334b65d254ccc35df4fca82706d1753227b01039",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "jsVersion": "15.4.80.19"
+  },
+  "browserEnvironment": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "platform": "MacIntel",
+    "hardwareConcurrency": 10,
+    "visibility": "visible",
+    "memoryApi": true
+  },
+  "machine": {
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "totalMemoryBytes": 17179869184,
+    "platform": "darwin",
+    "release": "24.6.0",
+    "arch": "arm64"
+  },
+  "chromeFlags": [
+    "--headless=new",
+    "--remote-debugging-pipe",
+    "--no-first-run",
+    "--no-default-browser-check",
+    "--disable-extensions",
+    "--disable-background-timer-throttling",
+    "--disable-renderer-backgrounding",
+    "--disable-backgrounding-occluded-windows",
+    "--enable-precise-memory-info"
+  ],
+  "sourceFiles": [
+    {
+      "file": "benchmarks/transactions/browser.js",
+      "sha256": "7b7f06872376c1f991c4df914f343036354461410c5305cdb17bca94ae144874"
+    },
+    {
+      "file": "benchmarks/transactions/index.html",
+      "sha256": "a7eeb2d8f528bee6b47899472fd9a446a61a2a14c51469606e91070e2d883353"
+    },
+    {
+      "file": "benchmarks/transactions/workloads.js",
+      "sha256": "63cbbf6aeb2f53c5eeed93462bbca23a90185f8b8c6891df46da689dae8552a0"
+    },
+    {
+      "file": "benchmarks/transactions/engines.js",
+      "sha256": "3f40dc93390c806e5fadd8f243ecf1e817615bbfe438d08f0a30d857e66c4515"
+    },
+    {
+      "file": "scripts/bench-spikes-browser.js",
+      "sha256": "160ab9db87a51499213af7a4d367b604312a63675167fa383183cb51225e9d1e"
+    },
+    {
+      "file": "spikes/transactions/contract.js",
+      "sha256": "9662c16b120bc203b20cc7a41ee9d8b2cfb0ee5ca8d23634834d94d0a76c77a6"
+    },
+    {
+      "file": "spikes/transactions/graph.js",
+      "sha256": "fa3124030e8dbb79cd25667c7b51d3a36bcc5d5a6ade0b7c765e83209afbc960"
+    },
+    {
+      "file": "spikes/transactions/draft-view.js",
+      "sha256": "b99f2e85d78e2b2ad08bedcc3f58a903bf442fb09255ea15c2b7af5089bb7e36"
+    },
+    {
+      "file": "spikes/transactions/engine-shell.js",
+      "sha256": "41d8a3e85d1ad3e0e2e68ab27d630f73c4da4653646c759f29580c100c83688d"
+    },
+    {
+      "file": "spikes/transactions/reference-evaluator.js",
+      "sha256": "32d2e9f6506ce8114cc7df88fe4f9de7c488cea09ba99217b9ee09c8657b4c3d"
+    },
+    {
+      "file": "spikes/transactions/cow-engine.js",
+      "sha256": "1fa22c2e9bf63f68b8712c90b2e219753108237e5a32fefa0ddf73e80fb78b2a"
+    },
+    {
+      "file": "spikes/transactions/staged-engine.js",
+      "sha256": "a5e85ab767dc841e3ad4a32ed4145aecef9104419a6cf5733b51d00df3baf592"
+    }
+  ],
+  "methodology": {
+    "timing": "One full synchronous transaction per real requestAnimationFrame callback; warmup excluded. Closure setup, checksum and UI outside timed callback work.",
+    "frames": "Callback scripting and consecutive rAF timestamp intervals, not a browser tracing total-frame or paint-latency measurement. No framework DOM bindings exist yet.",
+    "ordering": "One isolated headless Chrome process/tab for all trials; engine order rotates by round. No forced GC.",
+    "memory": "Chromium performance.memory before/after observations; neither exact allocation nor retained heap. Browser GC pause API unavailable; Node profiles separately supply GC observations.",
+    "environment": "Headless Chrome with foreground/visibility checks and explicit flags. Desktop browsers/displays may differ."
+  },
+  "summaries": [
+    {
+      "engine": "reference",
+      "workload": "sparse-nested",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.20000004768371582,
+        "p95": 0.2999999523162842,
+        "min": 0.19999998807907104,
+        "max": 0.2999999523162842
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 75,
+        "p95": 616.6,
+        "min": 16.699999999999932,
+        "max": 616.6
+      },
+      "roundMediansMs": [
+        0.20000004768371582
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "cow",
+      "workload": "sparse-nested",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.19999998807907104,
+        "p95": 0.19999998807907104,
+        "min": 0.09999996423721313,
+        "max": 0.19999998807907104
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.649999999999977,
+        "p95": 16.700000000000045,
+        "min": 16.600000000000023,
+        "max": 16.700000000000045
+      },
+      "roundMediansMs": [
+        0.19999998807907104
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "staged",
+      "workload": "sparse-nested",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.09999999403953552,
+        "p95": 0.20000004768371582,
+        "min": 0,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999932,
+        "p95": 16.700000000000045,
+        "min": 16.600000000000136,
+        "max": 16.700000000000045
+      },
+      "roundMediansMs": [
+        0.09999999403953552
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "reference",
+      "workload": "repeated-writes",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.15000000596046448,
+        "p95": 0.20000004768371582,
+        "min": 0.09999996423721313,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000045,
+        "min": 16.59999999999991,
+        "max": 16.700000000000045
+      },
+      "roundMediansMs": [
+        0.15000000596046448
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "cow",
+      "workload": "repeated-writes",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.09999999403953552,
+        "p95": 0.10000002384185791,
+        "min": 0.09999996423721313,
+        "max": 0.10000002384185791
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.65000000000009,
+        "p95": 16.700000000000045,
+        "min": 16.59999999999991,
+        "max": 16.700000000000045
+      },
+      "roundMediansMs": [
+        0.09999999403953552
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "staged",
+      "workload": "repeated-writes",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.09999999403953552,
+        "p95": 0.19999998807907104,
+        "min": 0.09999996423721313,
+        "max": 0.19999998807907104
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999932,
+        "p95": 16.700000000000045,
+        "min": 16.600000000000136,
+        "max": 16.700000000000045
+      },
+      "roundMediansMs": [
+        0.09999999403953552
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "reference",
+      "workload": "dense-updates",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.10000002384185791,
+        "p95": 0.20000004768371582,
+        "min": 0.09999996423721313,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.600000000000136,
+        "p95": 16.799999999999955,
+        "min": 16.59999999999991,
+        "max": 16.799999999999955
+      },
+      "roundMediansMs": [
+        0.10000002384185791
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "cow",
+      "workload": "dense-updates",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.2500000298023224,
+        "p95": 0.40000003576278687,
+        "min": 0.19999998807907104,
+        "max": 0.40000003576278687
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999932,
+        "p95": 16.700000000000045,
+        "min": 16.600000000000136,
+        "max": 16.700000000000045
+      },
+      "roundMediansMs": [
+        0.2500000298023224
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "staged",
+      "workload": "dense-updates",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.19999998807907104,
+        "p95": 0.19999998807907104,
+        "min": 0.10000002384185791,
+        "max": 0.19999998807907104
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.65000000000009,
+        "p95": 16.799999999999955,
+        "min": 16.59999999999991,
+        "max": 16.799999999999955
+      },
+      "roundMediansMs": [
+        0.19999998807907104
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "reference",
+      "workload": "array-insert",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.20000001788139343,
+        "p95": 0.20000004768371582,
+        "min": 0.09999996423721313,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000045,
+        "min": 16.59999999999991,
+        "max": 16.700000000000045
+      },
+      "roundMediansMs": [
+        0.20000001788139343
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "cow",
+      "workload": "array-insert",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.20000001788139343,
+        "p95": 0.20000004768371582,
+        "min": 0.09999996423721313,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999932,
+        "p95": 16.700000000000045,
+        "min": 16.600000000000136,
+        "max": 16.700000000000045
+      },
+      "roundMediansMs": [
+        0.20000001788139343
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "staged",
+      "workload": "array-insert",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.20000004768371582,
+        "p95": 0.20000004768371582,
+        "min": 0.19999998807907104,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999818,
+        "p95": 16.700000000000273,
+        "min": 16.600000000000364,
+        "max": 16.700000000000273
+      },
+      "roundMediansMs": [
+        0.20000004768371582
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "reference",
+      "workload": "array-reorder",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.5,
+        "p95": 0.699999988079071,
+        "min": 0.5,
+        "max": 0.699999988079071
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000273,
+        "min": 16.59999999999991,
+        "max": 16.700000000000273
+      },
+      "roundMediansMs": [
+        0.5
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "cow",
+      "workload": "array-reorder",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.7500000298023224,
+        "p95": 1,
+        "min": 0.5,
+        "max": 1
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000273,
+        "min": 16.59999999999991,
+        "max": 16.700000000000273
+      },
+      "roundMediansMs": [
+        0.7500000298023224
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "staged",
+      "workload": "array-reorder",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.8500000238418579,
+        "p95": 0.9000000357627869,
+        "min": 0.699999988079071,
+        "max": 0.9000000357627869
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000273,
+        "min": 16.59999999999991,
+        "max": 16.700000000000273
+      },
+      "roundMediansMs": [
+        0.8500000238418579
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "reference",
+      "workload": "alias-edits",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.5,
+        "p95": 0.6000000238418579,
+        "min": 0.30000001192092896,
+        "max": 0.6000000238418579
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.65000000000009,
+        "p95": 16.700000000000273,
+        "min": 16.59999999999991,
+        "max": 16.700000000000273
+      },
+      "roundMediansMs": [
+        0.5
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "cow",
+      "workload": "alias-edits",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.44999998807907104,
+        "p95": 0.5,
+        "min": 0.3999999761581421,
+        "max": 0.5
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000273,
+        "min": 16.59999999999991,
+        "max": 16.700000000000273
+      },
+      "roundMediansMs": [
+        0.44999998807907104
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "staged",
+      "workload": "alias-edits",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.5,
+        "p95": 0.5,
+        "min": 0.40000003576278687,
+        "max": 0.5
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.600000000000364,
+        "p95": 16.799999999999727,
+        "min": 16.59999999999991,
+        "max": 16.799999999999727
+      },
+      "roundMediansMs": [
+        0.5
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "reference",
+      "workload": "rollback",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.29999998211860657,
+        "p95": 0.40000003576278687,
+        "min": 0.19999998807907104,
+        "max": 0.40000003576278687
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.65000000000009,
+        "p95": 16.800000000000182,
+        "min": 16.59999999999991,
+        "max": 16.800000000000182
+      },
+      "roundMediansMs": [
+        0.29999998211860657
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "cow",
+      "workload": "rollback",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.19999998807907104,
+        "p95": 0.30000001192092896,
+        "min": 0.09999996423721313,
+        "max": 0.30000001192092896
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999818,
+        "p95": 16.700000000000273,
+        "min": 16.600000000000364,
+        "max": 16.700000000000273
+      },
+      "roundMediansMs": [
+        0.19999998807907104
+      ],
+      "equivalentWork": true
+    },
+    {
+      "engine": "staged",
+      "workload": "rollback",
+      "size": 32,
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.15000000596046448,
+        "p95": 0.30000001192092896,
+        "min": 0,
+        "max": 0.30000001192092896
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.65000000000009,
+        "p95": 16.800000000000182,
+        "min": 16.59999999999991,
+        "max": 16.800000000000182
+      },
+      "roundMediansMs": [
+        0.15000000596046448
+      ],
+      "equivalentWork": true
+    }
+  ],
+  "results": [
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "sparse-nested",
+      "engine": "reference",
+      "samplesMs": [
+        0.20000004768371582,
+        0.2999999523162842,
+        0.20000004768371582,
+        0.19999998807907104
+      ],
+      "frameIntervalsMs": [
+        616.6,
+        16.699999999999932,
+        133.30000000000007,
+        16.699999999999932
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.20000004768371582,
+        "p95": 0.2999999523162842,
+        "min": 0.19999998807907104,
+        "max": 0.2999999523162842
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 75,
+        "p95": 616.6,
+        "min": 16.699999999999932,
+        "max": 616.6
+      },
+      "version": 7,
+      "invalidations": 4,
+      "checksum": "25bf880853e596368f3260249dd47a94e2f84d26a1fd414b46cbe3d5536d2faa",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 1533885,
+      "heapAfterBytes": 1250467,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "sparse-nested",
+      "engine": "cow",
+      "samplesMs": [
+        0.19999998807907104,
+        0.19999998807907104,
+        0.09999996423721313,
+        0.19999998807907104
+      ],
+      "frameIntervalsMs": [
+        16.699999999999932,
+        16.700000000000045,
+        16.600000000000023,
+        16.600000000000023
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.19999998807907104,
+        "p95": 0.19999998807907104,
+        "min": 0.09999996423721313,
+        "max": 0.19999998807907104
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.649999999999977,
+        "p95": 16.700000000000045,
+        "min": 16.600000000000023,
+        "max": 16.700000000000045
+      },
+      "version": 7,
+      "invalidations": 4,
+      "checksum": "25bf880853e596368f3260249dd47a94e2f84d26a1fd414b46cbe3d5536d2faa",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 1345103,
+      "heapAfterBytes": 1241750,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "sparse-nested",
+      "engine": "staged",
+      "samplesMs": [
+        0.20000004768371582,
+        0.09999996423721313,
+        0,
+        0.10000002384185791
+      ],
+      "frameIntervalsMs": [
+        16.700000000000045,
+        16.699999999999818,
+        16.700000000000045,
+        16.600000000000136
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.09999999403953552,
+        "p95": 0.20000004768371582,
+        "min": 0,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999932,
+        "p95": 16.700000000000045,
+        "min": 16.600000000000136,
+        "max": 16.700000000000045
+      },
+      "version": 7,
+      "invalidations": 4,
+      "checksum": "25bf880853e596368f3260249dd47a94e2f84d26a1fd414b46cbe3d5536d2faa",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 1323822,
+      "heapAfterBytes": 1998841,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "repeated-writes",
+      "engine": "reference",
+      "samplesMs": [
+        0.10000002384185791,
+        0.19999998807907104,
+        0.09999996423721313,
+        0.20000004768371582
+      ],
+      "frameIntervalsMs": [
+        16.700000000000045,
+        16.59999999999991,
+        16.700000000000045,
+        16.700000000000045
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.15000000596046448,
+        "p95": 0.20000004768371582,
+        "min": 0.09999996423721313,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000045,
+        "min": 16.59999999999991,
+        "max": 16.700000000000045
+      },
+      "version": 7,
+      "invalidations": 4,
+      "checksum": "638ab5ad3d1b7598cdbafa7ec263518334520177d4766bdc2d71e0285d7e838c",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 1127837,
+      "heapAfterBytes": 1569454,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "repeated-writes",
+      "engine": "cow",
+      "samplesMs": [
+        0.10000002384185791,
+        0.09999996423721313,
+        0.09999996423721313,
+        0.10000002384185791
+      ],
+      "frameIntervalsMs": [
+        16.600000000000136,
+        16.59999999999991,
+        16.700000000000045,
+        16.700000000000045
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.09999999403953552,
+        "p95": 0.10000002384185791,
+        "min": 0.09999996423721313,
+        "max": 0.10000002384185791
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.65000000000009,
+        "p95": 16.700000000000045,
+        "min": 16.59999999999991,
+        "max": 16.700000000000045
+      },
+      "version": 7,
+      "invalidations": 4,
+      "checksum": "638ab5ad3d1b7598cdbafa7ec263518334520177d4766bdc2d71e0285d7e838c",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 1651918,
+      "heapAfterBytes": 2053043,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "repeated-writes",
+      "engine": "staged",
+      "samplesMs": [
+        0.10000002384185791,
+        0.09999996423721313,
+        0.19999998807907104,
+        0.09999996423721313
+      ],
+      "frameIntervalsMs": [
+        16.700000000000045,
+        16.699999999999818,
+        16.600000000000136,
+        16.700000000000045
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.09999999403953552,
+        "p95": 0.19999998807907104,
+        "min": 0.09999996423721313,
+        "max": 0.19999998807907104
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999932,
+        "p95": 16.700000000000045,
+        "min": 16.600000000000136,
+        "max": 16.700000000000045
+      },
+      "version": 7,
+      "invalidations": 4,
+      "checksum": "638ab5ad3d1b7598cdbafa7ec263518334520177d4766bdc2d71e0285d7e838c",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 1240519,
+      "heapAfterBytes": 1953500,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "dense-updates",
+      "engine": "reference",
+      "samplesMs": [
+        0.09999996423721313,
+        0.10000002384185791,
+        0.10000002384185791,
+        0.20000004768371582
+      ],
+      "frameIntervalsMs": [
+        16.600000000000136,
+        16.59999999999991,
+        16.799999999999955,
+        16.600000000000136
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.10000002384185791,
+        "p95": 0.20000004768371582,
+        "min": 0.09999996423721313,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.600000000000136,
+        "p95": 16.799999999999955,
+        "min": 16.59999999999991,
+        "max": 16.799999999999955
+      },
+      "version": 7,
+      "invalidations": 128,
+      "checksum": "f45f75e7b9858fa09e738d887f5523f62931baa40befd2cdef26d724ebf4cf13",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 2034728,
+      "heapAfterBytes": 1825619,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "dense-updates",
+      "engine": "cow",
+      "samplesMs": [
+        0.20000004768371582,
+        0.19999998807907104,
+        0.30000001192092896,
+        0.40000003576278687
+      ],
+      "frameIntervalsMs": [
+        16.700000000000045,
+        16.699999999999818,
+        16.600000000000136,
+        16.700000000000045
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.2500000298023224,
+        "p95": 0.40000003576278687,
+        "min": 0.19999998807907104,
+        "max": 0.40000003576278687
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999932,
+        "p95": 16.700000000000045,
+        "min": 16.600000000000136,
+        "max": 16.700000000000045
+      },
+      "version": 7,
+      "invalidations": 128,
+      "checksum": "f45f75e7b9858fa09e738d887f5523f62931baa40befd2cdef26d724ebf4cf13",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 1911759,
+      "heapAfterBytes": 2034698,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "dense-updates",
+      "engine": "staged",
+      "samplesMs": [
+        0.19999998807907104,
+        0.19999998807907104,
+        0.19999998807907104,
+        0.10000002384185791
+      ],
+      "frameIntervalsMs": [
+        16.59999999999991,
+        16.799999999999955,
+        16.600000000000136,
+        16.700000000000045
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.19999998807907104,
+        "p95": 0.19999998807907104,
+        "min": 0.10000002384185791,
+        "max": 0.19999998807907104
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.65000000000009,
+        "p95": 16.799999999999955,
+        "min": 16.59999999999991,
+        "max": 16.799999999999955
+      },
+      "version": 7,
+      "invalidations": 128,
+      "checksum": "f45f75e7b9858fa09e738d887f5523f62931baa40befd2cdef26d724ebf4cf13",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 2116250,
+      "heapAfterBytes": 2204905,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "array-insert",
+      "engine": "reference",
+      "samplesMs": [
+        0.20000004768371582,
+        0.19999998807907104,
+        0.09999996423721313,
+        0.20000004768371582
+      ],
+      "frameIntervalsMs": [
+        16.700000000000045,
+        16.59999999999991,
+        16.700000000000045,
+        16.700000000000045
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.20000001788139343,
+        "p95": 0.20000004768371582,
+        "min": 0.09999996423721313,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000045,
+        "min": 16.59999999999991,
+        "max": 16.700000000000045
+      },
+      "version": 7,
+      "invalidations": 8,
+      "checksum": "6dc03e696565e5a1b3bcb01675bcf70cc3841438dde87ca07c927fcf7694bed6",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 2286129,
+      "heapAfterBytes": 1971785,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "array-insert",
+      "engine": "cow",
+      "samplesMs": [
+        0.20000004768371582,
+        0.09999996423721313,
+        0.19999998807907104,
+        0.20000004768371582
+      ],
+      "frameIntervalsMs": [
+        16.700000000000045,
+        16.699999999999818,
+        16.600000000000136,
+        16.700000000000045
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.20000001788139343,
+        "p95": 0.20000004768371582,
+        "min": 0.09999996423721313,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999932,
+        "p95": 16.700000000000045,
+        "min": 16.600000000000136,
+        "max": 16.700000000000045
+      },
+      "version": 7,
+      "invalidations": 8,
+      "checksum": "6dc03e696565e5a1b3bcb01675bcf70cc3841438dde87ca07c927fcf7694bed6",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 2053377,
+      "heapAfterBytes": 3426557,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "array-insert",
+      "engine": "staged",
+      "samplesMs": [
+        0.20000004768371582,
+        0.19999998807907104,
+        0.20000004768371582,
+        0.20000004768371582
+      ],
+      "frameIntervalsMs": [
+        16.600000000000364,
+        16.699999999999818,
+        16.699999999999818,
+        16.700000000000273
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.20000004768371582,
+        "p95": 0.20000004768371582,
+        "min": 0.19999998807907104,
+        "max": 0.20000004768371582
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999818,
+        "p95": 16.700000000000273,
+        "min": 16.600000000000364,
+        "max": 16.700000000000273
+      },
+      "version": 7,
+      "invalidations": 8,
+      "checksum": "6dc03e696565e5a1b3bcb01675bcf70cc3841438dde87ca07c927fcf7694bed6",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 1881461,
+      "heapAfterBytes": 3359733,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "array-reorder",
+      "engine": "reference",
+      "samplesMs": [
+        0.5,
+        0.5,
+        0.699999988079071,
+        0.5
+      ],
+      "frameIntervalsMs": [
+        16.700000000000273,
+        16.59999999999991,
+        16.699999999999818,
+        16.700000000000273
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.5,
+        "p95": 0.699999988079071,
+        "min": 0.5,
+        "max": 0.699999988079071
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000273,
+        "min": 16.59999999999991,
+        "max": 16.700000000000273
+      },
+      "version": 7,
+      "invalidations": 132,
+      "checksum": "006aba28c862a179177fd738982c44a42a04fc34575886d020217072d26781ed",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 3441021,
+      "heapAfterBytes": 3227808,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "array-reorder",
+      "engine": "cow",
+      "samplesMs": [
+        1,
+        0.5,
+        0.9000000357627869,
+        0.6000000238418579
+      ],
+      "frameIntervalsMs": [
+        16.700000000000273,
+        16.699999999999818,
+        16.59999999999991,
+        16.700000000000273
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.7500000298023224,
+        "p95": 1,
+        "min": 0.5,
+        "max": 1
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000273,
+        "min": 16.59999999999991,
+        "max": 16.700000000000273
+      },
+      "version": 7,
+      "invalidations": 132,
+      "checksum": "006aba28c862a179177fd738982c44a42a04fc34575886d020217072d26781ed",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 3309056,
+      "heapAfterBytes": 3201559,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "array-reorder",
+      "engine": "staged",
+      "samplesMs": [
+        0.800000011920929,
+        0.699999988079071,
+        0.9000000357627869,
+        0.9000000357627869
+      ],
+      "frameIntervalsMs": [
+        16.700000000000273,
+        16.699999999999818,
+        16.59999999999991,
+        16.700000000000273
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.8500000238418579,
+        "p95": 0.9000000357627869,
+        "min": 0.699999988079071,
+        "max": 0.9000000357627869
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000273,
+        "min": 16.59999999999991,
+        "max": 16.700000000000273
+      },
+      "version": 7,
+      "invalidations": 132,
+      "checksum": "006aba28c862a179177fd738982c44a42a04fc34575886d020217072d26781ed",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 3282775,
+      "heapAfterBytes": 3372462,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "alias-edits",
+      "engine": "reference",
+      "samplesMs": [
+        0.30000001192092896,
+        0.5,
+        0.5,
+        0.6000000238418579
+      ],
+      "frameIntervalsMs": [
+        16.700000000000273,
+        16.59999999999991,
+        16.699999999999818,
+        16.600000000000364
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.5,
+        "p95": 0.6000000238418579,
+        "min": 0.30000001192092896,
+        "max": 0.6000000238418579
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.65000000000009,
+        "p95": 16.700000000000273,
+        "min": 16.59999999999991,
+        "max": 16.700000000000273
+      },
+      "version": 7,
+      "invalidations": 4,
+      "checksum": "50c8ad01cb54ae33bc2839108c95245b900f20231b97f1def420ee289de90f5b",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 3482106,
+      "heapAfterBytes": 3170582,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "alias-edits",
+      "engine": "cow",
+      "samplesMs": [
+        0.5,
+        0.3999999761581421,
+        0.5,
+        0.3999999761581421
+      ],
+      "frameIntervalsMs": [
+        16.700000000000273,
+        16.59999999999991,
+        16.699999999999818,
+        16.700000000000273
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.44999998807907104,
+        "p95": 0.5,
+        "min": 0.3999999761581421,
+        "max": 0.5
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.700000000000045,
+        "p95": 16.700000000000273,
+        "min": 16.59999999999991,
+        "max": 16.700000000000273
+      },
+      "version": 7,
+      "invalidations": 4,
+      "checksum": "50c8ad01cb54ae33bc2839108c95245b900f20231b97f1def420ee289de90f5b",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 3252406,
+      "heapAfterBytes": 2865858,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "alias-edits",
+      "engine": "staged",
+      "samplesMs": [
+        0.5,
+        0.40000003576278687,
+        0.5,
+        0.5
+      ],
+      "frameIntervalsMs": [
+        16.600000000000364,
+        16.799999999999727,
+        16.59999999999991,
+        16.600000000000364
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.5,
+        "p95": 0.5,
+        "min": 0.40000003576278687,
+        "max": 0.5
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.600000000000364,
+        "p95": 16.799999999999727,
+        "min": 16.59999999999991,
+        "max": 16.799999999999727
+      },
+      "version": 7,
+      "invalidations": 4,
+      "checksum": "50c8ad01cb54ae33bc2839108c95245b900f20231b97f1def420ee289de90f5b",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 2946850,
+      "heapAfterBytes": 2729330,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "rollback",
+      "engine": "reference",
+      "samplesMs": [
+        0.2999999523162842,
+        0.30000001192092896,
+        0.40000003576278687,
+        0.19999998807907104
+      ],
+      "frameIntervalsMs": [
+        16.800000000000182,
+        16.699999999999818,
+        16.59999999999991,
+        16.600000000000364
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.29999998211860657,
+        "p95": 0.40000003576278687,
+        "min": 0.19999998807907104,
+        "max": 0.40000003576278687
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.65000000000009,
+        "p95": 16.800000000000182,
+        "min": 16.59999999999991,
+        "max": 16.800000000000182
+      },
+      "version": 1,
+      "invalidations": 0,
+      "checksum": "006aba28c862a179177fd738982c44a42a04fc34575886d020217072d26781ed",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 2810302,
+      "heapAfterBytes": 3225985,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "rollback",
+      "engine": "cow",
+      "samplesMs": [
+        0.30000001192092896,
+        0.10000002384185791,
+        0.09999996423721313,
+        0.2999999523162842
+      ],
+      "frameIntervalsMs": [
+        16.700000000000273,
+        16.699999999999818,
+        16.699999999999818,
+        16.600000000000364
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.19999998807907104,
+        "p95": 0.30000001192092896,
+        "min": 0.09999996423721313,
+        "max": 0.30000001192092896
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.699999999999818,
+        "p95": 16.700000000000273,
+        "min": 16.600000000000364,
+        "max": 16.700000000000273
+      },
+      "version": 1,
+      "invalidations": 0,
+      "checksum": "006aba28c862a179177fd738982c44a42a04fc34575886d020217072d26781ed",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 3307021,
+      "heapAfterBytes": 3620488,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    },
+    {
+      "sizes": [
+        32
+      ],
+      "warmup": 2,
+      "samples": 4,
+      "rounds": 1,
+      "round": 0,
+      "size": 32,
+      "workload": "rollback",
+      "engine": "staged",
+      "samplesMs": [
+        0.19999998807907104,
+        0,
+        0.30000001192092896,
+        0.10000002384185791
+      ],
+      "frameIntervalsMs": [
+        16.700000000000273,
+        16.59999999999991,
+        16.59999999999991,
+        16.800000000000182
+      ],
+      "callbackScriptingMs": {
+        "count": 4,
+        "median": 0.15000000596046448,
+        "p95": 0.30000001192092896,
+        "min": 0,
+        "max": 0.30000001192092896
+      },
+      "frameIntervalMs": {
+        "count": 4,
+        "median": 16.65000000000009,
+        "p95": 16.800000000000182,
+        "min": 16.59999999999991,
+        "max": 16.800000000000182
+      },
+      "version": 1,
+      "invalidations": 0,
+      "checksum": "006aba28c862a179177fd738982c44a42a04fc34575886d020217072d26781ed",
+      "visibleSamples": [
+        "visible",
+        "visible",
+        "visible",
+        "visible"
+      ],
+      "heapBeforeBytes": 3701504,
+      "heapAfterBytes": 2705591,
+      "gcEvents": null,
+      "exactAllocationBytes": null
+    }
+  ]
+}
