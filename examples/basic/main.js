@@ -5,40 +5,25 @@
  * via standard ES module imports without a bundler, compiler, or external runtime.
  */
 
-import { VERSION, FRAMEWORK_INFO, createApp } from '../../src/index.js';
+import { VERSION, FRAMEWORK_INFO, createApp } from "../../src/index.js";
 
-const statusEl = document.getElementById('app-status');
-const outputBox = document.getElementById('output-box');
-const capabilityList = document.getElementById('capability-list');
-
-try {
-  // Verify public exports
-  const app = createApp();
-
-  if (statusEl) {
-    statusEl.innerHTML = `Loaded <strong id="status-indicator">mini-framework v${VERSION}</strong> successfully via browser-native ES module import.`;
-  }
-
-  if (outputBox) {
-    outputBox.innerHTML = `
-      <pre><code>${JSON.stringify({
+// The framework finds #app when mount() is called and owns every DOM write.
+export const app = createApp({
+  initialState: { message: "Public application lifecycle is running." },
+  view: ({ state }) =>
+    JSON.stringify(
+      {
+        message: state.message,
         framework: FRAMEWORK_INFO.name,
-        version: FRAMEWORK_INFO.version,
+        version: VERSION,
         milestone: FRAMEWORK_INFO.phase,
-        publicEntry: '/src/index.js',
-        appInstanceCreated: Boolean(app)
-      }, null, 2)}</code></pre>
-    `;
-  }
+        publicEntry: "/src/index.js",
+        capabilities: FRAMEWORK_INFO.capabilities,
+      },
+      null,
+      2,
+    ),
+});
 
-  if (capabilityList && Array.isArray(FRAMEWORK_INFO.capabilities)) {
-    capabilityList.innerHTML = FRAMEWORK_INFO.capabilities
-      .map((cap) => `<li>${cap}</li>`)
-      .join('');
-  }
-} catch (err) {
-  if (statusEl) {
-    statusEl.innerHTML = `<span style="color: #f87171;">Failed to load framework: ${err.message}</span>`;
-  }
-  console.error('[mini-framework basic example error]', err);
-}
+app.mount();
+// Call app.dispose() when the application is no longer needed.

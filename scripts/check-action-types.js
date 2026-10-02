@@ -7,10 +7,15 @@ try { ts = (await import('typescript')).default; }
 catch { console.error('Type tests require the development dependency: run npm ci first.'); process.exit(1); }
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const directory = path.join(root, 'spikes/action-schema/types');
-const files = ['positive.ts', 'negative.ts', 'javascript.js'].map(file => path.join(directory, file));
-const negative = files[1];
-const source = fs.readFileSync(negative, 'utf8');
-const expectedLines = new Set(source.split('\n').flatMap((line, index) => line.includes('@ts-expect-error') ? [index + 1] : []));
+const publicDirectory = path.join(root, 'tests/types');
+const files = [...['positive.ts', 'negative.ts', 'javascript.js'].map(file => path.join(directory, file)),
+  ...['positive.ts', 'negative.ts'].map(file => path.join(publicDirectory, file)),
+  path.join(root, 'examples/basic/main.js')];
+const negatives = new Map([directory, publicDirectory].map(dir => {
+  const file = path.join(dir, 'negative.ts'); return [file, fs.readFileSync(file, 'utf8')];
+}));
+const expectedLines = new Set([...negatives].flatMap(([file, source]) => source.split('\n')
+  .flatMap((line, index) => line.includes('@ts-expect-error') ? [file + ':' + (index + 1)] : [])));
 const options = { strict: true, noEmit: true, allowJs: true, checkJs: true, skipLibCheck: false,
   noUncheckedIndexedAccess: true, exactOptionalPropertyTypes: true,
   target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.NodeNext, moduleResolution: ts.ModuleResolutionKind.NodeNext,
@@ -24,15 +29,15 @@ if (diagnostics.length) { console.error(format(diagnostics)); process.exit(1); }
 // This catches both unused directives and declarations accidentally widening to any.
 const host = ts.createCompilerHost(options);
 const read = host.readFile.bind(host);
-host.readFile = file => path.resolve(file) === negative
-  ? source.replaceAll('@ts-expect-error', 'expected-error-disabled') : read(file);
+host.readFile = file => negatives.has(path.resolve(file))
+  ? negatives.get(path.resolve(file)).replaceAll('@ts-expect-error', 'expected-error-disabled') : read(file);
 const rejected = ts.getPreEmitDiagnostics(ts.createProgram(files, options, host));
 const actualLines = new Set();
 for (const diagnostic of rejected) {
-  if (!diagnostic.file || path.resolve(diagnostic.file.fileName) !== negative || diagnostic.start === undefined) {
+  if (!diagnostic.file || !negatives.has(path.resolve(diagnostic.file.fileName)) || diagnostic.start === undefined) {
     console.error(format([diagnostic])); process.exit(1);
   }
-  actualLines.add(diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start).line);
+  actualLines.add(path.resolve(diagnostic.file.fileName) + ':' + diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start).line);
 }
 if (!expectedLines.size || [...expectedLines].some(line => !actualLines.has(line))
   || [...actualLines].some(line => !expectedLines.has(line))) {

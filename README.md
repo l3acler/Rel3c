@@ -9,6 +9,7 @@ A standalone JavaScript frontend framework built from scratch on a **determinist
 - [Current Milestone Status](#current-milestone-status)
 - [Zero-Dependency & Tooling Disclosure](#zero-dependency--tooling-disclosure)
 - [Quick Start](#quick-start)
+- [Current Public Application API](#current-public-application-api)
 - [Repository Structure](#repository-structure)
 - [Planned API Contracts & Examples](#planned-api-contracts--examples)
 - [Verification & Quality Gates](#verification--quality-gates)
@@ -17,7 +18,7 @@ A standalone JavaScript frontend framework built from scratch on a **determinist
 
 ## Overview & Purpose
 
-`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes are complete; the public runtime is still a scaffold.
+`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and the A.1 public lifecycle are complete; transactions, reactive elements, events and routing remain later tasks.
 
 The planned runtime uses the following capabilities; they are not yet shipped public features:
 1. **Fine-Grained Reactive Bindings (`DOM-1`, `DOM-2`)**: State properties track which exact DOM nodes or computed values depend on them. Updating one property touches only its bound DOM node, leaving unaffected nodes and browser focus untouched.
@@ -56,7 +57,11 @@ The planned runtime uses the following capabilities; they are not yet shipped pu
   - [x] **0.8 Action Schema & Serialization**: Typed named actions, independent runtime payload validation, and alias-preserving canonical snapshots; cycles rejected. See the [schema ADR](docs/adr/0002-action-schema-serialization.md) and [evidence report](docs/reports/task-0.8-actions-serialization.md).
   - [x] **0.9 Architecture Review & Selection**: COW selected after validation fixes and fresh equivalent-work benchmarks. Stable graph IDs, data/action/view decisions and proposed browser/input targets are documented. See [engine ADR](docs/adr/0003-transaction-engine-identity.md), [browser/input ADR](docs/adr/0004-browser-input-support.md), and [review/evidence](docs/reports/task-0.9-architecture-review.md).
 
-Next: **A.1 — application ownership and public lifecycle**. The public entry remains a scaffold; no production engine, router, recording or replay is shipped yet.
+- **Phase A — Core Runtime (In Progress)**:
+  - [x] **A.1 Public Application Lifecycle**: Owned initial state/action registration, framework-called text views, mount/dispose, cleanup/error reporting and public-only root example. See [current API](docs/api/application.md), [ADR 0005](docs/adr/0005-application-lifecycle.md) and [verification](docs/reports/task-A.1-application-lifecycle.md).
+  - [ ] **A.2 Production Transactions**: Next: adapt the selected COW engine.
+
+No action bodies execute in A.1. Reactive elements, events, routing, controlled services, recording and replay are not shipped yet.
 
 > [!NOTE]
 > Per the project instructions, planned features for Phases A–D (core runtime, router, deterministic ticks, replay, inspector) are currently under development or scheduled. They are not claimed as shipped until their respective acceptance gates pass.
@@ -101,6 +106,19 @@ Runs the built-in test suite:
 npm test
 ```
 
+Public lifecycle checks run in real isolated Chrome (installed Chrome required;
+override its location with `MINI_FRAMEWORK_CHROME_PATH`):
+
+```bash
+npm run test:browser
+```
+
+Current verification: 331 Node tests (31 public, 292 spike, eight workload), 45
+negative type lines (20 public + 25 spike), and 27 public lifecycle browser checks.
+Type checks include the plain-JS root example and require `npm ci`. Startup and
+Node tests still need no dependency installation. Native input/IME and broad
+cross-browser qualification remain later work.
+
 ### 4. Run Spike Benchmarks
 Runs the architecture spike benchmark harness:
 ```bash
@@ -113,7 +131,7 @@ This runs seven equivalent workloads across eager reference, copy-on-write, and 
 npm run bench:spikes:browser
 ```
 
-Use `-- --quick` on either benchmark command for a harness smoke check. See [benchmark prerequisites and methodology](benchmarks/README.md) and the [measured results and limitations](docs/reports/task-0.6-measurements.md). No engine has been selected; these are transaction spikes, not a renderer benchmark. Run workload and transaction correctness separately:
+Use `-- --quick` on either benchmark command for a harness smoke check. See [benchmark prerequisites and methodology](benchmarks/README.md) and the [corrected selection evidence](docs/reports/task-0.9-architecture-review.md). COW is selected for A.2; these remain transaction spikes, not production renderer benchmarks. Run workload and transaction correctness separately:
 
 ```bash
 npm run test:spikes
@@ -128,7 +146,7 @@ Task 0.7 adds seven Node syntax tests and 40 browser checks, with three-round mo
 npm run check:view-syntax
 ```
 
-Requires installed Chrome (override with `MINI_FRAMEWORK_CHROME_PATH`). `-- --quick` shortens measurements. For the runnable syntax examples, open `http://localhost:3000/spikes/view-syntax/` after `npm run dev`. These use spike exports, not the placeholder public runtime. See the [spike guide](spikes/view-syntax/README.md).
+Requires installed Chrome (override with `MINI_FRAMEWORK_CHROME_PATH`). `-- --quick` shortens measurements. For the runnable syntax examples, open `http://localhost:3000/spikes/view-syntax/` after `npm run dev`. These use spike exports, not the A.1 public lifecycle API. See the [spike guide](spikes/view-syntax/README.md).
 
 Task 0.8 adds 111 action/serialization tests, plus strict positive TypeScript and checked-JavaScript fixtures with 25 independently checked negative lines:
 
@@ -138,7 +156,46 @@ npm run test:types
 npm run test:spikes
 ```
 
-The action harness and codec run as plain JavaScript without compilation. Snapshots preserve aliases, holes, undefined, negative zero and property order; cycles and unsupported input types are rejected. These are experimental data snapshots, not replay checkpoints or public exports. Task 0.9 fixes the shared assignment/DAG validation gaps and remeasures both strategies. Current totals: 292 spike tests, eight workload tests, three scaffold tests, 25 negative type lines and 40 Chrome DOM checks. See the [action/serialization spike guide](spikes/action-schema/README.md).
+The action harness and codec run as plain JavaScript without compilation. Snapshots preserve aliases, holes, undefined, negative zero and property order; cycles and unsupported input types are rejected. These are experimental data snapshots, not replay checkpoints or public exports. Task 0.9 fixes the shared assignment/DAG validation gaps and remeasures both strategies. Phase 0's 292 spike tests, eight workload tests, 25 negative type lines and 40 syntax/DOM checks remain available; A.1 adds public lifecycle checks separately. See the [action/serialization spike guide](spikes/action-schema/README.md).
+
+---
+
+## Current Public Application API
+
+With a `<div id="app"></div>` in the page, a browser module at the repository
+root can run this today:
+
+```js
+import { createApp } from './src/index.js';
+
+const app = createApp({
+  initialState: { message: 'Hello from an owned application' },
+  view: ({ state, onDispose }) => {
+    onDispose(() => console.log('View disposed'));
+    return state.message;
+  },
+});
+
+app.mount(); // Finds #app; framework calls the view and appends its owned text.
+// app.state is a deep-frozen copy; caller state is not frozen or mutated.
+app.dispose(); // Runs cleanup and removes only app-owned content.
+```
+
+Use `app.mount()` with the conventional `#app` container, `app.mount(element)`
+for a custom container, or pass `target` to createApp for automatic mounting.
+Targetless creation stays headless/lazy. Missing `#app` throws clearly at mount
+time and allows retry; explicit invalid targets never fall back to `#app`.
+Disposal is terminal/idempotent; failed mounts clean up and may be retried.
+Views return synchronous text/null/undefined in A.1. This proves framework-owned
+lifecycle; it is not the final element/binding renderer or full Phase A core.
+
+`createActionSchema()` registers explicit no-payload/payload modes with inferred
+types. Registered actions/dispatch throw `FEATURE_UNAVAILABLE` until A.3—no fake
+state mutation is performed. The placeholder's raw `actions`/`seed` options now
+reject instead of being silently ignored. Read [the implemented lifecycle API](docs/api/application.md)
+for registration, error observation, state guards and cleanup details. The root
+example mounts one report with `app.mount()` using public imports only. Browser
+verification imports that app and calls `dispose()` to check owned DOM removal.
 
 ---
 
@@ -181,7 +238,13 @@ mini-framework/
 
 ## Planned API Contracts & Examples
 
-The following are design sketches, not implemented public APIs. Task 0.7 selected element functions with explicit binding tokens for Phase A. Optional templates remain deferred: eager state expressions capture whole views rather than exact individual binding dependencies. The public entry remains a scaffold placeholder; runnable syntax examples use the separate spike entry. Routing remains Phase B work.
+The following are future design sketches, not current runnable public examples.
+Use the lifecycle example above for implemented A.1 usage. Task 0.7 selected
+element functions with explicit binding tokens for Phase A; these exports and
+action execution are not yet implemented. Optional templates remain deferred:
+eager state expressions capture whole views rather than exact individual binding
+dependencies. Runnable syntax examples use the separate spike entry. Routing
+remains Phase B work; inline-action/seed options below are planned sketches only.
 
 ### 1. Tagged Template Syntax (Evaluated Prototype, Deferred)
 The eager prototype runs natively without arrow wrappers, but its conservative whole-view tracking does not meet the exact-binding adoption gate. This preserves the evaluated PRD candidate for reference, not as a promised public API:

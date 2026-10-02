@@ -1,7 +1,7 @@
 
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
-**Status:** Product definition
+**Status:** Product definition; Phase 0 decisions recorded, A.1 lifecycle implemented
 **Version:** 2.3
 **Date:** 2 October 2026
 **Working name:** Undecided
@@ -54,6 +54,15 @@ flowchart TD
 **Replay contract.** Given the same initial snapshot, action schema/runtime version, seed, and ordered input log—including recorded external results and browser measurements used by actions—the transition engine produces the same committed state at corresponding checkpoints. Browser paint timing and interpolated visuals are not part of this guarantee.
 
 ### Illustrative API
+
+**Current A.1 surface:** [ADR 0005](docs/adr/0005-application-lifecycle.md) and
+[application API docs](docs/api/application.md) describe implemented owned
+construction, schema registration, text-only mount/dispose and cleanup/errors.
+Explicit `app.mount()` resolves the conventional `#app` container at mount time;
+custom Element targets remain supported, and targetless creation stays lazy.
+They are experimental. Action execution, element/binding exports, events,
+routing and replay remain later acceptance gates; the candidate snippets below
+are not current runnable API examples.
 
 These are illustrative design sketches, not implemented public exports. Phase 0 selects element functions with explicit binding tokens; the exact application/action registration surface remains to be integrated in Phase A.
 

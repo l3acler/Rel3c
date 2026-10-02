@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>mini-framework — Basic Example (Phase 0 Scaffold)</title>
+  <title>mini-framework — Public Lifecycle Example (A.1)</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -14,11 +15,13 @@
       --border: #334155;
       --badge-bg: #0369a1;
     }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: var(--bg);
@@ -26,20 +29,24 @@
       line-height: 1.6;
       padding: 2rem 1rem;
     }
+
     .container {
       max-width: 800px;
       margin: 0 auto;
     }
+
     header {
       margin-bottom: 2rem;
       border-bottom: 1px solid var(--border);
       padding-bottom: 1rem;
     }
+
     h1 {
       font-size: 1.75rem;
       color: var(--accent);
       margin-bottom: 0.5rem;
     }
+
     .badge {
       display: inline-block;
       font-size: 0.75rem;
@@ -52,6 +59,7 @@
       color: #fff;
       margin-bottom: 0.5rem;
     }
+
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -59,28 +67,34 @@
       padding: 1.5rem;
       margin-bottom: 1.5rem;
     }
+
     h2 {
       font-size: 1.25rem;
       margin-bottom: 0.75rem;
       color: var(--text);
     }
+
     p {
       color: var(--muted);
       margin-bottom: 0.75rem;
     }
+
     ul {
       list-style-type: none;
       padding-left: 0;
     }
+
     li {
       padding: 0.4rem 0.6rem;
       border-bottom: 1px solid var(--border);
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.9rem;
     }
+
     li:last-child {
       border-bottom: none;
     }
+
     pre {
       background: #020617;
       padding: 1rem;
@@ -90,34 +104,39 @@
       color: #38bdf8;
       border: 1px solid var(--border);
     }
+
     #status-indicator {
       font-weight: bold;
       color: #4ade80;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <header>
-      <span class="badge" id="app-badge">Phase 0.1</span>
-      <h1 id="app-title">mini-framework Root Scaffold</h1>
-      <p id="app-subtitle">Zero-dependency deterministic reactive frontend framework runtime verification.</p>
+      <span class="badge" id="app-badge">Phase A.1</span>
+      <h1 id="app-title">mini-framework Application Lifecycle</h1>
+      <p id="app-subtitle">Owned state, framework-called text view, mount and disposal. No third-party runtime
+        dependencies.</p>
     </header>
 
     <div class="card">
-      <h2>Native Module Import Status</h2>
-      <p id="app-status">Importing framework from <code id="import-path">/src/index.js</code>...</p>
-      <div id="output-box"></div>
+      <h2>Public Lifecycle Report</h2>
+      <p id="app-status">The module below calls <code>app.mount()</code> to display this report in
+        <code>#app</code> using <code id="import-path">/src/index.js</code>.</p>
+      <pre id="app"></pre>
     </div>
 
     <div class="card">
-      <h2>Planned Architecture Spikes (Phase 0)</h2>
-      <ul id="capability-list">
-        <li>Loading planned capabilities...</li>
-      </ul>
+      <h2>What Comes Next</h2>
+      <p>Transactions and action execution follow in A.2/A.3. Reactive elements,
+        events and keyed lists follow later in Phase A. Routing is Phase B;
+        deterministic services, recording and replay are Phase C.</p>
     </div>
   </div>
 
   <script type="module" src="./main.js"></script>
 </body>
+
 </html>

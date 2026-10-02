@@ -1,0 +1,208 @@
+{
+  "kind": "public-app-lifecycle",
+  "task": "A.1",
+  "formatVersion": 1,
+  "recordedAt": "2026-10-02T18:21:55.808Z",
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/154.0.8037.93",
+    "revision": "@f89f3a4363808e117c592adedcf9947882ac3b79",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "jsVersion": "15.4.80.19"
+  },
+  "flags": [
+    "--headless=new",
+    "--remote-debugging-pipe",
+    "--no-first-run",
+    "--no-default-browser-check",
+    "--disable-extensions"
+  ],
+  "machine": {
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "platform": "darwin",
+    "release": "24.6.0",
+    "arch": "arm64",
+    "node": "v26.3.0"
+  },
+  "sourceFiles": [
+    {
+      "file": "src/index.js",
+      "sha256": "5283e5b5d0dbd55e601d34ef1b99cf145b7b5022be4280cc03df0268748d7130"
+    },
+    {
+      "file": "src/index.d.ts",
+      "sha256": "aca32c6bb9a78e5638662b9d88e1501ef88a2c16f83e2a36e8314c92307cc0d6"
+    },
+    {
+      "file": "src/runtime/app.js",
+      "sha256": "9f44659be2ad9dd3efba66c2a861ab7658ec0c6c5c97d330a1db97ec2afccf49"
+    },
+    {
+      "file": "src/runtime/errors.js",
+      "sha256": "53b430ba1ba466583ae74ba99a3655c6eca5b203b878f26c44ff6598f56e9d0e"
+    },
+    {
+      "file": "src/runtime/records.js",
+      "sha256": "2ab1fdc349a55e10b2042626e01c9209dc52dfbfdcfc7b776d6d757e6b3434a8"
+    },
+    {
+      "file": "src/runtime/state/initial-state.js",
+      "sha256": "b8305e7a6e6790d6c0bf21401c7bd62223afd61f047f3f1f386f57218abc51eb"
+    },
+    {
+      "file": "src/runtime/actions/schema.js",
+      "sha256": "be68fea174ad25646b8611ca5a88bce7e9703631511b86179f087a1b1301bfe1"
+    },
+    {
+      "file": "examples/basic/main.js",
+      "sha256": "71cbed9c0dba07055d39b6805e04f36c3ac40089fef921ba34bf03517751d8b1"
+    },
+    {
+      "file": "examples/basic/index.html",
+      "sha256": "1e90c17988a231af468d73fe74d416143a78de7726128e6501cfcccd31c19761"
+    },
+    {
+      "file": "tests/browser/app-lifecycle.js",
+      "sha256": "dee1fc96ec1a84fc526d16a7d169dec2881367da5b0b27383996c302172af227"
+    },
+    {
+      "file": "tests/browser/app-lifecycle.html",
+      "sha256": "f905e1428e9a7b84e4ccb494725ede5a507acdf5b7e24b507e0cc4e9017d4e16"
+    },
+    {
+      "file": "scripts/check-app-lifecycle.js",
+      "sha256": "21baa57f402fd3438629428409458055dd92c5197813ba92a1cb3dc516e7d028"
+    },
+    {
+      "file": "scripts/local-browser.js",
+      "sha256": "07c8cf79bae1f568f417e306fbb58d8d6708cc7dbe35dd2a8d58e133f01e3f96"
+    },
+    {
+      "file": "scripts/dev-server.js",
+      "sha256": "ec2e25bc7552de8f2003009c5517c075058154c4212e8f00d8a8655f7f74f15f"
+    }
+  ],
+  "example": {
+    "mounted": true,
+    "disposed": "disposed",
+    "removedOwnedText": true,
+    "report": {
+      "message": "Public application lifecycle is running.",
+      "framework": "mini-framework",
+      "version": "0.1.0",
+      "milestone": "A.1 - Application Ownership and Lifecycle",
+      "publicEntry": "/src/index.js",
+      "firstAppDisposed": true,
+      "capabilities": [
+        "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
+        "DOM-1: Declarative DOM abstraction (planned Phase A)",
+        "DOM-2: Fine-grained DOM updates (planned Phase A)",
+        "STATE-1: Deep reactive store (planned Phase A)",
+        "ACTION-1: Transactional named actions (prototype in Phase 0, production Phase A)",
+        "ROUTE-1: Reactive router (planned Phase B)",
+        "EVENT-1: Framework event system (planned Phase B)",
+        "TIME-1: Deterministic simulation ticks (planned Phase C)",
+        "RECORD-1: Action recording & replay (planned Phase C)"
+      ]
+    }
+  },
+  "tests": {
+    "passed": 23,
+    "results": [
+      {
+        "name": "public browser-native module exports current lifecycle metadata",
+        "passed": true
+      },
+      {
+        "name": "lazy create, explicit mount, terminal/idempotent dispose",
+        "passed": true
+      },
+      {
+        "name": "configured target mounts automatically with immutable context",
+        "passed": true
+      },
+      {
+        "name": "owned initial state is deep read-only without freezing caller data",
+        "passed": true
+      },
+      {
+        "name": "aliases, holes and null prototypes preserve meaning in native JS",
+        "passed": true
+      },
+      {
+        "name": "dynamic text cannot inject HTML",
+        "passed": true
+      },
+      {
+        "name": "host children, native focus and selection survive mount/dispose",
+        "passed": true
+      },
+      {
+        "name": "target claim is exclusive and released after disposal",
+        "passed": true
+      },
+      {
+        "name": "invalid DOM-like targets/documents/shadow roots reject",
+        "passed": true
+      },
+      {
+        "name": "same app cannot double-mount or move to another target",
+        "passed": true
+      },
+      {
+        "name": "failed view unwinds its scope and permits retry on the same target",
+        "passed": true
+      },
+      {
+        "name": "cleanup is reverse-order and repeated disposal does not rerun it",
+        "passed": true
+      },
+      {
+        "name": "cleanup errors do not block later cleanup/DOM removal/claim release",
+        "passed": true
+      },
+      {
+        "name": "owned node removal follows a moved node but does not remove unrelated nodes",
+        "passed": true
+      },
+      {
+        "name": "registered action wrappers are inert until A.3 and names are owned",
+        "passed": true
+      },
+      {
+        "name": "schema shared by apps does not share stores or disposal",
+        "passed": true
+      },
+      {
+        "name": "view mutation fails before publishing text",
+        "passed": true
+      },
+      {
+        "name": "Promise-returning views reject with cleanup and no unhandled native rejection",
+        "passed": true
+      },
+      {
+        "name": "DOM state and unsupported Array prototypes reject",
+        "passed": true
+      },
+      {
+        "name": "iframe DOM targets work while foreign-realm state is not normalized",
+        "passed": true
+      },
+      {
+        "name": "detached DOM targets can mount and dispose without a connected page",
+        "passed": true
+      },
+      {
+        "name": "100 cycles return owned nodes, cleanup counts and target claims to baseline",
+        "passed": true
+      },
+      {
+        "name": "root public-import example mounts/disposes without DOM patching",
+        "passed": true
+      }
+    ]
+  },
+  "limitations": "Lifecycle/text-only runtime; no public transactions/events/reactivity/replay or cross-browser/IME qualification. Resource counters are not a heap-leak proof."
+}

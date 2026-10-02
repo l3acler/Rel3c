@@ -15,6 +15,7 @@
   "scripts": {
     "dev": "node scripts/dev-server.js",
     "test": "node --test 'tests/**/*.test.js'",
+    "test:browser": "node scripts/check-app-lifecycle.js",
     "test:spikes": "node --test 'spikes/**/*.test.js'",
     "bench:spikes": "node scripts/bench-spikes.js",
     "bench:spikes:browser": "node scripts/bench-spikes-browser.js",
