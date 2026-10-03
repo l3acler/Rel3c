@@ -42,3 +42,21 @@ type DispatchReturn = Expect<Equal<ReturnType<typeof app.dispatch>, void>>;
 const completed: void = app.actions.increment();
 app.dispatch('rename', { name: 'Grace' });
 void completed;
+
+const score = app.computed(state => state.count * 2);
+const watched = app.observe(state => state.rows.map(row => row.id), () => {});
+const scoreValue: number = score.value;
+const ids: string[] = watched.read();
+const dirty: boolean = watched.dirty;
+const chained = app.computed(() => score.value.toFixed(2));
+const chainValue: string = chained.value;
+watched.dispose(); score.dispose(); chained.dispose();
+createApp({ initialState: { n: 1 }, view({ observe, computed }) {
+  const derived = computed(state => state.n * 2);
+  const observer = observe(() => derived.value);
+  const result: number = observer.read();
+  return String(result);
+} });
+type ComputedInference = Expect<Equal<typeof score.value, number>>;
+type ObserverInference = Expect<Equal<ReturnType<typeof watched.read>, string[]>>;
+void scoreValue; void ids; void dirty; void chainValue;

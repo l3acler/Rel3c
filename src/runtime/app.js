@@ -3,6 +3,7 @@ import { readRecord } from "./records.js";
 import { createTransactionStore } from "./state/transactions.js";
 import { createActionSchema, ownActionRegistry } from "./actions/schema.js";
 import { createDispatcher } from "./actions/dispatch.js";
+import { createTracking } from "./reactivity/tracking.js";
 
 const targets = new WeakMap();
 const emptySchema = createActionSchema()(() => ({}));
@@ -78,6 +79,7 @@ export function createApplication(config, frameworkVersion) {
   let node = null;
   let mountCleanups = [];
   const appCleanups = [];
+  const tracking = createTracking(store);
   function live() {
     if (status === "disposed" || status === "disposing")
       fail(
@@ -111,12 +113,20 @@ export function createApplication(config, frameworkVersion) {
   }
   dispatcher = createDispatcher(store, registry, () => {
     live();
-    if (status === "mounting" || reporting)
+    if (status === "mounting" || reporting || tracking.isBusy())
       fail(
         "ACTION_REENTRANT",
-        "Cannot dispatch during view mounting or error reporting.",
+        "Cannot dispatch during view mounting, reactive reads/notifications or error reporting.",
       );
-  });
+  }, tracking.publish);
+  function observe(read, notify) {
+    live();
+    return tracking.observe(read, notify);
+  }
+  function computed(read) {
+    live();
+    return tracking.computed(read);
+  }
   function dispatch(...args) {
     const nested = dispatcher?.isActive();
     // Deduplicate propagation within this operation, not future batches that
@@ -144,6 +154,8 @@ export function createApplication(config, frameworkVersion) {
     actionNames,
     actions,
     dispatch,
+    observe,
+    computed,
     get status() {
       return status;
     },
@@ -152,7 +164,7 @@ export function createApplication(config, frameworkVersion) {
     },
     get state() {
       live();
-      return store.getState();
+      return tracking.state();
     },
     get stateVersion() {
       live();
@@ -164,7 +176,7 @@ export function createApplication(config, frameworkVersion) {
     mount(mountTarget = defaultTarget) {
       try {
         live();
-        if (dispatcher.isActive())
+        if (dispatcher.isActive() || tracking.isBusy())
           fail(
             "LIFECYCLE_REENTRANT",
             "Cannot mount during action dispatch or payload validation.",
@@ -195,10 +207,24 @@ export function createApplication(config, frameworkVersion) {
       const context = Object.freeze({
         get state() {
           live();
-          return store.getState();
+          return tracking.state();
         },
         actions,
         dispatch,
+        observe(read, notify) {
+          if (mountCleanups !== attemptCleanups || !["mounting", "mounted"].includes(status))
+            fail("SCOPE_DISPOSED", "This view scope is no longer active.");
+          const observer = observe(read, notify);
+          register(attemptCleanups, observer.dispose);
+          return observer;
+        },
+        computed(read) {
+          if (mountCleanups !== attemptCleanups || !["mounting", "mounted"].includes(status))
+            fail("SCOPE_DISPOSED", "This view scope is no longer active.");
+          const value = computed(read);
+          register(attemptCleanups, value.dispose);
+          return value;
+        },
         onDispose(cleanup) {
           if (
             mountCleanups !== attemptCleanups ||
@@ -262,7 +288,7 @@ export function createApplication(config, frameworkVersion) {
     },
     dispose() {
       if (status === "disposed" || status === "disposing") return;
-      if (status === "mounting" || dispatcher.isActive())
+      if (status === "mounting" || dispatcher.isActive() || tracking.isBusy())
         report(
           new FrameworkError(
             "LIFECYCLE_REENTRANT",
@@ -271,6 +297,9 @@ export function createApplication(config, frameworkVersion) {
           "dispose",
         );
       status = "disposing";
+      // Stop the complete graph before scoped/user cleanup can dispose sources
+      // and accidentally notify other resources in this closing application.
+      tracking.dispose();
       const errors = drain(mountCleanups);
       errors.push(...drain(appCleanups));
       if (node?.parentNode) {

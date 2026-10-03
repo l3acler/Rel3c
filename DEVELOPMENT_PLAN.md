@@ -1,18 +1,18 @@
 # Framework development plan
 
-**Status:** Phase 0 complete; Phase A in progress with A.1–A.3 verified. Later tasks remain planned.
+**Status:** Phase 0 complete; Phase A in progress with A.1–A.5 verified. Later tasks remain planned.
 
 **Created:** 30 September 2026.
 
 **Source:** [Framework_PRD.md](Framework_PRD.md), version 2.4, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** Phase A — core runtime (A.1–A.3 complete; next task A.4).
+**Current milestone:** Phase A — core runtime (A.1–A.5 complete; next task A.6).
 
 ## 1. Purpose and scope
 
 This document turns the product requirements into an implementation backlog. The framework is the product: its state engine, DOM abstraction, event system, router, scheduler, deterministic runtime, tools, package, and documentation. Small examples validate public APIs. The assignment's separate demonstration application is a later integration task and must not determine the framework architecture.
 
-The repository contains browser-native public lifecycle exports, a development server/public-only text example, tested transaction/view/action-schema spikes, equivalent-work Node/browser measurements, and typed dispatch/graph snapshot evidence. Phase 0 is complete: copy-on-write is selected for Phase A, with stable graph IDs, explicit action inputs, acyclic supported data, element/binding syntax and proposed browser/input qualification recorded in ADRs. Task 0.8's shared validation findings were corrected and remeasured in 0.9. A.1 implements initial ownership, schema registration, mount/dispose and cleanup/errors; A.2 adds app-owned production COW transactions, revocation, stable IDs and state/scratch growth guards with fresh port evidence. A.3 implements public dispatch with owned payloads, synchronous guards, bounded FIFO queues and failure propagation. Reactive DOM remains unimplemented. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
+The repository contains browser-native public lifecycle exports, a development server/public-only text example, tested transaction/view/action-schema spikes, equivalent-work Node/browser measurements, and typed dispatch/graph snapshot evidence. Phase 0 is complete: copy-on-write is selected for Phase A, with stable graph IDs, explicit action inputs, acyclic supported data, element/binding syntax and proposed browser/input qualification recorded in ADRs. Task 0.8's shared validation findings were corrected and remeasured in 0.9. A.1 implements initial ownership, schema registration, mount/dispose and cleanup/errors; A.2 adds app-owned production COW transactions, revocation, stable IDs and state/scratch growth guards with fresh port evidence. A.3 implements public dispatch with owned payloads, synchronous guards, bounded FIFO queues and failure propagation. A.4/A.5 add exact observers, current-state read facades, lazy computed caches, chained/dynamic dependencies, cycle errors and scoped disposal. Reactive DOM remains unimplemented. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
 
 The PRD remains the source of truth for acceptance criteria. Changes to product scope or execution contracts require corresponding PRD changes and an explanation. Architecture choices require an architecture decision record (ADR), supporting tests, and measurements where applicable.
 
@@ -123,8 +123,8 @@ Deliver the root scaffold, isolated prototypes, shared fixture suite, reproducib
 - [x] **A.1 — Establish application ownership and public entry.** Dependencies: 0.9. Define create/mount/dispose lifecycle, app-owned store, action registry, view invocation context, and development error reporting. Acceptance: a public-import example mounts and disposes; applications need no internal imports. Evidence: [ADR 0005](docs/adr/0005-application-lifecycle.md), [implemented API](docs/api/application.md), [A.1 report](docs/reports/task-A.1-application-lifecycle.md) and public root example. Text-only lifecycle/owned initial state and explicit schema registration work; dispatch execution intentionally throws until A.3. Production COW/reactive DOM are not claimed by A.1.
 - [x] **A.2 — Implement production transactions.** Dependencies: A.1. Adapt COW per ADR 0003 into runtime code with read-only committed views, deep transactions, stable object identity, original-prototype rejection, descriptor validation and active/completed DAG traversal. Define production growth/depth limits or safe traversal; codec budgets do not bound the backend. Acceptance: prototype correctness/type-policy fixtures pass against the runtime; nested writes, add/delete, aliases, and array changes publish atomically; leaked drafts reject use after commit/abort. Remeasure materialization/indexing changes before cost claims. Evidence: [ADR 0006](docs/adr/0006-production-transactions.md), [A.2 verification/measurements](docs/reports/task-A.2-production-transactions.md), 86 production transaction checks, seven changing-workload equivalence checks, 33 Chrome checks and a fingerprinted Node port comparison. Engine is internal; A.3 public dispatch remains gated.
 - [x] **A.3 — Implement named dispatch and ordering.** Dependencies: A.2. Validate names/payloads, reject async/thenable actions, assign committed versions, and queue nested dispatches. Decide FIFO ordering, error propagation, and whether nested dispatches from a failed parent are discarded before implementation. Acceptance: observers see complete versions only; throwing or Promise-returning actions publish none; ordering fixtures include successful and failed parents and children. Evidence: [ADR 0007](docs/adr/0007-named-dispatch-ordering.md), [A.3 verification](docs/reports/task-A.3-named-dispatch.md), 29 new public dispatch tests, positive/negative types and 39 Chrome checks. Each parent stages children until success; failed children discard descendants, continue siblings and report terminal failures after draining.
-- [ ] **A.4 — Track exact dependencies.** Dependencies: A.2. Track object-property reads, property existence, key iteration, array length/structure, and item-property reads. Replace stale dependency sets when branches change. Acceptance: unrelated properties invalidate different observers, alias writes find the same dependencies, and item edits do not invalidate unrelated items or list structure.
-- [ ] **A.5 — Implement computed values.** Dependencies: A.4. Add lazy caching, chained dependencies, dynamic dependency replacement, disposal, and cycle detection. Acceptance: unobserved dirty computations remain lazy, observed values recompute only as needed, and cycles fail with a useful error.
+- [x] **A.4 — Track exact dependencies.** Dependencies: A.2. Track object-property reads, property existence, key iteration, array length/structure, and item-property reads. Replace stale dependency sets when branches change. Acceptance: unrelated properties invalidate different observers, alias writes find the same dependencies, and item edits do not invalidate unrelated items or list structure. Evidence: [reactivity API](docs/api/reactivity.md), [ADR 0008](docs/adr/0008-exact-reactivity.md) and [A.4/A.5 verification](docs/reports/task-A.4-A.5-reactivity.md).
+- [x] **A.5 — Implement computed values.** Dependencies: A.4. Add lazy caching, chained dependencies, dynamic dependency replacement, disposal, and cycle detection. Acceptance: unobserved dirty computations remain lazy, observed values recompute only as needed, and cycles fail with a useful error. Evidence: [reactivity API](docs/api/reactivity.md), [ADR 0008](docs/adr/0008-exact-reactivity.md) and [A.4/A.5 verification](docs/reports/task-A.4-A.5-reactivity.md).
 - [ ] **A.6 — Implement declarative DOM bindings.** Dependencies: A.1, A.4. Add elements, static/reactive text, attributes, classes, styles, nested children, and conditional views. Define null/boolean children and attribute-versus-property handling for forms. Acceptance: a form and conditional section use only public APIs; reactive changes preserve unrelated nodes and reject mutation from render computations.
 - [ ] **A.7 — Add frame batching and explicit flush.** Dependencies: A.3, A.6. Deduplicate dirty bindings, read latest committed values, avoid unnecessary writes, and cancel disposed work. Acceptance: several commits before one frame cause at most one latest-value write per binding; explicit flush is deterministic in tests and does not create duplicate scheduled writes.
 - [ ] **A.8 — Implement keyed collections.** Dependencies: A.4, A.6, A.7. Add keyed insertion/removal/reorder, item binding ownership, and missing/duplicate-key diagnostics. Acceptance: retained items preserve DOM identity and focus after reorder; item edits affect only dependent bindings; removed items dispose resources.
@@ -233,7 +233,7 @@ Additional PRD gates: transaction comparison is covered by 0.2–0.6/0.9; tagged
 
 ## 11. Decision register
 
-This register tracks recorded architecture choices and later open decisions, not stable public contracts. Phase 0 choices are in ADRs 0001–0004: elements/binding tokens, explicit action modes/acyclic data, COW/logical identity, and browser/input qualification targets. ADR 0005 records the implemented A.1 lifecycle/registration surface. ADR 0006 records A.2 production ownership, native revocation, successful no-op versions and conservative state/scratch growth limits. ADR 0007 records A.3 payload ownership, FIFO queues, parent-failure discard, sibling continuation and aggregate errors. Reactive API integration, final formats and release compatibility remain later gates below.
+This register tracks recorded architecture choices and later open decisions, not stable public contracts. Phase 0 choices are in ADRs 0001–0004: elements/binding tokens, explicit action modes/acyclic data, COW/logical identity, and browser/input qualification targets. ADR 0005 records the implemented A.1 lifecycle/registration surface. ADR 0006 records A.2 production ownership, native revocation, successful no-op versions and conservative state/scratch growth limits. ADR 0007 records A.3 payload ownership, FIFO queues, parent-failure discard, sibling continuation and aggregate errors. ADR 0008 records A.4/A.5 exact observers, current-state read facades, lazy computed edges, disposal and post-commit notification failures. DOM API integration, final formats and release compatibility remain later gates below.
 
 | Decision | Evidence needed | Decision gate |
 | --- | --- | --- |
@@ -682,6 +682,22 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
   A.3 committed as its own milestone at user request; no push.
 ```
 
+### A.4/A.5 implementation batch — complete (3 October 2026)
+
+- A.4 validated before A.5: 19 initial exact-dependency tests, 165 runtime tests,
+  root startup smoke and existing types passed before dependent implementation.
+- Final: 191 runtime + 292 spike + 15 workload tests pass; 55 negative type lines,
+  positive TS/checked JS, 49 Chrome checks and root startup smoke pass.
+- Delivered exact property/presence/key/array observers, current-state facades,
+  lazy computed caches, chains/diamonds, dynamic replacement, cycle diagnostics
+  and explicit/app/view disposal. Notification failures preserve committed
+  versions and queued children. Detailed evidence and limits are in the
+  [batch report](docs/reports/task-A.4-A.5-reactivity.md).
+- Public guide, README, API references, ADR 0008 and PRD status are current.
+  A.6 remains unimplemented. The user requested a commit after verification.
+  The implementation commit includes final browser evidence; unrelated existing
+  AGENTS.md changes and intermediate browser reports remain outside its scope.
+
 ## 14. Completion checklist
 
 - [x] Both transaction strategies were measured on equivalent workloads; the selected strategy has an evidence-backed ADR (0003, task 0.9).
@@ -695,4 +711,4 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Next implementation task:** A.4. Track exact property, presence, key and array dependencies using stable object IDs and the existing commit metadata. Replace dynamic dependency sets and verify unrelated properties remain independent. Computed values and DOM bindings follow A.5/A.6.
+**Next implementation task:** A.6. Implement declarative DOM bindings using the completed A.4 tracking graph. A.4 and A.5 are complete; this batch does not start A.6.

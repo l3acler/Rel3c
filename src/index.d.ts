@@ -1,4 +1,4 @@
-/** Experimental public lifecycle and synchronous named actions (A.3). */
+/** Experimental public lifecycle, named actions and exact observers/computed values (A.1–A.5). */
 export const VERSION: string;
 export interface FrameworkInfo {
   readonly name: string; readonly version: string; readonly phase: string;
@@ -38,11 +38,27 @@ type DispatchArgs<D> = { [K in keyof D & string]: [name: K, ...ArgsOf<D[K]>] }[k
 export type AppStatus = 'created' | 'mounting' | 'mounted' | 'disposing' | 'disposed';
 export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'dispose';
 type Cleanup<F extends () => unknown> = F & Sync<F>;
+export interface Observer<T> {
+  /** Rerun the read and replace its dependency set. */
+  read(): T;
+  readonly dirty: boolean;
+  dispose(): void;
+}
+export interface Computed<T> {
+  /** Evaluate once when dirty, otherwise return the cached value. */
+  readonly value: T;
+  readonly dirty: boolean;
+  dispose(): void;
+}
 export interface ViewContext<S, D extends Definitions<S>> {
   readonly state: DeepReadonly<S>;
   readonly actions: { readonly [K in keyof D]: (...args: ArgsOf<D[K]>) => void };
   /** Drains an outer batch synchronously; nested calls only admit queued work. */
   readonly dispatch: (...args: DispatchArgs<D>) => void;
+  observe<F extends (state: DeepReadonly<S>) => unknown, N extends () => unknown = () => void>(
+    read: F & Sync<F>, onInvalidate?: N & Sync<N>
+  ): Observer<ReturnType<F>>;
+  computed<F extends (state: DeepReadonly<S>) => unknown>(read: F & Sync<F>): Computed<ReturnType<F>>;
   onDispose<F extends () => unknown>(cleanup: Cleanup<F>): void;
 }
 export interface AppConfig<S extends object, D extends Definitions<S> = {}> {

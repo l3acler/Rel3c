@@ -48,3 +48,23 @@ app.actions.increment = () => { throw Error(); };
 createApp({ initialState: { count: 0 }, view: ({ state }) => { state.count = 1; return ''; } });
 // @ts-expect-error dispatch does not expose an action result or transaction receipt
 const receipt: { version: number } = app.actions.increment();
+// @ts-expect-error tracked state is read-only
+app.observe(state => { state.count++; });
+// @ts-expect-error computed state is read-only
+app.computed(state => { state.rows.push({ id: 'x' }); });
+// @ts-expect-error async observer reads reject
+app.observe(async state => state.count);
+// @ts-expect-error async invalidation callbacks reject
+app.observe(state => state.count, async () => {});
+// @ts-expect-error async computed reads reject
+app.computed(async state => state.count);
+const computed = app.computed(state => state.count);
+// @ts-expect-error computed values are read-only
+computed.value = 1;
+// @ts-expect-error wrong computed result type
+const text: string = computed.value;
+const observed = app.observe(state => state.name);
+// @ts-expect-error observer result types remain inferred
+const number: number = observed.read();
+// @ts-expect-error dirty is read-only
+observed.dirty = false;

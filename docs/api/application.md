@@ -1,9 +1,10 @@
-# Application lifecycle and named actions — A.3
+# Application lifecycle, named actions and reactivity — A.1–A.5
 
 Experimental public API. Implemented: owned initial state/schema registration,
 synchronous text mounting, cleanup and disposal. A.2/A.3 add production COW
 transactions, payload ownership/guards and bounded FIFO named dispatch.
-Reactive elements (A.4–A.8), events (A.9/B), routing and replay remain
+A.4/A.5 add exact observers and lazy computed values.
+Reactive elements (A.6–A.8), events (A.9/B), routing and replay remain
 unimplemented. This document describes what actually runs today.
 
 ## Run from the root
@@ -61,7 +62,9 @@ Instance properties are immutable: `version` is the framework package version;
 it is separate from the package version. `schemaVersion`, `actionNames`
 and `actions` describe registration. `status` and `mounted` expose lifecycle.
 `state` is an owned deeply frozen graph, never the caller's original object.
-It is not a reactive proxy yet. Supported data follows ADR 0002/0005. Construction
+Outside reactive reads this remains a frozen snapshot. During observer/computed
+reads it is a read-only current-state facade that tracks accessed properties.
+Supported data follows ADR 0002/0005. Construction
 guards are fixed (128 levels, 10,000 nodes, 100,000 properties/array slots,
 1,000,000 UTF-16 text/key units). A.2 applies these guards to the internal engine's
 imports, monotonic transaction growth and prospective committed graph. See
@@ -74,9 +77,9 @@ bind/derived tokens are not exported until their runtime exists. Host children,
 focus and selection are preserved. One app claims an exact target at a time;
 double-mount/target migration reject. Failed mount cleans up and may be retried.
 Disposed apps cannot mount or read `state`/`stateVersion`; construct a new app.
-`context.state` reads the latest committed snapshot, just like `app.state`.
-A saved snapshot remains unchanged after later commits. Text views run once per
-mount and do not update after actions yet. Dispatch inside a view rejects with
+`context.state` has the same snapshot/tracking behavior as `app.state`.
+A saved ordinary snapshot remains unchanged after later commits. Text views run
+once per mount and do not update after actions yet. Dispatch inside a view rejects with
 `ACTION_REENTRANT`; prepare state before mounting or dispatch afterward.
 
 ## Named synchronous actions
@@ -212,3 +215,24 @@ ACTION_QUEUE_LIMIT and PAYLOAD_INVALID/PAYLOAD_CYCLE/PAYLOAD_LIMIT/PAYLOAD_ASYNC
 Rationale: [ADR 0005](../adr/0005-application-lifecycle.md) and
 [ADR 0007](../adr/0007-named-dispatch-ordering.md).
 Verification: [A.3 evidence report](../reports/task-A.3-named-dispatch.md).
+
+## Exact subscriptions (A.4)
+
+`app.observe(read, onInvalidate?)` and `context.observe(...)` establish exact
+property/presence/key/array dependencies with an initial synchronous read.
+The returned `Observer<T>` has `read(): T`, `dirty: boolean`, and idempotent
+`dispose(): void`. Dirty transitions notify synchronously after commit; refresh
+is explicit. View resources are scoped to that mount; app resources are owned
+until disposal. See [the public guide](../../DOCUMENTATION.md#exact-reactive-observers)
+for copyable imports, current-state facades, errors and failure ordering.
+
+## Lazy computed values (A.5)
+
+`app.computed(read)` and `context.computed(read)` return a `Computed<T>` with
+read-only `value: T`, `dirty: boolean`, and idempotent `dispose(): void`.
+`read(trackedState)` first runs on value consumption and caches until dependencies
+change. Invalidation never eagerly recomputes, and dependencies through other
+computed values propagate before observer callbacks run. View resources belong
+to the mount attempt; app resources belong to the app. See the full
+[reactivity API](reactivity.md) and [public guide](../../DOCUMENTATION.md#lazy-computed-values)
+for runnable public-import examples, errors, disposal and cache semantics.

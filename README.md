@@ -2,6 +2,10 @@
 
 A standalone JavaScript frontend framework built from scratch on a **deterministic reactive runtime** for interactive browser applications.
 
+Read [DOCUMENTATION.md](DOCUMENTATION.md) for the public framework guide, runnable
+examples, lifecycle, actions, exact observers, computed values, errors and limits. It is maintained alongside every
+framework addition or change.
+
 ## Table of Contents
 
 - [Overview & Purpose](#overview--purpose)
@@ -18,12 +22,12 @@ A standalone JavaScript frontend framework built from scratch on a **determinist
 
 ## Overview & Purpose
 
-`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and A.1–A.3 lifecycle, transactions and named dispatch are complete. Reactive elements, events and routing remain later tasks.
+`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and A.1–A.5 lifecycle, transactions, named dispatch, exact dependencies and computed values are complete. Reactive elements, events and routing remain later tasks.
 
 The runtime implements named transactions; reactive rendering and deterministic
 services remain planned:
 1. **Fine-Grained Reactive Bindings (`DOM-1`, `DOM-2`)**: State properties track which exact DOM nodes or computed values depend on them. Updating one property touches only its bound DOM node, leaving unaffected nodes and browser focus untouched.
-2. **Transactional State Actions (`ACTION-1`, `STATE-1`, implemented A.3)**: Synchronous actions execute against a draft transaction view. Successful actions publish one immutable version atomically; throwing actions roll back completely without partial leakage. Reactive subscriptions follow A.4.
+2. **Transactional State Actions (`ACTION-1`, `STATE-1`, implemented A.3)**: Synchronous actions execute against a draft transaction view. Successful actions publish one immutable version atomically; throwing actions roll back completely without partial leakage. Exact subscriptions and lazy computed values are implemented in A.4/A.5.
 3. **Frame-Coalesced Rendering (`SCHED-1`)**: State mutations coalesce so that multiple commits before a render frame result in at most one latest-value DOM update per dirty binding.
 4. **Deterministic Simulation & Replay (`TIME-1`, `RECORD-1`, `REPLAY-1`)**: Simulation ticks operate on a logical clock and seeded PRNG, separating simulation rate from display refresh rate.
 
@@ -62,9 +66,10 @@ services remain planned:
   - [x] **A.1 Public Application Lifecycle**: Owned initial state/action registration, framework-called text views, mount/dispose, cleanup/error reporting and public-only root example. See [current API](docs/api/application.md), [ADR 0005](docs/adr/0005-application-lifecycle.md) and [verification](docs/reports/task-A.1-application-lifecycle.md).
   - [x] **A.2 Production Transactions**: App-owned COW store, frozen snapshots, stable IDs, aliases/arrays, atomic publication/rollback, native draft revocation and growth guards. See [ADR 0006](docs/adr/0006-production-transactions.md) and [verification/measurements](docs/reports/task-A.2-production-transactions.md).
   - [x] **A.3 Named Dispatch and Ordering**: Owned validated payloads, synchronous transactional actions, bounded FIFO queues and failure propagation. See [ADR 0007](docs/adr/0007-named-dispatch-ordering.md) and [verification](docs/reports/task-A.3-named-dispatch.md).
-  - [ ] **A.4 Exact Dependencies**: Next: property-level subscriptions and dynamic dependency sets.
+  - [x] **A.4 Exact Dependencies**: Property/presence/key/array subscriptions, aliases, dynamic branches and scope disposal.
+  - [x] **A.5 Computed Values**: Lazy caches, chained/dynamic dependencies and useful cycle errors. See [reactivity API](docs/api/reactivity.md) and [batch verification](docs/reports/task-A.4-A.5-reactivity.md).
 
-Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Reactive elements, events, routing, controlled services, recording and replay are not shipped yet.
+Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Reactive elements, events, routing, controlled services, recording and replay are not shipped yet.
 
 > [!NOTE]
 > Per the project instructions, planned features for Phases A–D (core runtime, router, deterministic ticks, replay, inspector) are currently under development or scheduled. They are not claimed as shipped until their respective acceptance gates pass.
@@ -116,9 +121,9 @@ override its location with `MINI_FRAMEWORK_CHROME_PATH`):
 npm run test:browser
 ```
 
-Current verification: 453 Node tests (31 lifecycle, 29 dispatch, 86 production
-transaction, 292 spike, 15 workload), 46 negative type lines (21 public + 25 spike),
-and 39 browser lifecycle/transaction/dispatch checks.
+Current verification: 498 Node tests (191 runtime, 292 spike, 15 workload),
+55 negative type lines (30 public + 25 spike), and 49 browser
+lifecycle/transaction/dispatch/reactivity checks.
 Type checks include the plain-JS root example and require `npm ci`. Startup and
 Node tests still need no dependency installation. Native input/IME and broad
 cross-browser qualification remain later work.
@@ -203,8 +208,7 @@ for a custom container, or pass `target` to createApp for automatic mounting.
 Targetless creation stays headless/lazy. Missing `#app` throws clearly at mount
 time and allows retry; explicit invalid targets never fall back to `#app`.
 Disposal is terminal/idempotent; failed mounts clean up and may be retried.
-Views return synchronous text/null/undefined in A.1. This proves framework-owned
-lifecycle; it is not the final element/binding renderer or full Phase A core.
+Views return synchronous text/null/undefined. This provides framework-owned lifecycle; element/binding rendering remains A.6.
 
 `createActionSchema()` registers explicit no-payload/payload modes with inferred
 types. Run named actions through public wrappers or dispatch:
@@ -233,7 +237,33 @@ action-count and aggregate payload limits. See [the implemented API](docs/api/ap
 for ordering examples, exact bounds, error observation and cleanup details.
 
 Text views still render once per mount; actions do not update DOM until reactive
-bindings exist. Dispatch inside a mounting view or payload guard rejects. The
+bindings exist. Exact observers and lazy computed values can already consume
+committed state through public APIs:
+
+```js
+import { createApp, createActionSchema } from './src/index.js';
+
+const schema = createActionSchema()(({ action }) => ({
+  increment: action(draft => { draft.count++; }),
+}));
+const app = createApp({ initialState: { count: 1 }, schema });
+const doubled = app.computed(state => state.count * 2);
+const observer = app.observe(() => doubled.value);
+app.actions.increment(); // Invalidates; doubled has not rerun.
+console.log(observer.dirty, observer.read()); // true, 4
+observer.dispose();
+doubled.dispose();
+app.dispose();
+```
+
+Observers establish dependencies with one initial read and refresh explicitly
+with `read()`. Computed values first evaluate on `.value` access and stay cached
+until dirty. Reads track exact fields, presence, keys and array structure;
+branches replace old dependencies. View-context `observe`/`computed` resources
+are disposed with their mount attempt; app resources last until disposal.
+See [the public guide](DOCUMENTATION.md#exact-reactive-observers) for current-state
+facades, error ordering and limits, and [the API reference](docs/api/reactivity.md)
+for both signatures.  Dispatch inside a mounting view or payload guard rejects. The
 raw `actions`/`seed` config sketches are not implemented. The root example commits
 its initialize action before mounting one report using public imports only.
 Browser verification also disposes that app to check owned DOM removal.
@@ -245,7 +275,7 @@ Browser verification also disposes that app to check owned DOM removal.
 ```text
 mini-framework/
 ├── AGENTS.md                  # Project rules, constraints, and work order
-├── Framework_PRD.md           # Product Requirements Document (PRD v2.4)
+├── Framework_PRD.md           # Product Requirements Document (PRD v2.5)
 ├── DEVELOPMENT_PLAN.md        # Implementation backlog and task tracking
 ├── README.md                  # Framework documentation & quickstart
 ├── package.json               # ES modules, zero runtime dependencies; dev type checker

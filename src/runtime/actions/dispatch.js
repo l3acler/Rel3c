@@ -20,7 +20,7 @@ function payloadError(error) {
   return error;
 }
 
-export function createDispatcher(store, registry, check) {
+export function createDispatcher(store, registry, check, publish = () => {}) {
   let running = false,
     preparing = false,
     children = null;
@@ -109,7 +109,7 @@ export function createDispatcher(store, registry, check) {
           children = [];
           try {
             const { run } = spec;
-            store.run((draft) => {
+            const result = store.run((draft) => {
               const result =
                 spec.input === "none" ? run(draft) : run(draft, payload);
               requireSync(
@@ -119,6 +119,9 @@ export function createDispatcher(store, registry, check) {
               );
             });
             queue.push(...children);
+            // Notification failures cannot roll back this commit or discard
+            // the successful parent's admitted children.
+            publish(result);
           } catch (error) {
             failures.push(error);
           } finally {

@@ -1,8 +1,8 @@
 
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
-**Status:** Product definition; Phase 0 decisions recorded, A.1–A.3 lifecycle, transactions and named dispatch implemented
-**Version:** 2.4
+**Status:** Product definition; Phase 0 decisions recorded, A.1–A.5 lifecycle, transactions, named dispatch, exact dependencies and computed values implemented
+**Version:** 2.5
 **Date:** 3 October 2026
 **Working name:** Undecided
 
@@ -55,7 +55,7 @@ flowchart TD
 
 ### Illustrative API
 
-**Current A.1–A.3 surface:** [ADR 0005](docs/adr/0005-application-lifecycle.md) and
+**Current A.1–A.5 surface:** [ADR 0005](docs/adr/0005-application-lifecycle.md) and
 [application API docs](docs/api/application.md) describe implemented owned
 construction, schema registration, text-only mount/dispose and cleanup/errors.
 Explicit `app.mount()` resolves the conventional `#app` container at mount time;
@@ -67,8 +67,12 @@ Named action execution and payload guards now use that store through public
 dispatch. [ADR 0007](docs/adr/0007-named-dispatch-ordering.md) specifies admission,
 FIFO ordering, parent-failure discard, sibling continuation, aggregate errors and
 batch bounds. Successful actions publish one version; failed actions publish none.
-An outer batch may throw after earlier actions committed. Mounted text views still
-render once; subscriptions and reactive rendering remain later tasks.
+An outer batch may throw after earlier actions committed. [ADR 0008](docs/adr/0008-exact-reactivity.md) defines the A.4/A.5 public
+observer/computed contracts: property/presence/key/array tracking using logical
+IDs, replacement of dynamic dependencies, lazy caches, chained invalidation,
+cycle diagnostics and scoped disposal. [Reactivity API](docs/api/reactivity.md)
+contains implemented public examples. Mounted text views still render once;
+element bindings and render batching remain A.6/A.7.
 The public APIs are experimental. Element/binding exports, events,
 routing and replay remain later acceptance gates; the candidate snippets below
 are not current runnable API examples.
