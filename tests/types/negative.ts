@@ -46,3 +46,5 @@ app.dispatch(unionName, { name: 'Ada' });
 app.actions.increment = () => { throw Error(); };
 // @ts-expect-error mounted is read-only in view context too
 createApp({ initialState: { count: 0 }, view: ({ state }) => { state.count = 1; return ''; } });
+// @ts-expect-error dispatch does not expose an action result or transaction receipt
+const receipt: { version: number } = app.actions.increment();

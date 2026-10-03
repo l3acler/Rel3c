@@ -115,22 +115,22 @@
 <body>
   <div class="container">
     <header>
-      <span class="badge" id="app-badge">Phase A.2</span>
-      <h1 id="app-title">mini-framework Application Lifecycle</h1>
-      <p id="app-subtitle">Owned state, framework-called text view, mount and disposal. No third-party runtime
+      <span class="badge" id="app-badge">Phase A.3</span>
+      <h1 id="app-title">mini-framework Named Actions</h1>
+      <p id="app-subtitle">Owned state, synchronous named actions, framework-called text view and disposal. No third-party runtime
         dependencies.</p>
     </header>
 
     <div class="card">
-      <h2>Public Lifecycle Report</h2>
-      <p id="app-status">The module below calls <code>app.mount()</code> to display this report in
+      <h2>Public Application Report</h2>
+      <p id="app-status">The module below commits its initialize action, then calls <code>app.mount()</code> to display this report in
         <code>#app</code> using <code id="import-path">/src/index.js</code>.</p>
       <pre id="app"></pre>
     </div>
 
     <div class="card">
       <h2>What Comes Next</h2>
-      <p>The internal transaction engine is ready. Public action execution follows in A.3. Reactive elements,
+      <p>Named actions and bounded FIFO dispatch are ready. Dependency tracking, reactive elements,
         events and keyed lists follow later in Phase A. Routing is Phase B;
         deterministic services, recording and replay are Phase C.</p>
     </div>

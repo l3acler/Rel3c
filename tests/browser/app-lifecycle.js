@@ -43,7 +43,7 @@ window.runAppLifecycleTests = async () => {
     throws(() => a.mount(), 'APP_DISPOSED');
   });
   await test('public browser-native module exports current lifecycle metadata', () => {
-    assert(FRAMEWORK_INFO.phase.startsWith('A.2')); assert(Object.isFrozen(FRAMEWORK_INFO));
+    assert(FRAMEWORK_INFO.phase.startsWith('A.3')); assert(Object.isFrozen(FRAMEWORK_INFO));
     assert(typeof createActionSchema === 'function' && typeof FrameworkError === 'function');
   });
   await test('lazy create, explicit mount, terminal/idempotent dispose', () => {
@@ -123,19 +123,89 @@ window.runAppLifecycleTests = async () => {
     const app = createApp({ target: first, view: () => 'owned' }); second.appendChild(first.firstChild); app.dispose();
     assert(second.childNodes.length === 1 && second.firstChild === other); first.remove(); second.remove();
   });
-  await test('registered action wrappers are inert until A.3 and names are owned', () => {
+  await test('registered action wrappers execute synchronous commits and names are owned', () => {
     let calls = 0; const schema = createActionSchema({ version: 'test/1' })(({ action }) => ({
       increment: action(() => { calls++; }),
     }));
     const app = createApp({ schema }); assert(app.schemaVersion === 'test/1' && app.actionNames[0] === 'increment');
-    throws(() => app.actions.increment(), 'FEATURE_UNAVAILABLE'); throws(() => app.dispatch('missing'), 'ACTION_UNKNOWN');
-    assert(calls === 0 && app.stateVersion === 1); app.dispose(); throws(() => app.actions.increment(), 'APP_DISPOSED');
+    assert(app.actions.increment() === undefined); throws(() => app.dispatch('missing'), 'ACTION_UNKNOWN');
+    assert(calls === 1 && app.stateVersion === 2); app.dispose(); throws(() => app.actions.increment(), 'APP_DISPOSED');
   });
   await test('schema shared by apps does not share stores or disposal', () => {
     const schema = createActionSchema()(({ action }) => ({ run: action(() => {}) })); const initialState = { count: 0 };
     const a = createApp({ schema, initialState }); const b = createApp({ schema, initialState });
     assert(a.state !== b.state && a.actions !== b.actions); a.dispose();
-    assert(b.state.count === 0); throws(() => b.actions.run(), 'FEATURE_UNAVAILABLE'); b.dispose();
+    assert(b.state.count === 0); b.actions.run(); assert(b.stateVersion === 2); b.dispose();
+  });
+  await test('public action rollback preserves committed snapshots, text, native focus and selection', () => {
+    const target = host(); const input = document.createElement('input'); input.value = 'native'; target.appendChild(input);
+    input.focus(); input.setSelectionRange(1, 4); let context, draft;
+    const schema = createActionSchema()(({ action }) => ({
+      increment: action(state => { state.n++; }),
+      fail: action(state => { draft = state; state.n++; throw new Error('rollback'); }),
+    }));
+    const app = createApp({ target, schema, initialState: { n: 0 }, view(received) { context = received; return String(received.state.n); } });
+    const snapshot = app.state, text = target.lastChild; context.actions.increment();
+    assert(context.state.n === 1 && snapshot.n === 0 && app.stateVersion === 2);
+    let failed = false; try { app.actions.fail(); } catch (error) { failed = error.message === 'rollback'; }
+    let revoked = false; try { draft.n++; } catch (error) { revoked = error instanceof TypeError; }
+    assert(failed && revoked && app.state.n === 1 && app.stateVersion === 2);
+    assert(target.lastChild === text && text.data === '0' && document.activeElement === input && input.selectionStart === 1 && input.selectionEnd === 4);
+    app.dispose(); assert(target.firstChild === input); target.remove();
+  });
+  await test('public payload admission copies aliases and sparse arrays without invoking unsupported getters', () => {
+    let calls = 0, gets = 0, captured; const shared = { n: -0 }, rows = new Array(3); rows[1] = shared;
+    const payload = { a: shared, b: shared, rows };
+    const schema = createActionSchema()(({ action }) => ({ put: action(value => {
+      assert(Object.isFrozen(value.a) && value.a === value.b && value.rows[1] === value.a && !(0 in value.rows)); return true;
+    }, (draft, value) => { calls++; captured = value; draft.saved = value; }) }));
+    const app = createApp({ schema }); app.actions.put(payload); shared.n = 9;
+    assert(captured !== payload && Object.is(app.state.saved.a.n, -0) && !Object.isFrozen(shared));
+    const bad = Object.defineProperty({}, 'value', { enumerable: true, get() { gets++; return 1; } });
+    throws(() => app.actions.put(bad), 'PAYLOAD_INVALID'); throws(() => app.actions.put(), 'ACTION_ARITY');
+    assert(gets === 0 && calls === 1 && app.stateVersion === 2); app.dispose();
+  });
+  await test('public FIFO dispatch commits parent before children and runs grandchildren after siblings', () => {
+    const schema = createActionSchema()(({ action }) => ({
+      root: action(draft => { draft.rows.push('root'); app.actions.a(); app.actions.b(); assert(app.state.rows.length === 0); }),
+      a: action(draft => { assert(app.stateVersion === 2); draft.rows.push('a'); app.actions.c(); }),
+      b: action(draft => { draft.rows.push('b'); }), c: action(draft => { draft.rows.push('c'); }),
+    }));
+    const app = createApp({ schema, initialState: { rows: [] } }); app.actions.root();
+    assert(app.state.rows.join(',') === 'root,a,b,c' && app.stateVersion === 5); app.dispose();
+  });
+  await test('failed public children discard descendants, continue siblings and report after draining', () => {
+    let descendant = false, reports = 0;
+    const schema = createActionSchema()(({ action }) => ({
+      root: action(draft => { draft.n++; app.actions.bad(); app.actions.good(); }),
+      bad: action(draft => { draft.n++; app.actions.descendant(); throw new Error('child'); }),
+      good: action(draft => { draft.n++; }), descendant: action(() => { descendant = true; }),
+    }));
+    const app = createApp({ schema, initialState: { n: 0 }, onError(error, info) {
+      reports++; assert(error.message === 'child' && info.phase === 'dispatch' && app.state.n === 2 && app.stateVersion === 3);
+    } });
+    let failed = false; try { app.actions.root(); } catch (error) { failed = error.message === 'child'; }
+    assert(failed && reports === 1 && !descendant); app.dispose();
+  });
+  await test('public illegal async actions reject atomically and revoke post-await mutation', async () => {
+    let lateError, thenCalls = 0; const schema = createActionSchema()(({ action }) => ({
+      bad: action(async draft => { draft.n++; await Promise.resolve(); try { draft.n++; } catch (error) { lateError = error; } throw new Error('late'); }),
+      masked: action(draft => {
+        draft.n++; return Object.defineProperty(Promise.reject(new Error('masked')), 'then', { value: undefined });
+      }),
+      guard: action(() => ({ then() { thenCalls++; } }), draft => { draft.n++; }),
+    }));
+    const app = createApp({ schema, initialState: { n: 0 } }); throws(() => app.actions.bad(), 'ACTION_ASYNC');
+    throws(() => app.actions.masked(), 'ACTION_ASYNC'); throws(() => app.actions.guard(null), 'PAYLOAD_ASYNC');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert(lateError instanceof TypeError && thenCalls === 0 && app.state.n === 0 && app.stateVersion === 1); app.dispose();
+  });
+  await test('public self-dispatch has a batch bound and recovers for a later call', () => {
+    const schema = createActionSchema()(({ action }) => ({
+      loop: action(draft => { draft.n++; app.actions.loop(); }), good: action(draft => { draft.n++; }),
+    }));
+    const app = createApp({ schema, initialState: { n: 0 } }); throws(() => app.actions.loop(), 'ACTION_QUEUE_LIMIT');
+    assert(app.state.n === 1023 && app.stateVersion === 1024); app.actions.good(); assert(app.state.n === 1024); app.dispose();
   });
   await test('view mutation fails before publishing text', () => {
     const target = host(); const app = createApp({ initialState: { count: 0 }, view({ state }) { state.count++; return ''; } });

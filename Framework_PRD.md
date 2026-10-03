@@ -1,9 +1,9 @@
 
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
-**Status:** Product definition; Phase 0 decisions recorded, A.1 lifecycle and A.2 internal transactions implemented
-**Version:** 2.3
-**Date:** 2 October 2026
+**Status:** Product definition; Phase 0 decisions recorded, A.1–A.3 lifecycle, transactions and named dispatch implemented
+**Version:** 2.4
+**Date:** 3 October 2026
 **Working name:** Undecided
 
 ## 1. Product overview
@@ -55,7 +55,7 @@ flowchart TD
 
 ### Illustrative API
 
-**Current A.1 surface:** [ADR 0005](docs/adr/0005-application-lifecycle.md) and
+**Current A.1–A.3 surface:** [ADR 0005](docs/adr/0005-application-lifecycle.md) and
 [application API docs](docs/api/application.md) describe implemented owned
 construction, schema registration, text-only mount/dispose and cleanup/errors.
 Explicit `app.mount()` resolves the conventional `#app` container at mount time;
@@ -63,7 +63,13 @@ custom Element targets remain supported, and targetless creation stays lazy.
 The app now owns the A.2 production COW store; [ADR 0006](docs/adr/0006-production-transactions.md)
 defines transaction revocation, successful no-op version publication and bounded
 state/scratch growth. The engine is internal, not a public mutation escape hatch.
-The public APIs are experimental. Named action execution, element/binding exports, events,
+Named action execution and payload guards now use that store through public
+dispatch. [ADR 0007](docs/adr/0007-named-dispatch-ordering.md) specifies admission,
+FIFO ordering, parent-failure discard, sibling continuation, aggregate errors and
+batch bounds. Successful actions publish one version; failed actions publish none.
+An outer batch may throw after earlier actions committed. Mounted text views still
+render once; subscriptions and reactive rendering remain later tasks.
+The public APIs are experimental. Element/binding exports, events,
 routing and replay remain later acceptance gates; the candidate snippets below
 are not current runnable API examples.
 

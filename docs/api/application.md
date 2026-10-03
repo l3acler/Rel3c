@@ -1,8 +1,9 @@
-# Application lifecycle — A.1
+# Application lifecycle and named actions — A.3
 
 Experimental public API. Implemented: owned initial state/schema registration,
-synchronous text mounting, cleanup and disposal. A.2 adds an internal production
-COW store; named dispatch execution (A.3), reactive elements (A.4–A.8), events (A.9/B), routing and replay remain
+synchronous text mounting, cleanup and disposal. A.2/A.3 add production COW
+transactions, payload ownership/guards and bounded FIFO named dispatch.
+Reactive elements (A.4–A.8), events (A.9/B), routing and replay remain
 unimplemented. This document describes what actually runs today.
 
 ## Run from the root
@@ -56,7 +57,8 @@ keys/accessors/symbol keys reject. The placeholder's `actions`/`seed` options
 are not implemented; do not treat planned PRD sketches as current examples.
 
 Instance properties are immutable: `version` is the framework package version;
-`stateVersion` still stays 1 while public dispatch is unavailable, not the package version; `schemaVersion`, `actionNames`
+`stateVersion` starts at 1 and advances once per successful action, including no-ops;
+it is separate from the package version. `schemaVersion`, `actionNames`
 and `actions` describe registration. `status` and `mounted` expose lifecycle.
 `state` is an owned deeply frozen graph, never the caller's original object.
 It is not a reactive proxy yet. Supported data follows ADR 0002/0005. Construction
@@ -72,8 +74,12 @@ bind/derived tokens are not exported until their runtime exists. Host children,
 focus and selection are preserved. One app claims an exact target at a time;
 double-mount/target migration reject. Failed mount cleans up and may be retried.
 Disposed apps cannot mount or read `state`/`stateVersion`; construct a new app.
+`context.state` reads the latest committed snapshot, just like `app.state`.
+A saved snapshot remains unchanged after later commits. Text views run once per
+mount and do not update after actions yet. Dispatch inside a view rejects with
+`ACTION_REENTRANT`; prepare state before mounting or dispatch afterward.
 
-## Action registration without execution
+## Named synchronous actions
 
 ```js
 import { createApp, createActionSchema } from './src/index.js';
@@ -87,15 +93,78 @@ const schema = createActionSchema({ version: 'counter/1' })(({ action }) => ({
 }));
 const app = createApp({ initialState: { count: 0 }, schema });
 console.log(app.actionNames); // ['increment', 'setCount']
-// app.actions.increment() / app.dispatch('increment') throw FEATURE_UNAVAILABLE.
-// No registered action body runs and no version is committed through the public API yet.
+app.actions.increment(); // equivalent to app.dispatch('increment')
+console.log(app.state.count, app.stateVersion); // 1, 2
+app.dispatch('setCount', 10);
+console.log(app.state.count, app.stateVersion); // 10, 3
 app.dispose();
 ```
 
 No-payload/payload modes are explicit, never inferred from function.length. The
 schema builder/specs/names/versions are validated; public metadata does not expose
-callbacks. Each app owns a registry copy. Payload copying/guard execution, named
-transactions and nested queues are A.3, not simulated by registration.
+callbacks. Each app owns a registry and store. Use zero arguments for `action(run)`
+and exactly one for `action(validate, run)`; an explicit `undefined` counts as a
+payload. Unknown names and wrong arity reject before any guard or body runs.
+
+Payloads support the same acyclic data types as state, plus primitive roots.
+The runtime copies and deeply freezes the graph before the guard, preserving
+aliases, distinct identities, array holes, custom enumerable properties and
+null prototypes. Caller data stays mutable. Accessors, symbols, unsupported
+native values/prototypes, cycles and excessive graphs reject before the guard.
+Guards must be pure and synchronous, return exactly `true`, and cannot dispatch
+or change lifecycle. False/truthy non-booleans and throwing guards reject. A
+throwing guard becomes `PAYLOAD_INVALID` with its original `cause`.
+
+Bodies receive `(draft)` or `(draft, ownedPayload)` with no bound `this`. Only the
+draft exposes in-progress writes; app/context state reads still see the previous
+complete version. Bodies must be synchronous. A throw, Promise/thenable return
+or invalid final state rolls back and revokes the draft; success commits once
+and revokes it too. Action return values are ignored, and both dispatch forms
+return `undefined`. Keep async effects outside actions and dispatch their results
+as supported payloads. Do not read ambient layout/storage/time/random values
+inside actions. Controlled services, input adapters and recording are Phase C;
+replay is not available yet. Arbitrary external side effects cannot be undone.
+
+## Nested dispatch and failures
+
+```js
+const schema = createActionSchema()(({ action }) => ({
+  parent: action(draft => {
+    draft.order.push('parent');
+    app.actions.first(); // validates/adopts now; body waits for parent commit
+    app.actions.second();
+  }),
+  first: action(draft => { draft.order.push('first'); app.actions.last(); }),
+  second: action(draft => { draft.order.push('second'); }),
+  last: action(draft => { draft.order.push('last'); }),
+}));
+const app = createApp({ initialState: { order: [] }, schema });
+app.actions.parent(); // synchronously drains the whole batch
+console.log(app.state.order); // ['parent', 'first', 'second', 'last']
+console.log(app.stateVersion); // 5
+app.dispose();
+```
+
+Nested calls validate and capture payloads at admission and return before the
+queued body runs. A parent may catch an admission error and continue. Its queued
+children join the FIFO tail only after it commits; if it fails, they are discarded.
+A failing child also discards its own children. Previously committed actions
+remain committed and queued siblings continue. After the queue drains, the outer
+call throws the single failure, or an `AggregateError` containing multiple failures
+in execution order. Non-Error throws normalize at the outer lifecycle error boundary.
+An outer call can therefore throw after earlier actions succeeded. Catching a
+nested call catches admission errors, not its later execution errors. `onError`
+observes the terminal batch error once, after draining.
+
+A batch admits at most 1,024 actions including its root. Aggregate admitted payload
+usage is bounded by 10,000 nodes, 100,000 enumerable entries, 100,000 array slots
+and 1,000,000 UTF-16 text/key units; each payload has at most 128 object levels.
+Consumed/discarded requests do not refund charges; failed admission does not charge.
+A new outer call gets a fresh budget. These conservative limits bound framework
+retention/work, not exact heap bytes or callback CPU. A bound failure behaves like
+any other admission failure: catching it permits safe parent work; propagating it
+aborts that parent. Self-dispatch reaches the bound without recursive body execution.
+Mount/dispose during a batch and dispatch during guards/views/error reporting reject.
 
 For TypeScript, bind state once: `createActionSchema<State>()(...)`. Use a type
 predicate payload guard (`(value: unknown): value is Payload => ...`) for payload
@@ -103,8 +172,8 @@ inference. Dispatch names/arguments are correlated and state is deeply read-only
 Public type fixtures and the native checked-JS example run with `npm run test:types`
 after `npm ci`; no application code is emitted. Types do not validate prototypes,
 finiteness or imported values, and `void`/`any` can hide async callbacks. Runtime
-validation must remain independent. Dispatch currently returns `never` because
-execution is intentionally unavailable; declarations are not a stable API freeze.
+validation must remain independent. Dispatch returns `void` in declarations;
+the experimental surface is not a stable API freeze.
 
 ## Cleanup and errors
 
@@ -130,14 +199,16 @@ swallow them. Config validation before a valid observer exists and property/scop
 access errors throw directly. FrameworkError exposes a code and readable message;
 view failures preserve their original `cause`. Observer failures aggregate with
 the original error; recursive reporting does not repeatedly invoke the observer.
-Illegal same-realm native Promise returns from views/cleanup/observers are
+Illegal same-realm native Promise returns from actions/guards/views/cleanup/observers are
 observed for rejection, not cancelled. Arbitrary callback side effects are not
 rolled back. Caller-held old snapshots remain caller-held after app disposal.
 
 Common codes: CONFIG_INVALID, STATE_INVALID/STATE_CYCLE/STATE_LIMIT, SCHEMA_INVALID,
 TARGET_INVALID/TARGET_OWNED, APP_MOUNTED/APP_DISPOSED, SCOPE_DISPOSED,
 VIEW_FAILED/VIEW_RESULT_INVALID, CLEANUP_INVALID/CLEANUP_ASYNC,
-LIFECYCLE_REENTRANT, ACTION_UNKNOWN and FEATURE_UNAVAILABLE.
+LIFECYCLE_REENTRANT, ACTION_UNKNOWN/ACTION_ARITY/ACTION_ASYNC/ACTION_REENTRANT,
+ACTION_QUEUE_LIMIT and PAYLOAD_INVALID/PAYLOAD_CYCLE/PAYLOAD_LIMIT/PAYLOAD_ASYNC.
 
-Rationale: [ADR 0005](../adr/0005-application-lifecycle.md).
-Verification: [A.1 evidence report](../reports/task-A.1-application-lifecycle.md).
+Rationale: [ADR 0005](../adr/0005-application-lifecycle.md) and
+[ADR 0007](../adr/0007-named-dispatch-ordering.md).
+Verification: [A.3 evidence report](../reports/task-A.3-named-dispatch.md).

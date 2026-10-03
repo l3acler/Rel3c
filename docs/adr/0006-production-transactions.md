@@ -3,6 +3,10 @@
 Status: accepted and implemented for A.2. Internal runtime contract, not a new
 public transaction API or completed Phase A vertical slice.
 
+A.3 follow-up: [ADR 0007](0007-named-dispatch-ordering.md) now integrates public
+named dispatch, payload guards and FIFO queues with this internal store. Statements
+below describing A.3 as future work record the A.2 milestone boundary.
+
 Date: 2026-10-02 (Bahrain). Sources: Framework_PRD.md §3/§4/§5; ACTION-1,
 STATE-1/STATE-2; A.2; ADRs 0002/0003/0005.
 

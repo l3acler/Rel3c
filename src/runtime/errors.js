@@ -20,9 +20,10 @@ export function observePromise(value) {
 export function requireSync(value, code, message) {
   observePromise(value);
   if (
-    value &&
-    (typeof value === "object" || typeof value === "function") &&
-    typeof value.then === "function"
+    value instanceof Promise ||
+    (value &&
+      (typeof value === "object" || typeof value === "function") &&
+      typeof value.then === "function")
   )
     fail(code, message);
 }

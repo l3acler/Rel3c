@@ -219,7 +219,7 @@ test('dispose aborts active work, revokes drafts, releases state and makes the s
     assert.throws(method, code('STORE_DISPOSED'));
   assert.throws(() => tx.draft.x, revoked);
 });
-test('internal transactions are not a public mutation escape hatch before A.3', () => {
+test('internal transactions are not a public mutation escape hatch', () => {
   assert.equal(publicApi.createTransactionStore, undefined);
   const app = publicApi.createApp({ initialState: { n: 0 } });
   assert.equal(app.begin, undefined); assert.equal(app.run, undefined); assert.equal(app.store, undefined);

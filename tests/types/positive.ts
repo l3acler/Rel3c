@@ -10,8 +10,8 @@ const initialState: State = { count: 0, name: 'Ada', rows: [] };
 const app = createApp({ schema, initialState,
   view({ state, actions, dispatch, onDispose }) {
     const count: number = state.count;
-    const noPayload: () => never = actions.increment;
-    const payload: (value: DeepReadonly<{ name: string }>) => never = actions.rename;
+    const noPayload: () => void = actions.increment;
+    const payload: (value: DeepReadonly<{ name: string }>) => void = actions.rename;
     const named: typeof app.dispatch = dispatch;
     onDispose(() => {}); void noPayload; void payload; void named;
     return String(count);
@@ -38,3 +38,7 @@ type NoPayloadInference = Expect<Equal<Parameters<typeof app.actions.increment>,
 type PayloadInference = Expect<Equal<Parameters<typeof app.actions.rename>, [payload: DeepReadonly<{ name: string }> ]>>;
 type NameInference = Expect<Equal<typeof app.actionNames[number], 'increment' | 'rename'>>;
 type InferredState = Expect<Equal<typeof inferred.state.label, string>>;
+type DispatchReturn = Expect<Equal<ReturnType<typeof app.dispatch>, void>>;
+const completed: void = app.actions.increment();
+app.dispatch('rename', { name: 'Grace' });
+void completed;

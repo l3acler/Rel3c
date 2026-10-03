@@ -338,7 +338,7 @@ test("schemas register explicit modes, own names, frozen metadata and safe proto
     () => a.actions.__proto__(),
     () => a.dispatch("constructor", 1),
   ])
-    assert.throws(call, code("FEATURE_UNAVAILABLE"));
+    assert.equal(call(), undefined);
   assert.throws(() => a.dispatch("toString"), code("ACTION_UNKNOWN"));
   assert.throws(
     () =>
@@ -349,10 +349,11 @@ test("schemas register explicit modes, own names, frozen metadata and safe proto
       }),
     code("ACTION_UNKNOWN"),
   );
-  assert.equal(executed, 0);
+  assert.equal(executed, 2);
   a.dispose();
   assert.throws(() => a.actions.__proto__(), code("APP_DISPOSED"));
-  assert.throws(() => b.actions.__proto__(), code("FEATURE_UNAVAILABLE"));
+  b.actions.__proto__();
+  assert.equal(b.stateVersion, 2);
   b.dispose();
 });
 test("schema validation rejects forged/accessor definitions and invalid helper/options", () => {
@@ -578,8 +579,8 @@ test("onError observes operation failures without swallowing them or duplicate r
       return "";
     },
   });
-  assert.throws(() => app.mount(host()), code("FEATURE_UNAVAILABLE"));
-  assert.deepEqual(observed, [["FEATURE_UNAVAILABLE", "dispatch", true]]);
+  assert.throws(() => app.mount(host()), code("ACTION_REENTRANT"));
+  assert.deepEqual(observed, [["ACTION_REENTRANT", "dispatch", true]]);
   assert.equal(app.status, "created");
   app.dispose();
   assert.throws(

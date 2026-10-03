@@ -2,6 +2,7 @@ import { FrameworkError, fail, observePromise, requireSync } from "./errors.js";
 import { readRecord } from "./records.js";
 import { createTransactionStore } from "./state/transactions.js";
 import { createActionSchema, ownActionRegistry } from "./actions/schema.js";
+import { createDispatcher } from "./actions/dispatch.js";
 
 const targets = new WeakMap();
 const emptySchema = createActionSchema()(() => ({}));
@@ -21,9 +22,12 @@ export function createApplication(config, frameworkVersion) {
   ) {
     fail("CONFIG_INVALID", "view and optional onError must be functions.");
   }
-  const reported = new WeakSet();
+  let reported = new WeakSet();
   let reporting = false;
+  let dispatcher;
   function report(error, phase) {
+    // Defer callback invocation until the outer dispatch drains committed work.
+    if (dispatcher?.isActive()) throw error;
     if (!(error instanceof Error))
       error = new FrameworkError("OPERATION_FAILED", `${phase} failed.`, {
         cause: error,
@@ -105,16 +109,25 @@ export function createApplication(config, frameworkVersion) {
     }
     return errors;
   }
-  function dispatch(name) {
+  dispatcher = createDispatcher(store, registry, () => {
+    live();
+    if (status === "mounting" || reporting)
+      fail(
+        "ACTION_REENTRANT",
+        "Cannot dispatch during view mounting or error reporting.",
+      );
+  });
+  function dispatch(...args) {
+    const nested = dispatcher?.isActive();
+    // Deduplicate propagation within this operation, not future batches that
+    // happen to throw the same application Error instance.
+    if (!nested && status !== "mounting" && !reporting)
+      reported = new WeakSet();
     try {
       live();
-      if (typeof name !== "string" || !registry.has(name))
-        fail("ACTION_UNKNOWN", "Unknown registered action name.");
-      fail(
-        "FEATURE_UNAVAILABLE",
-        "Named action execution is not implemented yet; the internal transaction store is ready and public dispatch follows in A.3.",
-      );
+      return dispatcher.dispatch(...args);
     } catch (error) {
+      if (nested) throw error;
       report(error, "dispatch");
     }
   }
@@ -151,6 +164,11 @@ export function createApplication(config, frameworkVersion) {
     mount(mountTarget = defaultTarget) {
       try {
         live();
+        if (dispatcher.isActive())
+          fail(
+            "LIFECYCLE_REENTRANT",
+            "Cannot mount during action dispatch or payload validation.",
+          );
         if (status !== "created")
           fail("APP_MOUNTED", "Application is already mounted or mounting.");
         if (mountTarget === undefined) {
@@ -175,7 +193,10 @@ export function createApplication(config, frameworkVersion) {
       const attemptCleanups = [];
       mountCleanups = attemptCleanups;
       const context = Object.freeze({
-        state: store.getState(),
+        get state() {
+          live();
+          return store.getState();
+        },
         actions,
         dispatch,
         onDispose(cleanup) {
@@ -241,11 +262,11 @@ export function createApplication(config, frameworkVersion) {
     },
     dispose() {
       if (status === "disposed" || status === "disposing") return;
-      if (status === "mounting")
+      if (status === "mounting" || dispatcher.isActive())
         report(
           new FrameworkError(
             "LIFECYCLE_REENTRANT",
-            "Cannot dispose during view mounting.",
+            "Cannot dispose during view mounting, action dispatch or payload validation.",
           ),
           "dispose",
         );
@@ -265,6 +286,7 @@ export function createApplication(config, frameworkVersion) {
       node = null;
       store.dispose();
       store = null;
+      dispatcher = null;
       registry.clear();
       registry = null;
       view = null;

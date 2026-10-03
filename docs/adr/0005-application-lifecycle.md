@@ -6,7 +6,10 @@ Phase A core or stable release.
 A.2 follow-up: the owned initial store is now backed by the production COW engine.
 [ADR 0006](0006-production-transactions.md) supersedes the initial-only guard
 limitation below with transaction growth/commit validation. A.1 evidence remains
-historical; public action execution still waits for A.3.
+historical. A.3 now executes named actions; [ADR 0007](0007-named-dispatch-ordering.md)
+supersedes the unavailable-dispatch/never-return policy below and makes retained
+view-context state getters read the latest committed snapshot. Text views still
+run once per mount; dispatch during mounting rejects.
 
 Date: 2026-10-02 (Bahrain). Sources: Framework_PRD.md §3/§7, LIFE-1/PACK-1/TECH-1;
 development task A.1; ADRs 0001–0004.

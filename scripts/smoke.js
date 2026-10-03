@@ -46,6 +46,13 @@ async function runSmoke() {
   const app = framework.createApp({ initialState: { ready: true } });
   assert.equal(app.status, 'created'); assert.equal(app.state.ready, true);
   app.dispose(); assert.equal(app.status, 'disposed');
+  const schema = framework.createActionSchema()(({ action }) => ({
+    set: action(value => typeof value === 'boolean', (draft, value) => { draft.ready = value; }),
+  }));
+  const actionable = framework.createApp({ initialState: { ready: false }, schema });
+  actionable.actions.set(true);
+  assert.equal(actionable.state.ready, true); assert.equal(actionable.stateVersion, 2);
+  actionable.dispose();
   console.log(`[smoke]    Public exports OK (v${framework.VERSION})`);
 
   // 2. Start dev server on ephemeral port (0 lets OS assign free port)
@@ -100,7 +107,7 @@ async function runSmoke() {
     );
     console.log('[smoke]    src/index.js served successfully');
 
-    for (const module of ['app.js', 'errors.js', 'records.js', 'actions/schema.js', 'state/initial-state.js',
+    for (const module of ['app.js', 'errors.js', 'records.js', 'actions/schema.js', 'actions/dispatch.js', 'state/initial-state.js',
       'state/transactions.js', 'state/data.js', 'state/draft.js', 'state/graph.js']) {
       const response = await fetchUrl(`${base}/src/runtime/${module}`);
       assert.equal(response.statusCode, 200, 'Runtime module must be served: ' + module);
@@ -110,7 +117,7 @@ async function runSmoke() {
     assert.ok(mainJsRes.body.includes('app.mount()'), 'Example must use default public mounting');
     assert.ok(!mainJsRes.body.includes('innerHTML') && !mainJsRes.body.includes('addEventListener'),
       'Example consumes public lifecycle without manual DOM/event behavior');
-    console.log('[smoke]    A.1/A.2 lifecycle/transaction modules and public-only example OK');
+    console.log('[smoke]    A.1–A.3 lifecycle/dispatch modules and public-only example OK');
 
     console.log('\n[smoke] ALL SMOKE CHECKS PASSED.');
   } finally {

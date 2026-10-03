@@ -1,4 +1,4 @@
-/** Experimental public lifecycle backed by A.2's internal store; dispatch throws until A.3. */
+/** Experimental public lifecycle and synchronous named actions (A.3). */
 export const VERSION: string;
 export interface FrameworkInfo {
   readonly name: string; readonly version: string; readonly phase: string;
@@ -40,8 +40,9 @@ export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'dispose';
 type Cleanup<F extends () => unknown> = F & Sync<F>;
 export interface ViewContext<S, D extends Definitions<S>> {
   readonly state: DeepReadonly<S>;
-  readonly actions: { readonly [K in keyof D]: (...args: ArgsOf<D[K]>) => never };
-  readonly dispatch: (...args: DispatchArgs<D>) => never;
+  readonly actions: { readonly [K in keyof D]: (...args: ArgsOf<D[K]>) => void };
+  /** Drains an outer batch synchronously; nested calls only admit queued work. */
+  readonly dispatch: (...args: DispatchArgs<D>) => void;
   onDispose<F extends () => unknown>(cleanup: Cleanup<F>): void;
 }
 export interface AppConfig<S extends object, D extends Definitions<S> = {}> {
