@@ -109,9 +109,10 @@ reject further creation with `SCOPE_DISPOSED`. Application disposal stops the
 graph before user/view cleanup, with no reactive callbacks during shutdown.
 Read/dirty/value access after resource disposal rejects `SCOPE_DISPOSED`.
 
-These APIs add subscriptions and derivations; text views still run once per
-mount. No DOM bindings, render scheduling, events, routing, recording or replay
-are introduced by this batch. State/type/transaction limits are unchanged. The
-coordinator indexes the current graph on commits and stores live subscriptions;
-this is correctness evidence, not a measured performance improvement or heap
-leak proof.
+Declarative DOM bindings use these subscriptions to update exact targets on render
+frames; `app.flush()` drains pending visual work. Root views still construct once;
+conditional child scopes own their observers/computed values. See [DOM API](dom.md).
+Events, routing, recording and replay remain unimplemented. State/type/transaction
+limits are unchanged. The coordinator indexes the current graph on commits and
+stores live subscriptions; this is correctness evidence, not a measured performance
+improvement or heap leak proof.

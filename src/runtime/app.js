@@ -4,6 +4,9 @@ import { createTransactionStore } from "./state/transactions.js";
 import { createActionSchema, ownActionRegistry } from "./actions/schema.js";
 import { createDispatcher } from "./actions/dispatch.js";
 import { createTracking } from "./reactivity/tracking.js";
+import { createBindings, derive as binding } from "./dom/bindings.js";
+import { when } from "./dom/nodes.js";
+import { createRenderer } from "./dom/renderer.js";
 
 const targets = new WeakMap();
 const emptySchema = createActionSchema()(() => ({}));
@@ -76,10 +79,13 @@ export function createApplication(config, frameworkVersion) {
   config = null; // Do not retain caller state/schema/config through app closures.
   let status = "created";
   let target = null;
-  let node = null;
+  let renderer = null;
+  let rendering = false;
   let mountCleanups = [];
   const appCleanups = [];
   const tracking = createTracking(store);
+  const bindingOwner = Object.freeze({});
+  const bind = createBindings(bindingOwner, live);
   function live() {
     if (status === "disposed" || status === "disposing")
       fail(
@@ -113,12 +119,66 @@ export function createApplication(config, frameworkVersion) {
   }
   dispatcher = createDispatcher(store, registry, () => {
     live();
-    if (status === "mounting" || reporting || tracking.isBusy())
+    if (status === "mounting" || reporting || rendering || tracking.isBusy())
       fail(
         "ACTION_REENTRANT",
         "Cannot dispatch during view mounting, reactive reads/notifications or error reporting.",
       );
-  }, tracking.publish);
+  }, result => {
+    const errors = [];
+    try { tracking.publish(result); } catch (error) { errors.push(error); }
+    try { renderer?.schedule(); } catch (error) { errors.push(error); }
+    if (errors.length === 1) throw errors[0];
+    if (errors.length) throw new AggregateError(errors, "Notifications/scheduling failed after commit.");
+  });
+  function render(run) {
+    const previous = rendering;
+    rendering = true;
+    try { return run(); } finally { rendering = previous; }
+  }
+  function flush() {
+    if (!rendering && !reporting && !dispatcher?.isActive() && !tracking.isBusy()) reported = new WeakSet();
+    try {
+      live();
+      if (status === "mounting" || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
+        fail("FLUSH_REENTRANT", "Cannot flush during mounting, dispatch, rendering, reactive reads/notifications or error reporting.");
+      render(() => renderer?.flush());
+    } catch (error) { report(error, "render"); }
+  }
+  function derive(read) {
+    live();
+    return binding(read, bindingOwner);
+  }
+  function makeContext(addCleanup, isActive) {
+    const scopeLive = () => {
+      if (!isActive()) fail("SCOPE_DISPOSED", "This view scope is no longer active.");
+      live();
+    };
+    return Object.freeze({
+      get state() { live(); return tracking.state(); },
+      get bind() { scopeLive(); return bind; },
+      actions, dispatch,
+      derive(read) { scopeLive(); return derive(read); },
+      when,
+      observe(read, notify) {
+        scopeLive();
+        const resource = observe(read, notify);
+        addCleanup(resource.dispose);
+        return resource;
+      },
+      computed(read) {
+        scopeLive();
+        const resource = computed(read);
+        addCleanup(resource.dispose);
+        return resource;
+      },
+      onDispose(cleanup) {
+        scopeLive();
+        if (typeof cleanup !== "function") fail("CLEANUP_INVALID", "onDispose requires a synchronous cleanup function.");
+        addCleanup(cleanup);
+      },
+    });
+  }
   function observe(read, notify) {
     live();
     return tracking.observe(read, notify);
@@ -154,8 +214,12 @@ export function createApplication(config, frameworkVersion) {
     actionNames,
     actions,
     dispatch,
+    flush,
     observe,
     computed,
+    derive,
+    when,
+    get bind() { live(); return bind; },
     get status() {
       return status;
     },
@@ -176,7 +240,7 @@ export function createApplication(config, frameworkVersion) {
     mount(mountTarget = defaultTarget) {
       try {
         live();
-        if (dispatcher.isActive() || tracking.isBusy())
+        if (dispatcher.isActive() || rendering || tracking.isBusy())
           fail(
             "LIFECYCLE_REENTRANT",
             "Cannot mount during action dispatch or payload validation.",
@@ -204,68 +268,28 @@ export function createApplication(config, frameworkVersion) {
       status = "mounting";
       const attemptCleanups = [];
       mountCleanups = attemptCleanups;
-      const context = Object.freeze({
-        get state() {
-          live();
-          return tracking.state();
-        },
-        actions,
-        dispatch,
-        observe(read, notify) {
-          if (mountCleanups !== attemptCleanups || !["mounting", "mounted"].includes(status))
-            fail("SCOPE_DISPOSED", "This view scope is no longer active.");
-          const observer = observe(read, notify);
-          register(attemptCleanups, observer.dispose);
-          return observer;
-        },
-        computed(read) {
-          if (mountCleanups !== attemptCleanups || !["mounting", "mounted"].includes(status))
-            fail("SCOPE_DISPOSED", "This view scope is no longer active.");
-          const value = computed(read);
-          register(attemptCleanups, value.dispose);
-          return value;
-        },
-        onDispose(cleanup) {
-          if (
-            mountCleanups !== attemptCleanups ||
-            !["mounting", "mounted"].includes(status)
-          ) {
-            fail("SCOPE_DISPOSED", "This view scope is no longer active.");
-          }
-          register(attemptCleanups, cleanup);
-        },
-      });
+      const context = makeContext(cleanup => register(attemptCleanups, cleanup),
+        () => mountCleanups === attemptCleanups && ["mounting", "mounted"].includes(status));
       try {
-        const output = view(context);
-        observePromise(output);
-        if (
-          output !== null &&
-          output !== undefined &&
-          typeof output !== "string"
-        ) {
-          fail(
-            "VIEW_RESULT_INVALID",
-            "A.1 views must synchronously return text, null or undefined. Declarative elements follow in A.6.",
-          );
-        }
-        node = target.ownerDocument.createTextNode(output ?? "");
-        target.appendChild(node);
+        renderer = createRenderer(target.ownerDocument, tracking, bindingOwner, makeContext, render, error => {
+          reported = new WeakSet();
+          report(error, "render");
+        });
+        render(() => {
+          const output = view(context);
+          observePromise(output);
+          renderer.mount(output, target);
+        });
         status = "mounted";
         return app;
       } catch (cause) {
         // Invalidate the failed view scope before running its cleanup hooks.
         mountCleanups = [];
-        const cleanupErrors = drain(attemptCleanups);
-        if (node?.parentNode) {
-          try {
-            node.parentNode.removeChild(node);
-          } catch (error) {
-            cleanupErrors.push(error);
-          }
-        }
+        const cleanupErrors = renderer ? renderer.dispose() : [];
+        cleanupErrors.push(...drain(attemptCleanups));
+        renderer = null;
         targets.delete(target);
         target = null;
-        node = null;
         status = "created";
         const error =
           cause instanceof FrameworkError || cause instanceof AggregateError
@@ -288,7 +312,7 @@ export function createApplication(config, frameworkVersion) {
     },
     dispose() {
       if (status === "disposed" || status === "disposing") return;
-      if (status === "mounting" || dispatcher.isActive() || tracking.isBusy())
+      if (status === "mounting" || dispatcher.isActive() || rendering || tracking.isBusy())
         report(
           new FrameworkError(
             "LIFECYCLE_REENTRANT",
@@ -300,19 +324,13 @@ export function createApplication(config, frameworkVersion) {
       // Stop the complete graph before scoped/user cleanup can dispose sources
       // and accidentally notify other resources in this closing application.
       tracking.dispose();
-      const errors = drain(mountCleanups);
+      const errors = renderer ? renderer.dispose() : [];
+      errors.push(...drain(mountCleanups));
       errors.push(...drain(appCleanups));
-      if (node?.parentNode) {
-        try {
-          node.parentNode.removeChild(node);
-        } catch (error) {
-          errors.push(error);
-        }
-      }
+      renderer = null;
       if (target) targets.delete(target);
       target = null;
       defaultTarget = null;
-      node = null;
       store.dispose();
       store = null;
       dispatcher = null;

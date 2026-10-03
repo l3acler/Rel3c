@@ -1,8 +1,8 @@
 
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
-**Status:** Product definition; Phase 0 decisions recorded, A.1–A.5 lifecycle, transactions, named dispatch, exact dependencies and computed values implemented
-**Version:** 2.5
+**Status:** Product definition; Phase 0 decisions recorded, A.1–A.7 lifecycle, transactions, named dispatch, exact dependencies, computed values and frame-batched declarative DOM implemented
+**Version:** 2.7
 **Date:** 3 October 2026
 **Working name:** Undecided
 
@@ -55,9 +55,9 @@ flowchart TD
 
 ### Illustrative API
 
-**Current A.1–A.5 surface:** [ADR 0005](docs/adr/0005-application-lifecycle.md) and
+**Current A.1–A.7 surface:** [ADR 0005](docs/adr/0005-application-lifecycle.md) and
 [application API docs](docs/api/application.md) describe implemented owned
-construction, schema registration, text-only mount/dispose and cleanup/errors.
+construction, schema registration, declarative mount/dispose and cleanup/errors.
 Explicit `app.mount()` resolves the conventional `#app` container at mount time;
 custom Element targets remain supported, and targetless creation stays lazy.
 The app now owns the A.2 production COW store; [ADR 0006](docs/adr/0006-production-transactions.md)
@@ -71,9 +71,10 @@ An outer batch may throw after earlier actions committed. [ADR 0008](docs/adr/00
 observer/computed contracts: property/presence/key/array tracking using logical
 IDs, replacement of dynamic dependencies, lazy caches, chained invalidation,
 cycle diagnostics and scoped disposal. [Reactivity API](docs/api/reactivity.md)
-contains implemented public examples. Mounted text views still render once;
-element bindings and render batching remain A.6/A.7.
-The public APIs are experimental. Element/binding exports, events,
+contains implemented public examples. A.6 implements elements, binding tokens, native form properties and conditional scopes;
+see [DOM API](docs/api/dom.md). A.7 adds latest-value frame batching, cancellation and explicit `app.flush()`.
+State commits remain synchronous; render failures preserve state and permit retry.
+The public APIs are experimental. Keyed lists, events,
 routing and replay remain later acceptance gates; the candidate snippets below
 are not current runnable API examples.
 

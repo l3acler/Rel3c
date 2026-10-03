@@ -2,26 +2,28 @@
 
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
-application lifecycle, read-only state and synchronous named actions, exact observers and lazy computed values (A.1–A.5).
+application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM (A.1–A.7).
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
 
 | Capability | Available behavior |
 | --- | --- |
-| Application lifecycle | Create headlessly, mount a text view, register cleanup and dispose |
+| Application lifecycle | Create headlessly, mount declarative views, register cleanup and dispose |
 | State ownership | Private deeply frozen snapshots; nested objects, arrays and acyclic aliases |
 | Named actions | Validated inputs, writable transaction drafts, atomic commit or rollback |
 | Nested dispatch | Bounded FIFO execution with defined parent and child failure behavior |
 | Reactive observers | Exact property, presence, key and array subscriptions with dynamic reads |
 | Computed values | Lazy caching, chained/dynamic dependencies, disposal and cycle errors |
+| Declarative DOM | Elements, text/attribute/class/style bindings, native form properties and scoped conditionals |
+| Render frames | Deduplicated latest-value writes, cancelled disposed work and explicit `app.flush()` |
 | Error reporting | Readable framework error codes and a synchronous application error hook |
 | TypeScript | Inferred action names/payloads and read-only state declarations |
 
-Views currently render once per mount. Actions update state but do not update
-mounted text automatically. Element functions, bindings, keyed lists and frame batching are unimplemented. Observers invalidate after commits but do not render DOM. Events,
-routing, persistence, controlled clock/random services, recording, replay and
-inspection also remain later work. Examples below use only implemented APIs.
+Views construct their static tree once per mount; explicit bindings update affected
+text, attributes, classes and styles on render frames after committed actions. Conditional factories
+run when their selected boolean branch changes. Keyed lists, events, routing,
+persistence, controlled services, recording and replay remain unimplemented.
 
 ## Start from the project root
 
@@ -36,7 +38,9 @@ Open [http://localhost:3000/](http://localhost:3000/). The root redirects to the
 basic example, which initializes state through a named action and then mounts a
 text report. The package has zero third-party runtime dependencies. Development
 tools are the built-in Node test runner/server, installed Chrome for browser
-checks, and TypeScript 5.9.3 for type checks.
+checks, and TypeScript 5.9.3 for type checks. Visit
+[http://localhost:3000/examples/dom/](http://localhost:3000/examples/dom/) for a
+public-import form, bound greeting and conditional section.
 
 For your own page, save this as `guide.html` at the repository root and open
 `http://localhost:3000/guide.html` while the server runs:
@@ -65,8 +69,8 @@ For your own page, save this as `guide.html` at the repository root and open
 </html>
 ```
 
-The `div` is a native HTML mount container. The framework owns the text it adds
-inside it. Element construction through framework functions follows later.
+The `div` is a native HTML mount container. Plain snapshot text is static; use
+explicit bindings below for updates.
 
 ## Public exports
 
@@ -74,6 +78,8 @@ inside it. Element construction through framework functions follows later.
 | --- | --- |
 | `createApp(config)` | Create an application with owned state, registered actions and a view |
 | `createActionSchema(options)(build)` | Define explicit action input modes and an optional schema version |
+| `element(tag, props?, ...children)` and HTML helpers | Create immutable declarative elements |
+| `derive(read)` and `when(condition, yes, no?)` | Explicit derived bindings and scoped conditional children |
 | `FrameworkError` | Framework error class with a readable message and `code` |
 | `VERSION` | Package version string |
 | `FRAMEWORK_INFO` | Frozen metadata describing implemented and planned capabilities |
@@ -91,9 +97,11 @@ Defaults are `{}` state, an empty schema and an empty text view. Unknown options
 and accessor configuration properties reject. Inline `actions` and `seed`
 configuration are not implemented.
 
-A view receives `{ state, actions, dispatch, observe, computed, onDispose }`. It returns synchronous
-text, null or undefined. HTML-looking strings become text, preserving text
-escaping. Element descriptors, numbers, booleans and async view results reject.
+A view receives `{ state, bind, derive, when, actions, dispatch, observe, computed, onDispose }`.
+It returns synchronous declarative elements, binding tokens, strings, finite numbers,
+child arrays, null, undefined or booleans. Null/undefined/booleans add no child;
+HTML-looking strings remain escaped text. Functions, forged descriptors and async
+results reject.
 `context.state` and `app.state` read the latest complete committed snapshot;
 destructuring or saving that snapshot retains that particular version.
 
@@ -101,9 +109,109 @@ Mount preserves host-owned children, native focus and selection. One application
 owns a target at a time. Double mount and target migration reject. Failed mounts
 release ownership and clean up their attempted view scope.
 
-`app.dispose()` removes owned text and runs cleanup. Disposal is terminal and
+`app.dispose()` removes owned DOM and runs cleanup. Disposal is terminal and
 idempotent. Afterward, state reads, mounting and dispatch reject. It does not
 invalidate snapshots already saved by callers.
+
+## Declarative elements and bindings
+
+Save this module in your own root HTML page containing `<div id="app"></div>`:
+
+```js
+import { createApp, createActionSchema, div, form, label, input, section, span } from './src/index.js';
+
+const schema = createActionSchema()(({ action }) => ({
+  rename: action(value => typeof value === 'string', (draft, value) => { draft.name = value; }),
+  hide: action(draft => { draft.visible = false; }),
+}));
+const app = createApp({
+  initialState: { name: 'Ada', visible: true }, schema,
+  view: ({ bind, derive, when }) => div({ id: 'profile', class: 'profile', 'data-kind': 'form' },
+    form(label({ htmlFor: 'name' }, 'Name'), input({ id: 'name', name: 'name', value: bind.name })),
+    span(derive(state => `Hello, ${state.name}`)),
+    when(bind.visible, ({ bind, onDispose }) => {
+      onDispose(() => console.log('Section removed'));
+      return section({ class: { visible: bind.visible }, style: { color: 'teal' } }, bind.name);
+    }),
+  ),
+});
+app.mount();
+app.actions.rename('Grace');
+app.actions.hide();
+app.flush(); // Optional: apply latest pending bindings now instead of waiting for a frame.
+```
+
+`element(tag, props?, ...children)` and `div`, `span`, `p`, `button`, `form`,
+`label`, `input`, `textarea`, `select`, `option`, `section`, `a`, `ul`, `li`
+use the same rules; empty props are optional. Props/child arrays are copied.
+`bind.user.name` tracks that property. Context/app `derive(state => expression)`
+tracks only what it reads; global `derive(() => app.state.name)` can also read
+computed `.value`. Saved snapshot strings remain static. Mutations and dispatch
+inside render reads/factories reject; derivations must be pure and synchronous.
+
+Ordinary attributes accept primitive values; null/undefined remove them. Boolean
+HTML attributes use presence for true and removal for false, while `aria-*` and
+`data-*` serialize false as `"false"`. `class`/`className` accept strings or a
+boolean class map. `style` accepts a property map (camelCase or custom properties),
+with primitive values or bindings; numbers have no implicit units, and null removes
+a style field. Whole class/style maps can be returned by `derive`. Aliases include
+`htmlFor`, `readOnly`, `tabIndex`; duplicate attribute/alias names reject.
+
+For `input`/`textarea`/`select`, `value` sets the live property; `checked` on input
+and `selected` on option are live booleans. Input/textarea initial `defaultValue`
+and initial checked/selected defaults support native form reset. Later updates
+change live values without rewriting defaults. Unchanged values avoid writes,
+preserving focus/selection. Native editing remains local to the control until
+future event APIs synchronize it with state; reset does not dispatch an action.
+
+`when(booleanOrBinding, yesFactory, noFactory?)` retains its branch while the
+predicate stays equal. Replacements dispose branch-owned observers, computed
+values and cleanup hooks. Factories receive the scoped view context; the omitted
+false branch is empty. Failed construction cleans its partial scope and preserves
+the previous branch. Application disposal removes owned descendants and leaves
+host children alone. Raw HTML, event attributes, script/style elements, unsupported
+tags and executable URL protocols reject. See [DOM API](docs/api/dom.md) for the
+supported tags, errors and limits. Keyed collections and event props are future work.
+
+## Render frames and explicit flush
+
+Actions commit state synchronously. Dirty visual bindings are deduplicated into
+one pending `requestAnimationFrame` per app, read the latest committed values,
+and avoid writes when text/attributes/styles or live form properties are equal.
+The root view is not rerun. Several commits before a frame cause at most one
+latest-value write for each dirty leaf binding. Structural branches run before
+their descendants, so removed scopes receive no queued reads/writes. Newly
+constructed branch bindings initialize from the current committed state.
+
+```js
+app.actions.rename('Grace');
+app.actions.rename('Lin');
+console.log(app.state.name); // Lin immediately; DOM may still display Ada.
+app.flush(); // Bound text/input now display Lin; the pending frame is cancelled.
+app.flush(); // Clean queue: no duplicate writes.
+```
+
+`app.flush()` takes no arguments, returns undefined and can be detached. It
+synchronously drains pending bindings and cancels its scheduled callback; it is
+a no-op before mounting. If the target document has no animation-frame API, work
+stays queued until explicit flush. Disposal cancels all work. Flush during an
+action/guard, mounting, reactive read/notification, render factory or error hook
+rejects `FLUSH_REENTRANT`; flush after disposal rejects `APP_DISPOSED`.
+
+All bindings in a batch are attempted, including after another fails. Failures
+leave committed state intact, retain failed work for retry, and reach
+`onError(error, { phase: 'render' })`. Explicit flush then throws; a scheduled
+frame throws to the browser after reporting. A failing frame does not reschedule
+itself indefinitely. Correct the cause and flush again, or commit another action
+(including a no-op) to schedule a retry. A failed candidate branch preserves the
+old branch; a cleanup failure after replacement reports the completed change.
+Rendering is not an atomic DOM transaction: successful writes survive another
+binding's failure. Derived callbacks must stay pure and synchronous.
+
+This is visual batching only. Scheduler priorities, fairness budgets, fixed
+simulation ticks, interpolation, event handling and keyed collections remain
+future work. Hidden-tab rendering follows native animation-frame behavior; use
+explicit flush for deterministic checks. No speed or heap claims are made.
 
 ## State and named actions
 
@@ -330,14 +438,14 @@ application lifecycle from reentrant changes.
 ## Cleanup and error reporting
 
 `app.onDispose(fn)` registers application-lifetime cleanup. A view's
-`onDispose(fn)` registers cleanup for that mount attempt. View hooks run in reverse
-registration order, then application hooks do the same. A failed mount drains
+`onDispose(fn)` registers cleanup for that mount attempt. Conditional child scopes dispose before root view hooks; each scope runs hooks
+in reverse registration order, then application hooks do the same. A failed mount drains
 only its attempted view scope. All hooks are attempted even if one fails;
 disposal still completes and then throws an AggregateError. Hooks must be
 synchronous, and disposed view scopes reject new registrations.
 
 An optional synchronous `onError(error, { phase })` observes creation, mounting,
-dispatch and disposal failures without swallowing them. For a dispatch batch it
+dispatch, rendering and disposal failures without swallowing them. For a dispatch batch it
 runs once after draining, when committed state is complete. If the hook also
 throws, its failure aggregates with the original. It cannot dispatch recovery
 work; the caller can catch the outer error and dispatch afterward. Unknown
@@ -349,7 +457,8 @@ Common error codes include `ACTION_UNKNOWN`, `ACTION_ARITY`, `ACTION_ASYNC`,
 `PAYLOAD_LIMIT`, `PAYLOAD_ASYNC`, `STATE_INVALID`, `STATE_CYCLE`, `STATE_LIMIT`,
 `TARGET_INVALID`, `APP_DISPOSED`, `LIFECYCLE_REENTRANT`, `STATE_READONLY`,
 `STATE_DETACHED`, `SCOPE_DISPOSED`, `REACTIVITY_INVALID`, `REACTIVITY_ASYNC`,
-`REACTIVITY_REENTRANT`, `REACTIVITY_CYCLE` and `COMPUTED_CYCLE`.
+`REACTIVITY_REENTRANT`, `REACTIVITY_CYCLE`, `COMPUTED_CYCLE` and `FLUSH_REENTRANT`.
+DOM errors and supported tags are listed in [DOM API](docs/api/dom.md).
 
 ## Resource limits
 
@@ -385,6 +494,6 @@ npm run test:types
 Browser checks require installed Chrome. Type checks require the development-only
 TypeScript installation; startup and Node tests do not. For the full reference,
 see [application API](docs/api/application.md). For current validation results,
-see [A.4/A.5 evidence](docs/reports/task-A.4-A.5-reactivity.md). The
+see [A.6/A.7 evidence](docs/reports/task-A.6-A.7-dom-frames.md). The
 [README](README.md) provides repository structure, feature status and the remaining
 verification commands; the [PRD](Framework_PRD.md) defines future acceptance gates.

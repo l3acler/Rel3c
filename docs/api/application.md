@@ -1,11 +1,11 @@
-# Application lifecycle, named actions and reactivity — A.1–A.5
+# Application lifecycle, named actions and reactivity — A.1–A.7
 
 Experimental public API. Implemented: owned initial state/schema registration,
-synchronous text mounting, cleanup and disposal. A.2/A.3 add production COW
+synchronous declarative mounting, cleanup and disposal. A.2/A.3 add production COW
 transactions, payload ownership/guards and bounded FIFO named dispatch.
 A.4/A.5 add exact observers and lazy computed values.
-Reactive elements (A.6–A.8), events (A.9/B), routing and replay remain
-unimplemented. This document describes what actually runs today.
+Declarative elements, exact bindings and frame batching are implemented in A.6/A.7; see [DOM API](dom.md).
+Keyed lists (A.8), events (A.9/B), routing and replay remain unimplemented. This document describes what actually runs today.
 
 ## Run from the root
 
@@ -71,16 +71,15 @@ imports, monotonic transaction growth and prospective committed graph. See
 [ADR 0006](../adr/0006-production-transactions.md) for the conservative accounting;
 exact heap/history budgets remain later work.
 
-Mount appends one Text node, treating HTML-looking strings as text. Other view
-objects, numbers, booleans, Promises and thenables reject. Element functions and
-bind/derived tokens are not exported until their runtime exists. Host children,
-focus and selection are preserved. One app claims an exact target at a time;
-double-mount/target migration reject. Failed mount cleans up and may be retried.
-Disposed apps cannot mount or read `state`/`stateVersion`; construct a new app.
-`context.state` has the same snapshot/tracking behavior as `app.state`.
-A saved ordinary snapshot remains unchanged after later commits. Text views run
-once per mount and do not update after actions yet. Dispatch inside a view rejects with
-`ACTION_REENTRANT`; prepare state before mounting or dispatch afterward.
+Mount appends owned declarative nodes while preserving host children, focus and
+selection. Views accept strings, finite numbers, null/undefined/booleans, arrays,
+bindings and framework descriptors; raw functions/objects and async results reject.
+One app claims an exact target; double mount/migration reject. Failed mounting
+cleans its resources and releases the target for retry. Static snapshot text runs
+once; `bind`/`derive` updates exact targets on render frames; `app.flush()` drains them
+synchronously and cancels the frame. State commits remain synchronous. See [DOM API](dom.md).
+`context.state` follows the same snapshot/tracking rules as `app.state`.
+Dispatch inside views or render computations rejects `ACTION_REENTRANT`.
 
 ## Named synchronous actions
 
@@ -182,11 +181,12 @@ the experimental surface is not a stable API freeze.
 
 `app.onDispose(fn)` registers app-lifetime cleanup, including before any mount.
 `context.onDispose(fn)` registers cleanup for its specific mount/view attempt.
-Both are synchronous; view hooks run LIFO, then app hooks LIFO. Failed mounts
+Both are synchronous; conditional child scopes dispose before root view hooks,
+then app hooks run. Each scope runs hooks LIFO. Failed mounts
 drain only the failed view scope. Disposed/failed view contexts cannot register
 more hooks. All callbacks are attempted even if some fail; disposal completes
-and throws an AggregateError afterward. No listener/subscription scheduler is
-claimed by these generic cleanup hooks; their general ownership follows A.9.
+and throws an AggregateError afterward. Bindings and pending visual work are
+disposed with their scopes; listener ownership remains A.9.
 
 ```js
 const app = createApp({
@@ -197,7 +197,7 @@ const app = createApp({
 });
 ```
 
-`onError` observes create/mount/dispatch/dispose operation errors and does not
+`onError` observes create/mount/dispatch/render/dispose operation errors and does not
 swallow them. Config validation before a valid observer exists and property/scope
 access errors throw directly. FrameworkError exposes a code and readable message;
 view failures preserve their original `cause`. Observer failures aggregate with
@@ -214,7 +214,7 @@ ACTION_QUEUE_LIMIT and PAYLOAD_INVALID/PAYLOAD_CYCLE/PAYLOAD_LIMIT/PAYLOAD_ASYNC
 
 Rationale: [ADR 0005](../adr/0005-application-lifecycle.md) and
 [ADR 0007](../adr/0007-named-dispatch-ordering.md).
-Verification: [A.3 evidence report](../reports/task-A.3-named-dispatch.md).
+Verification: [A.6/A.7 evidence report](../reports/task-A.6-A.7-dom-frames.md).
 
 ## Exact subscriptions (A.4)
 
@@ -236,3 +236,6 @@ computed values propagate before observer callbacks run. View resources belong
 to the mount attempt; app resources belong to the app. See the full
 [reactivity API](reactivity.md) and [public guide](../../DOCUMENTATION.md#lazy-computed-values)
 for runnable public-import examples, errors, disposal and cache semantics.
+
+`onError` also observes render failures (phase `render`); state remains committed.
+See [DOM scheduling API](dom.md#scheduling-and-flush-a7) for retry/disposal behavior.

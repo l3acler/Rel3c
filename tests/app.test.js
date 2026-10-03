@@ -679,11 +679,9 @@ test("cleanup registration rejects invalid callbacks without running them", () =
   assert.throws(() => app.onDispose(null), code("CLEANUP_INVALID"));
   app.dispose();
 });
-test("text-only boundary rejects DOM descriptors, numbers and unknown thenables without execution", () => {
+test("declarative boundary rejects forged descriptors and unknown thenables without execution", () => {
   let calls = 0;
   for (const output of [
-    1,
-    false,
     {},
     {
       then() {

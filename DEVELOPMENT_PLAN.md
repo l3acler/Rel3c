@@ -6,7 +6,7 @@
 
 **Source:** [Framework_PRD.md](Framework_PRD.md), version 2.4, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** Phase A — core runtime (A.1–A.5 complete; next task A.6).
+**Current milestone:** Phase A — core runtime (A.1–A.7 complete; next task A.8).
 
 ## 1. Purpose and scope
 
@@ -125,8 +125,8 @@ Deliver the root scaffold, isolated prototypes, shared fixture suite, reproducib
 - [x] **A.3 — Implement named dispatch and ordering.** Dependencies: A.2. Validate names/payloads, reject async/thenable actions, assign committed versions, and queue nested dispatches. Decide FIFO ordering, error propagation, and whether nested dispatches from a failed parent are discarded before implementation. Acceptance: observers see complete versions only; throwing or Promise-returning actions publish none; ordering fixtures include successful and failed parents and children. Evidence: [ADR 0007](docs/adr/0007-named-dispatch-ordering.md), [A.3 verification](docs/reports/task-A.3-named-dispatch.md), 29 new public dispatch tests, positive/negative types and 39 Chrome checks. Each parent stages children until success; failed children discard descendants, continue siblings and report terminal failures after draining.
 - [x] **A.4 — Track exact dependencies.** Dependencies: A.2. Track object-property reads, property existence, key iteration, array length/structure, and item-property reads. Replace stale dependency sets when branches change. Acceptance: unrelated properties invalidate different observers, alias writes find the same dependencies, and item edits do not invalidate unrelated items or list structure. Evidence: [reactivity API](docs/api/reactivity.md), [ADR 0008](docs/adr/0008-exact-reactivity.md) and [A.4/A.5 verification](docs/reports/task-A.4-A.5-reactivity.md).
 - [x] **A.5 — Implement computed values.** Dependencies: A.4. Add lazy caching, chained dependencies, dynamic dependency replacement, disposal, and cycle detection. Acceptance: unobserved dirty computations remain lazy, observed values recompute only as needed, and cycles fail with a useful error. Evidence: [reactivity API](docs/api/reactivity.md), [ADR 0008](docs/adr/0008-exact-reactivity.md) and [A.4/A.5 verification](docs/reports/task-A.4-A.5-reactivity.md).
-- [ ] **A.6 — Implement declarative DOM bindings.** Dependencies: A.1, A.4. Add elements, static/reactive text, attributes, classes, styles, nested children, and conditional views. Define null/boolean children and attribute-versus-property handling for forms. Acceptance: a form and conditional section use only public APIs; reactive changes preserve unrelated nodes and reject mutation from render computations.
-- [ ] **A.7 — Add frame batching and explicit flush.** Dependencies: A.3, A.6. Deduplicate dirty bindings, read latest committed values, avoid unnecessary writes, and cancel disposed work. Acceptance: several commits before one frame cause at most one latest-value write per binding; explicit flush is deterministic in tests and does not create duplicate scheduled writes.
+- [x] **A.6 — Implement declarative DOM bindings.** Dependencies: A.1, A.4. Add elements, static/reactive text, attributes, classes, styles, nested children, and conditional views. Define null/boolean children and attribute-versus-property handling for forms. Acceptance: a form and conditional section use only public APIs; reactive changes preserve unrelated nodes and reject mutation from render computations.
+- [x] **A.7 — Add frame batching and explicit flush.** Dependencies: A.3, A.6. Deduplicate dirty bindings, read latest committed values, avoid unnecessary writes, and cancel disposed work. Acceptance: several commits before one frame cause at most one latest-value write per binding; explicit flush is deterministic in tests and does not create duplicate scheduled writes.
 - [ ] **A.8 — Implement keyed collections.** Dependencies: A.4, A.6, A.7. Add keyed insertion/removal/reorder, item binding ownership, and missing/duplicate-key diagnostics. Acceptance: retained items preserve DOM identity and focus after reorder; item edits affect only dependent bindings; removed items dispose resources.
 - [ ] **A.9 — Implement scoped cleanup and minimal click events.** Dependencies: A.1, A.6, A.7. Own handlers, subscriptions, computed values, child scopes, and scheduled callbacks. Add the public click mechanism needed for the vertical slice. Acceptance: repeated mount/unmount restores resource counts; disposed scopes receive neither events nor queued writes.
 - [ ] **A.10 — Verify the core vertical slice.** Dependencies: A.3–A.9. Build a public-import counter with an unrelated bound node, a nested field, conditional content, and keyed items. Instrument binding evaluations and DOM writes. Acceptance: one click commits one version and updates exactly its dependent text; the unrelated node is unchanged; a failing action changes neither committed state nor UI.
@@ -233,7 +233,7 @@ Additional PRD gates: transaction comparison is covered by 0.2–0.6/0.9; tagged
 
 ## 11. Decision register
 
-This register tracks recorded architecture choices and later open decisions, not stable public contracts. Phase 0 choices are in ADRs 0001–0004: elements/binding tokens, explicit action modes/acyclic data, COW/logical identity, and browser/input qualification targets. ADR 0005 records the implemented A.1 lifecycle/registration surface. ADR 0006 records A.2 production ownership, native revocation, successful no-op versions and conservative state/scratch growth limits. ADR 0007 records A.3 payload ownership, FIFO queues, parent-failure discard, sibling continuation and aggregate errors. ADR 0008 records A.4/A.5 exact observers, current-state read facades, lazy computed edges, disposal and post-commit notification failures. DOM API integration, final formats and release compatibility remain later gates below.
+This register tracks recorded architecture choices and later open decisions, not stable public contracts. Phase 0 choices are in ADRs 0001–0004: elements/binding tokens, explicit action modes/acyclic data, COW/logical identity, and browser/input qualification targets. ADR 0005 records the implemented A.1 lifecycle/registration surface. ADR 0006 records A.2 production ownership, native revocation, successful no-op versions and conservative state/scratch growth limits. ADR 0007 records A.3 payload ownership, FIFO queues, parent-failure discard, sibling continuation and aggregate errors. ADR 0008 records A.4/A.5 exact observers, current-state read facades, lazy computed edges, disposal and post-commit notification failures. ADR 0009 records implemented declarative elements, binding scopes, native form properties and render-frame/flush semantics. Keyed lists, final formats and release compatibility remain later gates below.
 
 | Decision | Evidence needed | Decision gate |
 | --- | --- | --- |
@@ -711,4 +711,15 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Next implementation task:** A.6. Implement declarative DOM bindings using the completed A.4 tracking graph. A.4 and A.5 are complete; this batch does not start A.6.
+**Next implementation task:** A.8 keyed collections. A.6/A.7 are complete; this batch does not start A.8.
+
+### A.6/A.7 implementation batch — complete (3 October 2026)
+
+A.6 validated before A.7: 213 runtime tests, 66 negative type lines, 54 Chrome
+checks and root smoke passed. A.7 adds 22 focused scheduler checks and five native
+browser checks; final counts are 235 runtime, 292 spike and 15 workload tests,
+67 negative type lines and 60 Chrome checks (including both public examples).
+See [DOM API](docs/api/dom.md), [ADR 0009](docs/adr/0009-declarative-dom-frames.md)
+and [batch evidence](docs/reports/task-A.6-A.7-dom-frames.md). The user requested a local commit after verification;
+keyed lists, events, priorities/fairness budgets and deterministic services remain
+unimplemented.

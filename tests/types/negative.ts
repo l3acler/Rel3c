@@ -68,3 +68,29 @@ const observed = app.observe(state => state.name);
 const number: number = observed.read();
 // @ts-expect-error dirty is read-only
 observed.dirty = false;
+import { div, input, derive, when } from 'mini-framework';
+// @ts-expect-error functions must be explicit binding tokens
+createApp({ view: () => div(() => 'text') });
+// @ts-expect-error events are not an A.6 element capability
+div({ onClick() {} }, 'button');
+// @ts-expect-error raw CSS strings are unsupported
+div({ style: 'color:red' });
+// @ts-expect-error checked accepts boolean values
+input({ checked: 'false' });
+// @ts-expect-error numeric class flags are not accepted
+div({ class: { active: 1 } });
+// @ts-expect-error bindings are read-only
+app.bind.count = app.bind.count;
+// @ts-expect-error object bindings cannot be text children
+div(app.bind.rows);
+// @ts-expect-error derived state remains read-only
+app.derive(state => { state.count++; return state.count; });
+// @ts-expect-error async derive callbacks reject
+app.derive(async state => state.count);
+// @ts-expect-error global derive callbacks must also be synchronous
+derive(async () => 'text');
+// @ts-expect-error branch factories must be synchronous
+when(true, async () => div('text'));
+
+// @ts-expect-error flush takes no arguments
+app.flush(1);

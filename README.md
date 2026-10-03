@@ -22,14 +22,15 @@ framework addition or change.
 
 ## Overview & Purpose
 
-`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and A.1–A.5 lifecycle, transactions, named dispatch, exact dependencies and computed values are complete. Reactive elements, events and routing remain later tasks.
+`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and A.1–A.7 lifecycle, transactions, named dispatch, exact dependencies and computed values are complete. Declarative elements and exact bindings are implemented; events and routing remain later tasks.
 
-The runtime implements named transactions; reactive rendering and deterministic
-services remain planned:
-1. **Fine-Grained Reactive Bindings (`DOM-1`, `DOM-2`)**: State properties track which exact DOM nodes or computed values depend on them. Updating one property touches only its bound DOM node, leaving unaffected nodes and browser focus untouched.
+The runtime implements named transactions and frame-batched reactive rendering.
+Deterministic simulation services remain planned:
+
+1. **Fine-Grained Reactive Bindings (`DOM-1`, `DOM-2`, implemented A.6)**: State properties track which exact DOM nodes or computed values depend on them. Updating one property touches only its bound DOM node, leaving unaffected nodes and browser focus untouched.
 2. **Transactional State Actions (`ACTION-1`, `STATE-1`, implemented A.3)**: Synchronous actions execute against a draft transaction view. Successful actions publish one immutable version atomically; throwing actions roll back completely without partial leakage. Exact subscriptions and lazy computed values are implemented in A.4/A.5.
-3. **Frame-Coalesced Rendering (`SCHED-1`)**: State mutations coalesce so that multiple commits before a render frame result in at most one latest-value DOM update per dirty binding.
-4. **Deterministic Simulation & Replay (`TIME-1`, `RECORD-1`, `REPLAY-1`)**: Simulation ticks operate on a logical clock and seeded PRNG, separating simulation rate from display refresh rate.
+3. **Frame-Coalesced Rendering (`SCHED-1`, implemented A.7)**: State mutations coalesce so that multiple commits before a render frame result in at most one latest-value DOM update per dirty binding.
+4. **Deterministic Simulation & Replay (`TIME-1`, `RECORD-1`, `REPLAY-1`, planned Phase C)**: Simulation ticks operate on a logical clock and seeded PRNG, separating simulation rate from display refresh rate.
 
 ---
 
@@ -69,7 +70,11 @@ services remain planned:
   - [x] **A.4 Exact Dependencies**: Property/presence/key/array subscriptions, aliases, dynamic branches and scope disposal.
   - [x] **A.5 Computed Values**: Lazy caches, chained/dynamic dependencies and useful cycle errors. See [reactivity API](docs/api/reactivity.md) and [batch verification](docs/reports/task-A.4-A.5-reactivity.md).
 
-Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Reactive elements, events, routing, controlled services, recording and replay are not shipped yet.
+  - [x] **A.6 Declarative DOM**: Elements, exact text/attribute/class/style bindings, native form properties and conditional scopes. See [DOM API](docs/api/dom.md) and the [copyable form example](DOCUMENTATION.md#declarative-elements-and-bindings).
+
+  - [x] **A.7 Render Frames**: Latest-value deduplication, equal-value write suppression, cancellation and explicit flush. See [batch verification](docs/reports/task-A.6-A.7-dom-frames.md).
+
+Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Declarative elements and bindings are shipped; keyed lists, events, routing, controlled services, recording and replay remain future work.
 
 > [!NOTE]
 > Per the project instructions, planned features for Phases A–D (core runtime, router, deterministic ticks, replay, inspector) are currently under development or scheduled. They are not claimed as shipped until their respective acceptance gates pass.
@@ -121,8 +126,8 @@ override its location with `MINI_FRAMEWORK_CHROME_PATH`):
 npm run test:browser
 ```
 
-Current verification: 498 Node tests (191 runtime, 292 spike, 15 workload),
-55 negative type lines (30 public + 25 spike), and 49 browser
+Current verification: 235 runtime tests, 292 spike tests and 15 workload tests,
+67 negative type lines, and 60 browser
 lifecycle/transaction/dispatch/reactivity checks.
 Type checks include the plain-JS root example and require `npm ci`. Startup and
 Node tests still need no dependency installation. Native input/IME and broad
@@ -208,7 +213,32 @@ for a custom container, or pass `target` to createApp for automatic mounting.
 Targetless creation stays headless/lazy. Missing `#app` throws clearly at mount
 time and allows retry; explicit invalid targets never fall back to `#app`.
 Disposal is terminal/idempotent; failed mounts clean up and may be retried.
-Views return synchronous text/null/undefined. This provides framework-owned lifecycle; element/binding rendering remains A.6.
+Views accept text, finite numbers, null/undefined/booleans, arrays, binding tokens
+and framework elements. See the [DOM reference](docs/api/dom.md).
+
+A public form and conditional example is served at `/examples/dom/`. With
+`<div id="app"></div>` in a root page:
+
+```js
+import { createApp, createActionSchema, div, form, label, input, span } from './src/index.js';
+const schema = createActionSchema()(({ action }) => ({
+  rename: action(value => typeof value === 'string', (draft, value) => { draft.name = value; }),
+}));
+const app = createApp({ initialState: { name: 'Ada', visible: true }, schema,
+  view: ({ bind, when }) => div({ id: 'profile', class: 'profile', 'data-kind': 'form' },
+    form(label({ htmlFor: 'name' }, 'Name'), input({ id: 'name', value: bind.name })),
+    when(bind.visible, () => span(bind.name)),
+  ),
+});
+app.mount();
+app.actions.rename('Grace'); // State commits now; DOM updates next frame.
+app.flush(); // Optional synchronous visual boundary; avoids a duplicate frame write.
+```
+
+Bindings track each property read, so unrelated nodes retain identity and focus.
+Native form editing remains local until event/state synchronization is implemented.
+Click/scroll/key registration, shared route state and navigation remain future
+APIs; the planned examples below are explicitly unimplemented.
 
 `createActionSchema()` registers explicit no-payload/payload modes with inferred
 types. Run named actions through public wrappers or dispatch:
@@ -236,9 +266,9 @@ siblings continue, and the outer call throws failures after draining. Batches ha
 action-count and aggregate payload limits. See [the implemented API](docs/api/application.md)
 for ordering examples, exact bounds, error observation and cleanup details.
 
-Text views still render once per mount; actions do not update DOM until reactive
-bindings exist. Exact observers and lazy computed values can already consume
-committed state through public APIs:
+Root views construct once; explicit `bind`/`derive` tokens update affected DOM
+on render frames. `app.flush()` applies latest pending bindings immediately. Exact
+observers and lazy computed values also consume committed state through public APIs:
 
 ```js
 import { createApp, createActionSchema } from './src/index.js';

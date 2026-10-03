@@ -16,7 +16,7 @@ const app = createApp({ schema, initialState,
     onDispose(() => {}); void noPayload; void payload; void named;
     return String(count);
   },
-  onError(error, info) { const phase: 'create' | 'mount' | 'dispatch' | 'dispose' = info.phase; void phase; void error; },
+  onError(error, info) { const phase: 'create' | 'mount' | 'dispatch' | 'render' | 'dispose' = info.phase; void phase; void error; },
 });
 const detached: typeof app.mount = app.mount;
 const defaultMounted: typeof app = detached();
@@ -60,3 +60,21 @@ createApp({ initialState: { n: 1 }, view({ observe, computed }) {
 type ComputedInference = Expect<Equal<typeof score.value, number>>;
 type ObserverInference = Expect<Equal<ReturnType<typeof watched.read>, string[]>>;
 void scoreValue; void ids; void dirty; void chainValue;
+
+import { div, span, form, input, label as labelElement, textarea, select, option, when, derive, element as htmlElement, type Child } from 'mini-framework';
+const domApp = createApp({ initialState: { name: 'Ada', shown: true, color: 'red', checked: false },
+  view({ bind, derive, when }) {
+    return div({ id: 'card', class: { active: bind.shown }, style: { color: bind.color }, 'data-name': bind.name },
+      form(labelElement({ htmlFor: 'name' }, 'Name'), input({ id: 'name', value: bind.name, checked: bind.checked }),
+        textarea({ value: bind.name }), select({ value: 'one' }, option({ value: 'one' }, 'One'))),
+      derive(state => state.name.toUpperCase()), when(bind.shown, ({ bind, onDispose }) => {
+        onDispose(() => {}); return span(bind.name);
+      }, () => null));
+  },
+});
+const reusable: Child = when(true, () => htmlElement('main', derive(() => domApp.state.name)));
+void reusable;
+
+domApp.flush();
+const renderPhase: import('mini-framework').ErrorPhase = 'render';
+void renderPhase;

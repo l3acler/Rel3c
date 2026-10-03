@@ -1,0 +1,45 @@
+import { fail } from '../errors.js';
+
+const readers = new WeakMap();
+export const isBinding = value => value !== null &&
+  (typeof value === 'object' || typeof value === 'function') && readers.has(value);
+
+export function derive(read, owner = null) {
+  if (typeof read !== 'function') fail('BINDING_INVALID', 'derive requires a synchronous read function.');
+  const token = Object.freeze({});
+  readers.set(token, { read, owner });
+  return token;
+}
+
+export function createBindings(owner, check, path = []) {
+  const children = new Map();
+  const immutable = () => fail('BINDING_READONLY', 'Binding tokens are read-only.');
+  const token = new Proxy(Object.create(null), {
+    get(_target, key) {
+      check();
+      if (typeof key !== 'string') return undefined;
+      if (!children.has(key)) children.set(key, createBindings(owner, check, [...path, key]));
+      return children.get(key);
+    },
+    set: immutable, deleteProperty: immutable, defineProperty: immutable,
+    setPrototypeOf: immutable, preventExtensions: immutable,
+  });
+  readers.set(token, { owner, read(state) {
+    check();
+    for (const key of path) {
+      if (state === null || state === undefined) return undefined;
+      state = state[key];
+    }
+    return state;
+  } });
+  return token;
+}
+
+export function resolveBinding(value, state, owner) {
+  if (!isBinding(value)) return value;
+  const source = readers.get(value);
+  if (source.owner !== null && source.owner !== owner)
+    fail('BINDING_OWNER', 'A state binding belongs to a different application.');
+  const { read } = source;
+  return read(state);
+}
