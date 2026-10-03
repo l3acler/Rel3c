@@ -3,6 +3,11 @@
 Status: accepted and implemented for A.1; experimental public API, not a complete
 Phase A core or stable release.
 
+A.2 follow-up: the owned initial store is now backed by the production COW engine.
+[ADR 0006](0006-production-transactions.md) supersedes the initial-only guard
+limitation below with transaction growth/commit validation. A.1 evidence remains
+historical; public action execution still waits for A.3.
+
 Date: 2026-10-02 (Bahrain). Sources: Framework_PRD.md §3/§7, LIFE-1/PACK-1/TECH-1;
 development task A.1; ADRs 0001–0004.
 

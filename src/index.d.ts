@@ -1,4 +1,4 @@
-/** Experimental A.1 public lifecycle; dispatch always throws until A.3. */
+/** Experimental public lifecycle backed by A.2's internal store; dispatch throws until A.3. */
 export const VERSION: string;
 export interface FrameworkInfo {
   readonly name: string; readonly version: string; readonly phase: string;

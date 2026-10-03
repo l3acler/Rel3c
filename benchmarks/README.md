@@ -1,5 +1,15 @@
 # Architecture spike measurements
 
+A.2 adds a separate `npm run bench:runtime` comparison of the selected COW spike
+and the bounded production engine. It reuses the same seven workloads/configuration
+but measures two engines: 84 timing trials and 28 memory profiles. Run after tests,
+not concurrently. `-- --quick` is smoke-only. New `runtime-node-*` artifacts do not
+replace historical spike datasets. Changing-workload hashes, versions and net
+metadata must match; no-op version/limit policy outside these workloads differs
+intentionally. See [A.2 report](../docs/reports/task-A.2-production-transactions.md)
+and [ADR 0006](../docs/adr/0006-production-transactions.md). No public renderer,
+whole-frame latency or browser performance qualification is measured by this run.
+
 Task 0.6 measures internal transaction engines. These benchmarks do not implement or measure a frontend renderer. The eager full-clone reference is an equivalent-work baseline; it is not a comparison to React, Vue, or another framework.
 
 Task 0.7 is a separate syntax/DOM prototype measurement, not part of the transaction suite below. Run `npm run check:view-syntax` for browser correctness and rotated element/token-template/eager-template mount/update/reorder/disposal trials. See the [syntax report](../docs/reports/task-0.7-view-syntax.md) for its configuration, raw evidence, cache microprobe and limits. Collect measurement runs without concurrent test/benchmark jobs.

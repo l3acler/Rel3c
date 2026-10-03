@@ -1,7 +1,7 @@
 
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
-**Status:** Product definition; Phase 0 decisions recorded, A.1 lifecycle implemented
+**Status:** Product definition; Phase 0 decisions recorded, A.1 lifecycle and A.2 internal transactions implemented
 **Version:** 2.3
 **Date:** 2 October 2026
 **Working name:** Undecided
@@ -60,7 +60,10 @@ flowchart TD
 construction, schema registration, text-only mount/dispose and cleanup/errors.
 Explicit `app.mount()` resolves the conventional `#app` container at mount time;
 custom Element targets remain supported, and targetless creation stays lazy.
-They are experimental. Action execution, element/binding exports, events,
+The app now owns the A.2 production COW store; [ADR 0006](docs/adr/0006-production-transactions.md)
+defines transaction revocation, successful no-op version publication and bounded
+state/scratch growth. The engine is internal, not a public mutation escape hatch.
+The public APIs are experimental. Named action execution, element/binding exports, events,
 routing and replay remain later acceptance gates; the candidate snippets below
 are not current runnable API examples.
 

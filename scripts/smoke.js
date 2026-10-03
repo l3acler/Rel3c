@@ -100,7 +100,8 @@ async function runSmoke() {
     );
     console.log('[smoke]    src/index.js served successfully');
 
-    for (const module of ['app.js', 'errors.js', 'records.js', 'actions/schema.js', 'state/initial-state.js']) {
+    for (const module of ['app.js', 'errors.js', 'records.js', 'actions/schema.js', 'state/initial-state.js',
+      'state/transactions.js', 'state/data.js', 'state/draft.js', 'state/graph.js']) {
       const response = await fetchUrl(`${base}/src/runtime/${module}`);
       assert.equal(response.statusCode, 200, 'Runtime module must be served: ' + module);
       assert.ok(response.headers['content-type']?.includes('application/javascript'));
@@ -109,7 +110,7 @@ async function runSmoke() {
     assert.ok(mainJsRes.body.includes('app.mount()'), 'Example must use default public mounting');
     assert.ok(!mainJsRes.body.includes('innerHTML') && !mainJsRes.body.includes('addEventListener'),
       'Example consumes public lifecycle without manual DOM/event behavior');
-    console.log('[smoke]    A.1 lifecycle modules and public-only example OK');
+    console.log('[smoke]    A.1/A.2 lifecycle/transaction modules and public-only example OK');
 
     console.log('\n[smoke] ALL SMOKE CHECKS PASSED.');
   } finally {

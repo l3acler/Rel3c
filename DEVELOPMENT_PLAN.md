@@ -1,18 +1,18 @@
 # Framework development plan
 
-**Status:** Phase 0 complete; Phase A in progress with A.1 verified. Later tasks remain planned.
+**Status:** Phase 0 complete; Phase A in progress with A.1/A.2 verified. Later tasks remain planned.
 
 **Created:** 30 September 2026.
 
 **Source:** [Framework_PRD.md](Framework_PRD.md), version 2.3, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** Phase A — core runtime (A.1 complete; next task A.2).
+**Current milestone:** Phase A — core runtime (A.1/A.2 complete; next task A.3).
 
 ## 1. Purpose and scope
 
 This document turns the product requirements into an implementation backlog. The framework is the product: its state engine, DOM abstraction, event system, router, scheduler, deterministic runtime, tools, package, and documentation. Small examples validate public APIs. The assignment's separate demonstration application is a later integration task and must not determine the framework architecture.
 
-The repository contains browser-native public lifecycle exports, a development server/public-only text example, tested transaction/view/action-schema spikes, equivalent-work Node/browser measurements, and typed dispatch/graph snapshot evidence. Phase 0 is complete: copy-on-write is selected for Phase A, with stable graph IDs, explicit action inputs, acyclic supported data, element/binding syntax and proposed browser/input qualification recorded in ADRs. Task 0.8's shared validation findings were corrected and remeasured in 0.9. A.1 implements initial ownership, schema registration, mount/dispose and cleanup/errors; public transactions/dispatch execution/reactive DOM are not yet implemented. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
+The repository contains browser-native public lifecycle exports, a development server/public-only text example, tested transaction/view/action-schema spikes, equivalent-work Node/browser measurements, and typed dispatch/graph snapshot evidence. Phase 0 is complete: copy-on-write is selected for Phase A, with stable graph IDs, explicit action inputs, acyclic supported data, element/binding syntax and proposed browser/input qualification recorded in ADRs. Task 0.8's shared validation findings were corrected and remeasured in 0.9. A.1 implements initial ownership, schema registration, mount/dispose and cleanup/errors; A.2 adds app-owned production COW transactions, revocation, stable IDs and state/scratch growth guards with fresh port evidence. Public dispatch execution/reactive DOM are not yet implemented. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
 
 The PRD remains the source of truth for acceptance criteria. Changes to product scope or execution contracts require corresponding PRD changes and an explanation. Architecture choices require an architecture decision record (ADR), supporting tests, and measurements where applicable.
 
@@ -121,7 +121,7 @@ Deliver the root scaffold, isolated prototypes, shared fixture suite, reproducib
 ### Tasks
 
 - [x] **A.1 — Establish application ownership and public entry.** Dependencies: 0.9. Define create/mount/dispose lifecycle, app-owned store, action registry, view invocation context, and development error reporting. Acceptance: a public-import example mounts and disposes; applications need no internal imports. Evidence: [ADR 0005](docs/adr/0005-application-lifecycle.md), [implemented API](docs/api/application.md), [A.1 report](docs/reports/task-A.1-application-lifecycle.md) and public root example. Text-only lifecycle/owned initial state and explicit schema registration work; dispatch execution intentionally throws until A.3. Production COW/reactive DOM are not claimed by A.1.
-- [ ] **A.2 — Implement production transactions.** Dependencies: A.1. Adapt COW per ADR 0003 into runtime code with read-only committed views, deep transactions, stable object identity, original-prototype rejection, descriptor validation and active/completed DAG traversal. Define production growth/depth limits or safe traversal; codec budgets do not bound the backend. Acceptance: prototype correctness/type-policy fixtures pass against the runtime; nested writes, add/delete, aliases, and array changes publish atomically; leaked drafts reject use after commit/abort. Remeasure materialization/indexing changes before cost claims.
+- [x] **A.2 — Implement production transactions.** Dependencies: A.1. Adapt COW per ADR 0003 into runtime code with read-only committed views, deep transactions, stable object identity, original-prototype rejection, descriptor validation and active/completed DAG traversal. Define production growth/depth limits or safe traversal; codec budgets do not bound the backend. Acceptance: prototype correctness/type-policy fixtures pass against the runtime; nested writes, add/delete, aliases, and array changes publish atomically; leaked drafts reject use after commit/abort. Remeasure materialization/indexing changes before cost claims. Evidence: [ADR 0006](docs/adr/0006-production-transactions.md), [A.2 verification/measurements](docs/reports/task-A.2-production-transactions.md), 86 production transaction checks, seven changing-workload equivalence checks, 33 Chrome checks and a fingerprinted Node port comparison. Engine is internal; A.3 public dispatch remains gated.
 - [ ] **A.3 — Implement named dispatch and ordering.** Dependencies: A.2. Validate names/payloads, reject async/thenable actions, assign committed versions, and queue nested dispatches. Decide FIFO ordering, error propagation, and whether nested dispatches from a failed parent are discarded before implementation. Acceptance: observers see complete versions only; throwing or Promise-returning actions publish none; ordering fixtures include successful and failed parents and children.
 - [ ] **A.4 — Track exact dependencies.** Dependencies: A.2. Track object-property reads, property existence, key iteration, array length/structure, and item-property reads. Replace stale dependency sets when branches change. Acceptance: unrelated properties invalidate different observers, alias writes find the same dependencies, and item edits do not invalidate unrelated items or list structure.
 - [ ] **A.5 — Implement computed values.** Dependencies: A.4. Add lazy caching, chained dependencies, dynamic dependency replacement, disposal, and cycle detection. Acceptance: unobserved dirty computations remain lazy, observed values recompute only as needed, and cycles fail with a useful error.
@@ -233,11 +233,12 @@ Additional PRD gates: transaction comparison is covered by 0.2–0.6/0.9; tagged
 
 ## 11. Decision register
 
-This register tracks recorded architecture choices and later open decisions, not stable public contracts. Phase 0 choices are in ADRs 0001–0004: elements/binding tokens, explicit action modes/acyclic data, COW/logical identity, and browser/input qualification targets. ADR 0005 records the implemented A.1 lifecycle/registration surface. Queue failure details, full public API integration, final formats and release compatibility remain later gates below.
+This register tracks recorded architecture choices and later open decisions, not stable public contracts. Phase 0 choices are in ADRs 0001–0004: elements/binding tokens, explicit action modes/acyclic data, COW/logical identity, and browser/input qualification targets. ADR 0005 records the implemented A.1 lifecycle/registration surface. ADR 0006 records A.2 production ownership, native revocation, successful no-op versions and conservative state/scratch growth limits. Queue failure details, full public API integration, final formats and release compatibility remain later gates below.
 
 | Decision | Evidence needed | Decision gate |
 | --- | --- | --- |
 | Transaction strategy and stable graph identity | Shared correctness fixtures and measured cost/tails | 0.9, before production engine |
+| Production state/scratch growth, revocation and no-op versions | Runtime fixture ports, growth/alias tests and port measurements | A.2, ADR 0006; internal contract implemented |
 | Supported state/payload types, aliases, cycles, numeric cases | Validation and graph round-trip fixtures | 0.8/0.9; finalize snapshot rules in C.1 |
 | Public element syntax and optional templates | Usability, parsing/cache, escaping, event ownership | 0.7/0.9 |
 | Dispatch schema, nested order, failure and no-op behavior | Type fixtures and explicit transition cases | 0.8/A.3, before core contract freeze |
@@ -607,6 +608,44 @@ Remaining limitations / blocking dependency: A.2 is next. No production COW
 
 Release candidates should progress through the Phase A core gate, Phase B auditor gate, Phase C replay gate, and Phase D product gate. Releases explicitly state completed phases. No package publication, deployment, or separate demonstration-app work is implied by this planning document.
 
+```text
+Task ID: A.2
+Status / owner: done / Codex
+Change reference: src/runtime/state transaction/data/draft/graph modules;
+  app-owned production store, fixture/oracle/type-policy/growth tests,
+  browser integration and runtime benchmark scripts/datasets
+Observable behavior delivered:
+  - Deep COW transactions, frozen committed snapshots, stable IDs, alias/array
+    semantics, untouched sharing and immutable net change metadata.
+  - Atomic success/failure; every successful internal commit advances one version,
+    including no-op data. Native draft revocation includes reflected access.
+  - Descriptor/type/DAG validation and conservative graph/scratch growth guards;
+    sparse slots, detached imports, text/keys and depth grafts cannot bypass them.
+  - Public app owns/disposes the store; no direct engine exports or public action
+    execution before A.3. No runtime spike/framework dependency.
+Verification commands and results:
+  - Combined Node tests: 424/424 (31 lifecycle, 86 transactions, 292 spike,
+    15 workload); 12 seeds x 160 attempts plus 960 recovery no-op commits.
+  - npm run test:types: positive TS/JS and 45 negative lines pass; no emit.
+  - npm run test:browser: 33 Chrome checks pass, including six internal-engine
+    cases and the public default-mount root example; root smoke passes.
+  - npm run bench:runtime: final 84 timing trials/5,040 samples, 28 separate
+    memory/GC profiles; every changing-workload equivalence check passes.
+    Port has higher medians than spike; memory/GC observations are mixed.
+  - npm ls --omit=dev: empty; source fingerprint/docs link/diff checks pass.
+Environment / browser checks: Apple M4, 10 cores, 16 GiB, Darwin 24.6 arm64;
+  Node 26.3.0/V8 14.6.202.34-node.20, TypeScript 5.9.3 development-only,
+  isolated Chrome 154.0.8037.93/V8 15.4.80.19. In-app discovery unavailable;
+  approved isolated runner used, browser/server/profile closed.
+Documentation or ADR updated: ADR 0006, ADR 0003/0005 follow-up notes, A.2 report,
+  public API status, README/benchmark guide, PRD and decision/task tracking.
+Remaining limitations / blocking dependency: A.3 next; no public named execution,
+  nested queues, subscriptions/computed/bindings/events/router/replay. Guards do
+  not measure heap/history or bound arbitrary callback CPU. No universal speed,
+  cross-browser/IME or leak guarantee. ADR 0001 user edits preserved; uncommitted,
+  no push. Historical datasets remain separate from current source evidence.
+```
+
 ## 14. Completion checklist
 
 - [x] Both transaction strategies were measured on equivalent workloads; the selected strategy has an evidence-backed ADR (0003, task 0.9).
@@ -620,4 +659,4 @@ Release candidates should progress through the Phase A core gate, Phase B audito
 - [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Next implementation task:** A.2. Adapt the selected COW transactions and stable graph identity into production modules, port correctness/type-policy fixtures, define transaction growth/depth policy, and preserve atomic publication/revocation before A.3 named dispatch.
+**Next implementation task:** A.3. Integrate named dispatch/payload ownership and guards with the production store. Specify FIFO, parent-abort discard, child errors and queue bounds before implementing nested ordering. A.2's successful no-op version contract is already implemented internally; public registered actions still do not execute.

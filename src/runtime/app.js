@@ -1,6 +1,6 @@
 import { FrameworkError, fail, observePromise, requireSync } from "./errors.js";
 import { readRecord } from "./records.js";
-import { ownInitialState } from "./state/initial-state.js";
+import { createTransactionStore } from "./state/transactions.js";
 import { createActionSchema, ownActionRegistry } from "./actions/schema.js";
 
 const targets = new WeakMap();
@@ -51,10 +51,10 @@ export function createApplication(config, frameworkVersion) {
     }
     throw error;
   }
-  let state;
+  let store;
   let registry;
   try {
-    state = ownInitialState(
+    store = createTransactionStore(
       options.initialState === undefined ? {} : options.initialState,
     );
     registry = ownActionRegistry(
@@ -112,7 +112,7 @@ export function createApplication(config, frameworkVersion) {
         fail("ACTION_UNKNOWN", "Unknown registered action name.");
       fail(
         "FEATURE_UNAVAILABLE",
-        "Action execution is not implemented in A.1; production transactions/dispatch follow in A.2/A.3.",
+        "Named action execution is not implemented yet; the internal transaction store is ready and public dispatch follows in A.3.",
       );
     } catch (error) {
       report(error, "dispatch");
@@ -139,11 +139,11 @@ export function createApplication(config, frameworkVersion) {
     },
     get state() {
       live();
-      return state;
+      return store.getState();
     },
     get stateVersion() {
       live();
-      return 1;
+      return store.getVersion();
     },
     onDispose(cleanup) {
       register(appCleanups, cleanup);
@@ -175,7 +175,7 @@ export function createApplication(config, frameworkVersion) {
       const attemptCleanups = [];
       mountCleanups = attemptCleanups;
       const context = Object.freeze({
-        state,
+        state: store.getState(),
         actions,
         dispatch,
         onDispose(cleanup) {
@@ -263,7 +263,8 @@ export function createApplication(config, frameworkVersion) {
       target = null;
       defaultTarget = null;
       node = null;
-      state = null;
+      store.dispose();
+      store = null;
       registry.clear();
       registry = null;
       view = null;

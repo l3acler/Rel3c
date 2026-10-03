@@ -2,6 +2,11 @@
 
 Status: accepted Phase 0 architecture decision for Phase A; not a shipped core.
 
+A.2 follow-up: the production COW store is implemented and owned by applications.
+[ADR 0006](0006-production-transactions.md) records growth/revocation/version
+policy and links fresh evidence. Named dispatch and the public core vertical
+slice remain later gates; Phase 0 measurements below stay historical.
+
 Date: 2026-10-02 (Bahrain). Task: 0.9. Sources: Framework_PRD.md §3/§4/§9;
 STATE-1/STATE-2, ACTION-1, DOM-2; tasks 0.5–0.8.
 

@@ -1,8 +1,8 @@
 # Application lifecycle — A.1
 
 Experimental public API. Implemented: owned initial state/schema registration,
-synchronous text mounting, cleanup and disposal. Transactions/dispatch execution
-(A.2/A.3), reactive elements (A.4–A.8), events (A.9/B), routing and replay remain
+synchronous text mounting, cleanup and disposal. A.2 adds an internal production
+COW store; named dispatch execution (A.3), reactive elements (A.4–A.8), events (A.9/B), routing and replay remain
 unimplemented. This document describes what actually runs today.
 
 ## Run from the root
@@ -56,12 +56,15 @@ keys/accessors/symbol keys reject. The placeholder's `actions`/`seed` options
 are not implemented; do not treat planned PRD sketches as current examples.
 
 Instance properties are immutable: `version` is the framework package version;
-`stateVersion` is 1 in A.1, not the package version; `schemaVersion`, `actionNames`
+`stateVersion` still stays 1 while public dispatch is unavailable, not the package version; `schemaVersion`, `actionNames`
 and `actions` describe registration. `status` and `mounted` expose lifecycle.
 `state` is an owned deeply frozen graph, never the caller's original object.
 It is not a reactive proxy yet. Supported data follows ADR 0002/0005. Construction
 guards are fixed (128 levels, 10,000 nodes, 100,000 properties/array slots,
-1,000,000 UTF-16 text/key units); transaction/history budgets remain later work.
+1,000,000 UTF-16 text/key units). A.2 applies these guards to the internal engine's
+imports, monotonic transaction growth and prospective committed graph. See
+[ADR 0006](../adr/0006-production-transactions.md) for the conservative accounting;
+exact heap/history budgets remain later work.
 
 Mount appends one Text node, treating HTML-looking strings as text. Other view
 objects, numbers, booleans, Promises and thenables reject. Element functions and
@@ -85,7 +88,7 @@ const schema = createActionSchema({ version: 'counter/1' })(({ action }) => ({
 const app = createApp({ initialState: { count: 0 }, schema });
 console.log(app.actionNames); // ['increment', 'setCount']
 // app.actions.increment() / app.dispatch('increment') throw FEATURE_UNAVAILABLE.
-// No action body runs and no version is committed in A.1.
+// No registered action body runs and no version is committed through the public API yet.
 app.dispose();
 ```
 

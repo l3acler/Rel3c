@@ -3,8 +3,8 @@
  *
  * Public Entry Point
  *
- * A.1 implements owned application construction, text-only mounting and disposal.
- * Transactions, action execution, reactive DOM and routing remain later tasks.
+ * A.1 implements application lifecycle; A.2 adds the internal COW transaction store.
+ * Named action execution, reactive DOM and routing remain later tasks.
  */
 
 import { createApplication } from "./runtime/app.js";
@@ -19,9 +19,10 @@ export const VERSION = "0.1.0";
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "A.1 - Application Ownership and Lifecycle",
+  phase: "A.2 - Production Transactions",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
+    "Internal copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2; public dispatch follows A.3)",
     "DOM-1: Declarative DOM abstraction (planned Phase A)",
     "DOM-2: Fine-grained DOM updates (planned Phase A)",
     "STATE-1: Deep reactive store (planned Phase A)",

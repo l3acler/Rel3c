@@ -18,6 +18,7 @@
     "test:browser": "node scripts/check-app-lifecycle.js",
     "test:spikes": "node --test 'spikes/**/*.test.js'",
     "bench:spikes": "node scripts/bench-spikes.js",
+    "bench:runtime": "node scripts/bench-runtime.js",
     "bench:spikes:browser": "node scripts/bench-spikes-browser.js",
     "test:benchmarks": "node --test 'benchmarks/**/*.test.js'",
     "check:view-syntax": "node scripts/check-view-syntax.js",

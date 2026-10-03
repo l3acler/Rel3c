@@ -18,7 +18,7 @@ A standalone JavaScript frontend framework built from scratch on a **determinist
 
 ## Overview & Purpose
 
-`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and the A.1 public lifecycle are complete; transactions, reactive elements, events and routing remain later tasks.
+`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes, the A.1 public lifecycle and the A.2 internal production transaction engine are complete; named dispatch, reactive elements, events and routing remain later tasks.
 
 The planned runtime uses the following capabilities; they are not yet shipped public features:
 1. **Fine-Grained Reactive Bindings (`DOM-1`, `DOM-2`)**: State properties track which exact DOM nodes or computed values depend on them. Updating one property touches only its bound DOM node, leaving unaffected nodes and browser focus untouched.
@@ -59,9 +59,10 @@ The planned runtime uses the following capabilities; they are not yet shipped pu
 
 - **Phase A — Core Runtime (In Progress)**:
   - [x] **A.1 Public Application Lifecycle**: Owned initial state/action registration, framework-called text views, mount/dispose, cleanup/error reporting and public-only root example. See [current API](docs/api/application.md), [ADR 0005](docs/adr/0005-application-lifecycle.md) and [verification](docs/reports/task-A.1-application-lifecycle.md).
-  - [ ] **A.2 Production Transactions**: Next: adapt the selected COW engine.
+  - [x] **A.2 Production Transactions**: App-owned COW store, frozen snapshots, stable IDs, aliases/arrays, atomic publication/rollback, native draft revocation and growth guards. See [ADR 0006](docs/adr/0006-production-transactions.md) and [verification/measurements](docs/reports/task-A.2-production-transactions.md).
+  - [ ] **A.3 Named Dispatch and Ordering**: Next: payload ownership/guards, action execution and nested queues.
 
-No action bodies execute in A.1. Reactive elements, events, routing, controlled services, recording and replay are not shipped yet.
+No registered action bodies execute through the public API yet. A.2's engine is internal; it is not a public direct-mutation API. Reactive elements, events, routing, controlled services, recording and replay are not shipped yet.
 
 > [!NOTE]
 > Per the project instructions, planned features for Phases A–D (core runtime, router, deterministic ticks, replay, inspector) are currently under development or scheduled. They are not claimed as shipped until their respective acceptance gates pass.
@@ -113,8 +114,9 @@ override its location with `MINI_FRAMEWORK_CHROME_PATH`):
 npm run test:browser
 ```
 
-Current verification: 331 Node tests (31 public, 292 spike, eight workload), 45
-negative type lines (20 public + 25 spike), and 27 public lifecycle browser checks.
+Current verification: 424 Node tests (31 lifecycle, 86 production transaction,
+292 spike, 15 workload), 45 negative type lines (20 public + 25 spike), and 33
+browser lifecycle/internal transaction checks.
 Type checks include the plain-JS root example and require `npm ci`. Startup and
 Node tests still need no dependency installation. Native input/IME and broad
 cross-browser qualification remain later work.
@@ -137,6 +139,19 @@ Use `-- --quick` on either benchmark command for a harness smoke check. See [ben
 npm run test:spikes
 npm run test:benchmarks
 ```
+
+Measure the bounded production port against the selected COW spike separately:
+
+```bash
+npm run bench:runtime
+```
+
+Use `-- --quick` only for a harness smoke check. The full run has 84 timing trials
+and 28 separate memory/GC profiles. Collect without concurrent tests/benchmarks.
+Changing-workload state/identity hashes, versions and net invalidation totals must
+match; successful no-op versions and resource-limit behavior intentionally differ
+from the old spike outside these cases. The current production port is slower,
+not a speedup. See [A.2 measurements](docs/reports/task-A.2-production-transactions.md).
 
 Task 0.5 verifies 157 transaction tests, including 12 seeded sequences and 5,760 programmed transaction attempts across reference, copy-on-write, and staged-operation engines. Task 0.9 selects COW as the Phase A basis and adds 17 type-policy tests; the engines remain isolated in `spikes/`, not shipped public runtime code.
 

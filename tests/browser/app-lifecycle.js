@@ -1,5 +1,7 @@
 // Browser instrumentation may construct fixtures/read DOM. Applications use public exports.
 import { createApp, createActionSchema, FrameworkError, FRAMEWORK_INFO } from '../../src/index.js';
+// Internal engine imports are test instrumentation, never normal application APIs.
+import { createTransactionStore } from '../../src/runtime/state/transactions.js';
 const assert = (condition, message = 'Assertion failed') => { if (!condition) throw new Error(message); };
 const throws = (run, code) => {
   try { run(); } catch (error) { assert(error.code === code, 'Expected ' + code + ', got ' + error); return error; }
@@ -41,7 +43,7 @@ window.runAppLifecycleTests = async () => {
     throws(() => a.mount(), 'APP_DISPOSED');
   });
   await test('public browser-native module exports current lifecycle metadata', () => {
-    assert(FRAMEWORK_INFO.phase.startsWith('A.1')); assert(Object.isFrozen(FRAMEWORK_INFO));
+    assert(FRAMEWORK_INFO.phase.startsWith('A.2')); assert(Object.isFrozen(FRAMEWORK_INFO));
     assert(typeof createActionSchema === 'function' && typeof FrameworkError === 'function');
   });
   await test('lazy create, explicit mount, terminal/idempotent dispose', () => {
@@ -160,6 +162,52 @@ window.runAppLifecycleTests = async () => {
   await test('detached DOM targets can mount and dispose without a connected page', () => {
     const target = document.createElement('div'); const app = createApp({ target, view: () => 'detached' });
     assert(!target.isConnected && target.textContent === 'detached'); app.dispose(); assert(!target.firstChild);
+  });
+  await test('A.2 transactions publish atomically and throwing bodies roll back', () => {
+    const store = createTransactionStore({ n: 0, rows: [1, 2] }); const before = store.getState();
+    const tx = store.begin(); tx.draft.n = 1; tx.draft.rows.reverse();
+    assert(store.getState() === before && before.n === 0); const result = tx.commit();
+    assert(result.version === 2 && result.state.n === 1 && result.state.rows.join(',') === '2,1');
+    const published = store.getState(); const failure = Error('abort');
+    try { store.run(draft => { draft.n = 9; throw failure; }); } catch (error) { assert(error === failure); }
+    assert(store.getState() === published && store.getVersion() === 2); store.dispose();
+  });
+  await test('A.2 aliases, moved item identity and untouched branches survive native array operations', () => {
+    const shared = { n: 0 }; const store = createTransactionStore({ a: shared, b: shared, rows: [shared, { n: 1 }], untouched: {} });
+    const before = store.getState(), id = store.getObjectId(before.a);
+    store.run(draft => { const held = draft.rows.shift(); draft.rows.push(held); held.n++; });
+    const after = store.getState(); assert(after.a === after.b && after.a === after.rows[1]);
+    assert(store.getObjectId(after.a) === id && after.a.n === 1 && before.a.n === 0 && after.untouched === before.untouched);
+    store.dispose();
+  });
+  await test('A.2 committed metadata is exact and freezes supported data', () => {
+    const store = createTransactionStore({ a: { n: -0 }, b: { n: 0 } }); const id = store.getObjectId(store.getState().a);
+    const result = store.run(draft => { draft.a.n = 0; draft.a.extra = undefined; });
+    assert(result.affectedProperties.length === 3 && result.affectedProperties.every(change => change.targetId === id));
+    assert(Object.hasOwn(result.state.a, 'extra') && Object.isFrozen(result.state.a) && Object.isFrozen(result.changes)); store.dispose();
+  });
+  await test('A.2 successful no-op advances a version and native revocation also blocks reflection', () => {
+    const store = createTransactionStore({ rows: [1] }); const before = store.getState(); const tx = store.begin(), held = tx.draft.rows;
+    const result = tx.commit(); assert(result.isNoop && result.version === 2 && result.state === before);
+    for (const read of [() => held.length, () => Object.isExtensible(held), () => Array.isArray(held)]) {
+      let rejected = false; try { read(); } catch (error) { rejected = error instanceof TypeError; } assert(rejected);
+    }
+    store.dispose();
+  });
+  await test('A.2 array and depth growth limits reject without partial publication', () => {
+    const store = createTransactionStore({ rows: [] }); const before = store.getState();
+    throws(() => store.run(draft => { draft.rows[100000] = 1; }), 'STATE_LIMIT'); assert(store.getState() === before);
+    throws(() => store.run(draft => { let node = draft; for (let i = 0; i < 128; i++) { node.child = {}; node = node.child; } }), 'STATE_LIMIT');
+    assert(store.getState() === before && store.getVersion() === 1); store.dispose();
+  });
+  await test('A.2 illegal native async work is rejected and its late draft mutation is observed', async () => {
+    let unhandled = 0; const handler = () => { unhandled++; }; window.addEventListener('unhandledrejection', handler);
+    const store = createTransactionStore({ n: 0 });
+    try {
+      throws(() => store.run(async draft => { draft.n = 1; await 0; draft.n = 2; }), 'TRANSACTION_ASYNC');
+      await new Promise(resolve => setTimeout(resolve, 20));
+      assert(store.getVersion() === 1 && store.getState().n === 0 && unhandled === 0);
+    } finally { store.dispose(); window.removeEventListener('unhandledrejection', handler); }
   });
   await test('100 cycles return owned nodes, cleanup counts and target claims to baseline', () => {
     const target = host(); let resources = 0;

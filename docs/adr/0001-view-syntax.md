@@ -66,14 +66,14 @@ browser checks, measurements, and limitations.
 
 ## Adoption gates
 
-| Gate | Elements + tokens | Templates + tokens | Eager templates |
-| --- | --- | --- | --- |
-| Native JavaScript, no compilation | Pass | Pass | Pass |
-| No mandatory arrow wrapper for a property | `bind.prop` | `${bind.prop}` | `${state.prop}` |
-| Exact per-binding dependency tracking | Pass | Pass | Fail: whole-view capture |
-| No dynamic HTML injection; inline events rejected | Pass in supported subset | Pass in supported subset | Pass in supported subset |
-| Owned handlers and unmount cleanup | Pass | Pass | Pass |
-| Cached parse and native clone | Not applicable | Pass | Pass |
+| Gate                                              | Elements + tokens        | Templates + tokens                   | Eager templates          |
+| ------------------------------------------------- | ------------------------ | ------------------------------------ | ------------------------ |
+| Native JavaScript, no compilation                 | Pass                     | Pass                                 | Pass                     |
+| No mandatory arrow wrapper for a property         | `bind.prop`            | `${bind.prop}` | `${state.prop}` |                          |
+| Exact per-binding dependency tracking             | Pass                     | Pass                                 | Fail: whole-view capture |
+| No dynamic HTML injection; inline events rejected | Pass in supported subset | Pass in supported subset             | Pass in supported subset |
+| Owned handlers and unmount cleanup                | Pass                     | Pass                                 | Pass                     |
+| Cached parse and native clone                     | Not applicable           | Pass                                 | Pass                     |
 
 `WeakMap` lookup is the constant-time cache operation, not parsing, cloning,
 inserting nodes, or resolving slot paths. Static HTML is developer-authored;
