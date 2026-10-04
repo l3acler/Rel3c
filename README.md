@@ -22,7 +22,7 @@ framework addition or change.
 
 ## Overview & Purpose
 
-`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and A.1–A.7 lifecycle, transactions, named dispatch, exact dependencies and computed values are complete. Declarative elements and exact bindings are implemented; events and routing remain later tasks.
+`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and A.1–A.9 lifecycle, transactions, named dispatch, exact dependencies and computed values are complete. Declarative elements and exact bindings are implemented; scoped click callbacks are implemented; general events and routing remain later tasks.
 
 The runtime implements named transactions and frame-batched reactive rendering.
 Deterministic simulation services remain planned:
@@ -46,7 +46,7 @@ Deterministic simulation services remain planned:
    Decoupling simulation updates from browser `requestAnimationFrame` allows applications to run at a consistent logical rate (e.g., 60 Hz simulation ticks) regardless of whether the user's monitor runs at 30 Hz, 60 Hz, 120 Hz, or 240 Hz. Optional render interpolation (`TIME-2`) visually smooths transforms without altering authoritative state hashes.
 
 4. **Why Framework-Owned Event Delegation?**
-   Native browser events are captured by framework-managed root delegates. Application components register declarative handlers via framework attributes rather than calling imperative `addEventListener()` on elements. This guarantees automatic resource cleanup (`LIFE-1`) when components unmount, eliminating memory leaks.
+   Native browser events are captured by framework-managed root delegates. Application components register declarative handlers via framework attributes rather than calling imperative `addEventListener()` on elements. This guarantees automatic resource cleanup (`LIFE-1`) when components unmount. Repeated-cycle resource checks cover owned cleanup; they do not prove heap collection.
 
 ---
 
@@ -74,7 +74,11 @@ Deterministic simulation services remain planned:
 
   - [x] **A.7 Render Frames**: Latest-value deduplication, equal-value write suppression, cancellation and explicit flush. See [batch verification](docs/reports/task-A.6-A.7-dom-frames.md).
 
-Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Declarative elements and bindings are shipped; keyed lists, events, routing, controlled services, recording and replay remain future work.
+  - [x] **A.8 Keyed Collections**: Insert/remove/reorder with retained nodes, focus and exact item bindings. See [collections API](docs/api/collections.md).
+
+  - [x] **A.9 Scoped Clicks and Cleanup**: One bubbling delegate, zero-argument action callbacks and full scope disposal. See [click API](docs/api/events.md).
+
+Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Declarative elements and bindings are shipped; general events, routing, controlled services, recording and replay remain future work.
 
 > [!NOTE]
 > Per the project instructions, planned features for Phases A–D (core runtime, router, deterministic ticks, replay, inspector) are currently under development or scheduled. They are not claimed as shipped until their respective acceptance gates pass.
@@ -113,6 +117,12 @@ a responsive Launch Board with computed progress, conditional content, native
 form settings, burst updates and rollback. Its [instructions](examples/features/README.md)
 explain native form reloads and console commands for live updates.
 
+For clickable controls without a reload, open
+[http://localhost:3000/examples/keyed/](http://localhost:3000/examples/keyed/).
+The [keyed tasks example](examples/keyed/README.md) demonstrates public `onClick`,
+item bindings, retained rows, scope cleanup and rollback. Native text edits remain
+local until input synchronization is implemented.
+
 ### 2. Run the Smoke Test
 Verifies public imports, module integrity, and dev server response headers:
 ```bash
@@ -132,9 +142,9 @@ override its location with `MINI_FRAMEWORK_CHROME_PATH`):
 npm run test:browser
 ```
 
-Current verification: 235 runtime tests, 292 spike tests and 15 workload tests,
-67 negative type lines, and 60 browser
-lifecycle/transaction/dispatch/reactivity checks.
+Current verification: 272 runtime tests, 292 spike tests and 15 workload tests,
+76 negative type lines, and 73 browser
+lifecycle/transaction/dispatch/reactivity/DOM/list/click checks.
 Type checks include the plain-JS root example and require `npm ci`. Startup and
 Node tests still need no dependency installation. Native input/IME and broad
 cross-browser qualification remain later work.
@@ -243,8 +253,24 @@ app.flush(); // Optional synchronous visual boundary; avoids a duplicate frame w
 
 Bindings track each property read, so unrelated nodes retain identity and focus.
 Native form editing remains local until event/state synchronization is implemented.
-Click/scroll/key registration, shared route state and navigation remain future
+`onClick` now registers scoped click callbacks; scroll/key registration, shared route state and navigation remain future
 APIs; the planned examples below are explicitly unimplemented.
+
+Register an implemented click action using public imports:
+
+```js
+import { createApp, createActionSchema, div, button, span } from './src/index.js';
+const schema = createActionSchema()(({ action }) => ({ increment: action(draft => { draft.count++; }) }));
+const counter = createApp({ initialState: { count: 0 }, schema,
+  view: ({ bind, actions }) => div({ id: 'counter', class: 'counter', 'aria-live': 'polite' },
+    span('Count: ', bind.count), button({ type: 'button', onClick: actions.increment }, 'Increment')),
+});
+counter.mount();
+```
+
+Click callbacks receive no arguments, so direct no-payload actions remain valid;
+use closures for payloads. Nodes/scopes own handlers and scheduled visual work.
+See [click API](docs/api/events.md) and [collections API](docs/api/collections.md).
 
 `createActionSchema()` registers explicit no-payload/payload modes with inferred
 types. Run named actions through public wrappers or dispatch:

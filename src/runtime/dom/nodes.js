@@ -65,6 +65,11 @@ export function when(condition, yes, no = () => null) {
     fail('DOM_CONDITION_INVALID', 'when requires a boolean/binding and synchronous branch functions.');
   return node('when', { condition, yes, no });
 }
+export function keyed(items, key, view) {
+  if (!isBinding(items) || typeof key !== 'function' || typeof view !== 'function')
+    fail('LIST_INVALID', 'keyed requires an array binding, a key function and a synchronous item view.');
+  return node('keyed', { items, key, view });
+}
 export const div = (...args) => element('div', ...args);
 export const span = (...args) => element('span', ...args);
 export const p = (...args) => element('p', ...args);

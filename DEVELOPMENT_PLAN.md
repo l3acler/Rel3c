@@ -1,18 +1,18 @@
 # Framework development plan
 
-**Status:** Phase 0 complete; Phase A in progress with A.1–A.5 verified. Later tasks remain planned.
+**Status:** Phase 0 complete; Phase A in progress with A.1–A.9 verified. Later tasks remain planned.
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.4, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.9, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** Phase A — core runtime (A.1–A.7 complete; next task A.8).
+**Current milestone:** Phase A — core runtime (A.1–A.9 complete; A.10 next).
 
 ## 1. Purpose and scope
 
 This document turns the product requirements into an implementation backlog. The framework is the product: its state engine, DOM abstraction, event system, router, scheduler, deterministic runtime, tools, package, and documentation. Small examples validate public APIs. The assignment's separate demonstration application is a later integration task and must not determine the framework architecture.
 
-The repository contains browser-native public lifecycle exports, a development server/public-only text example, tested transaction/view/action-schema spikes, equivalent-work Node/browser measurements, and typed dispatch/graph snapshot evidence. Phase 0 is complete: copy-on-write is selected for Phase A, with stable graph IDs, explicit action inputs, acyclic supported data, element/binding syntax and proposed browser/input qualification recorded in ADRs. Task 0.8's shared validation findings were corrected and remeasured in 0.9. A.1 implements initial ownership, schema registration, mount/dispose and cleanup/errors; A.2 adds app-owned production COW transactions, revocation, stable IDs and state/scratch growth guards with fresh port evidence. A.3 implements public dispatch with owned payloads, synchronous guards, bounded FIFO queues and failure propagation. A.4/A.5 add exact observers, current-state read facades, lazy computed caches, chained/dynamic dependencies, cycle errors and scoped disposal. Reactive DOM remains unimplemented. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
+The repository contains browser-native public lifecycle exports, a development server/public-only text example, tested transaction/view/action-schema spikes, equivalent-work Node/browser measurements, and typed dispatch/graph snapshot evidence. Phase 0 is complete: copy-on-write is selected for Phase A, with stable graph IDs, explicit action inputs, acyclic supported data, element/binding syntax and proposed browser/input qualification recorded in ADRs. Task 0.8's shared validation findings were corrected and remeasured in 0.9. A.1 implements initial ownership, schema registration, mount/dispose and cleanup/errors; A.2 adds app-owned production COW transactions, revocation, stable IDs and state/scratch growth guards with fresh port evidence. A.3 implements public dispatch with owned payloads, synchronous guards, bounded FIFO queues and failure propagation. A.4/A.5 add exact observers, current-state read facades, lazy computed caches, chained/dynamic dependencies, cycle errors and scoped disposal. A.6/A.7 add declarative DOM and frame batching; A.8/A.9 add keyed collection scopes and minimal click events with resource cleanup. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
 
 The PRD remains the source of truth for acceptance criteria. Changes to product scope or execution contracts require corresponding PRD changes and an explanation. Architecture choices require an architecture decision record (ADR), supporting tests, and measurements where applicable.
 
@@ -127,8 +127,8 @@ Deliver the root scaffold, isolated prototypes, shared fixture suite, reproducib
 - [x] **A.5 — Implement computed values.** Dependencies: A.4. Add lazy caching, chained dependencies, dynamic dependency replacement, disposal, and cycle detection. Acceptance: unobserved dirty computations remain lazy, observed values recompute only as needed, and cycles fail with a useful error. Evidence: [reactivity API](docs/api/reactivity.md), [ADR 0008](docs/adr/0008-exact-reactivity.md) and [A.4/A.5 verification](docs/reports/task-A.4-A.5-reactivity.md).
 - [x] **A.6 — Implement declarative DOM bindings.** Dependencies: A.1, A.4. Add elements, static/reactive text, attributes, classes, styles, nested children, and conditional views. Define null/boolean children and attribute-versus-property handling for forms. Acceptance: a form and conditional section use only public APIs; reactive changes preserve unrelated nodes and reject mutation from render computations.
 - [x] **A.7 — Add frame batching and explicit flush.** Dependencies: A.3, A.6. Deduplicate dirty bindings, read latest committed values, avoid unnecessary writes, and cancel disposed work. Acceptance: several commits before one frame cause at most one latest-value write per binding; explicit flush is deterministic in tests and does not create duplicate scheduled writes.
-- [ ] **A.8 — Implement keyed collections.** Dependencies: A.4, A.6, A.7. Add keyed insertion/removal/reorder, item binding ownership, and missing/duplicate-key diagnostics. Acceptance: retained items preserve DOM identity and focus after reorder; item edits affect only dependent bindings; removed items dispose resources.
-- [ ] **A.9 — Implement scoped cleanup and minimal click events.** Dependencies: A.1, A.6, A.7. Own handlers, subscriptions, computed values, child scopes, and scheduled callbacks. Add the public click mechanism needed for the vertical slice. Acceptance: repeated mount/unmount restores resource counts; disposed scopes receive neither events nor queued writes.
+- [x] **A.8 — Implement keyed collections.** Dependencies: A.4, A.6, A.7. Add keyed insertion/removal/reorder, item binding ownership, and missing/duplicate-key diagnostics. Acceptance: retained items preserve DOM identity and focus after reorder; item edits affect only dependent bindings; removed items dispose resources.
+- [x] **A.9 — Implement scoped cleanup and minimal click events.** Dependencies: A.1, A.6, A.7. Own handlers, subscriptions, computed values, child scopes, and scheduled callbacks. Add the public click mechanism needed for the vertical slice. Acceptance: repeated mount/unmount restores resource counts; disposed scopes receive neither events nor queued writes.
 - [ ] **A.10 — Verify the core vertical slice.** Dependencies: A.3–A.9. Build a public-import counter with an unrelated bound node, a nested field, conditional content, and keyed items. Instrument binding evaluations and DOM writes. Acceptance: one click commits one version and updates exactly its dependent text; the unrelated node is unchanged; a failing action changes neither committed state nor UI.
 
 ### Exit gate and artifacts
@@ -233,7 +233,7 @@ Additional PRD gates: transaction comparison is covered by 0.2–0.6/0.9; tagged
 
 ## 11. Decision register
 
-This register tracks recorded architecture choices and later open decisions, not stable public contracts. Phase 0 choices are in ADRs 0001–0004: elements/binding tokens, explicit action modes/acyclic data, COW/logical identity, and browser/input qualification targets. ADR 0005 records the implemented A.1 lifecycle/registration surface. ADR 0006 records A.2 production ownership, native revocation, successful no-op versions and conservative state/scratch growth limits. ADR 0007 records A.3 payload ownership, FIFO queues, parent-failure discard, sibling continuation and aggregate errors. ADR 0008 records A.4/A.5 exact observers, current-state read facades, lazy computed edges, disposal and post-commit notification failures. ADR 0009 records implemented declarative elements, binding scopes, native form properties and render-frame/flush semantics. Keyed lists, final formats and release compatibility remain later gates below.
+This register tracks recorded architecture choices and later open decisions, not stable public contracts. Phase 0 choices are in ADRs 0001–0004: elements/binding tokens, explicit action modes/acyclic data, COW/logical identity, and browser/input qualification targets. ADR 0005 records the implemented A.1 lifecycle/registration surface. ADR 0006 records A.2 production ownership, native revocation, successful no-op versions and conservative state/scratch growth limits. ADR 0007 records A.3 payload ownership, FIFO queues, parent-failure discard, sibling continuation and aggregate errors. ADR 0008 records A.4/A.5 exact observers, current-state read facades, lazy computed edges, disposal and post-commit notification failures. ADR 0009 records implemented declarative elements, binding scopes, native form properties and render-frame/flush semantics. ADR 0010 records keyed item cells, focus-preserving ranges and scoped click delegation. Final formats and release compatibility remain later gates below.
 
 | Decision | Evidence needed | Decision gate |
 | --- | --- | --- |
@@ -711,7 +711,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Next implementation task:** A.8 keyed collections. A.6/A.7 are complete; this batch does not start A.8.
+**Current batch:** A.8/A.9 complete; local commit requested after verification. A.10 remains planned. See the [batch report](docs/reports/task-A.8-A.9-keyed-events.md) and [ADR 0010](docs/adr/0010-keyed-scopes-clicks.md).
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -721,5 +721,27 @@ browser checks; final counts are 235 runtime, 292 spike and 15 workload tests,
 67 negative type lines and 60 Chrome checks (including both public examples).
 See [DOM API](docs/api/dom.md), [ADR 0009](docs/adr/0009-declarative-dom-frames.md)
 and [batch evidence](docs/reports/task-A.6-A.7-dom-frames.md). The user requested a local commit after verification;
-keyed lists, events, priorities/fairness budgets and deterministic services remain
-unimplemented.
+At that milestone, keyed lists, events, priorities/fairness budgets and deterministic
+services remained unimplemented. Keyed lists and minimal clicks now ship in A.8/A.9.
+
+
+### A.8/A.9 implementation batch — complete (5 October 2026)
+
+A.8 validated before A.9: 256 runtime tests (21 focused keyed checks), 74 negative
+type lines, 65 Chrome checks and root smoke passed. A.9 adds 16 focused click/resource
+checks and six native browser checks; the public example also verifies native
+Enter/Space activation, list identity/focus, actions and disposal. Final results:
+272 runtime, 292 spike and 15 workload tests; positive TS/checked JS and 76 negative
+type lines; 73 Chrome checks; root smoke and diff checks pass. Tests instrument
+handlers/listeners, scopes, bindings, observers/computed/cells, subscriptions,
+queued jobs/frames and owned nodes. Counts return to baseline across repeated
+conditional/app cycles; stale scopes cannot handle clicks or write queued work.
+
+Public exports/types, DOCUMENTATION.md, README, API references, PRD v2.9, ADR 0010
+and the [batch report](docs/reports/task-A.8-A.9-keyed-events.md) describe implemented
+behavior. `/examples/keyed/` consumes only public imports. Existing AGENTS.md and
+browser reports are preserved outside the task commit. The user requested a local
+commit after verification; no push was requested. A.10 is next. General native
+event/cancellation APIs, input synchronization/IME, routing, priorities and replay
+remain unimplemented. Resource-count checks are not a heap-collection proof;
+rendering remains non-atomic and browser qualification is Chrome-only.

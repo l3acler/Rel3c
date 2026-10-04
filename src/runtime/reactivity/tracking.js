@@ -180,6 +180,38 @@ export function createTracking(store) {
       dispose: () => disposeResource(resource),
     });
   }
+  // Renderer-owned cells retarget keyed item/index reads without broadening
+  // their property dependencies to every array index or item key.
+  const cells = new WeakMap();
+  function cell(value) {
+    const resource = createResource("cell", () => {}, null);
+    resource.dirty = false;
+    resource.cached = value;
+    const handle = Object.freeze({
+      get value() {
+        live();
+        if (resource.disposed) fail("SCOPE_DISPOSED", "List item scope is disposed.");
+        if (active && !suppressTracking) active.nextSources.add(resource);
+        return resource.cached;
+      },
+      dispose: () => disposeResource(resource),
+    });
+    cells.set(handle, resource);
+    return handle;
+  }
+  function updateCells(updates) {
+    live();
+    if (active || notifying) fail("REACTIVITY_REENTRANT", "Cannot retarget list cells during reactive reads/notifications.");
+    const affected = new Set();
+    for (const [handle, value] of updates) {
+      const resource = cells.get(handle);
+      if (!resource || resource.disposed) fail("SCOPE_DISPOSED", "List cell is disposed.");
+      if (Object.is(resource.cached, value)) continue;
+      resource.cached = value;
+      for (const consumer of resource.dependents) affected.add(consumer);
+    }
+    invalidate(affected);
+  }
   function publish(result) {
     live();
     const previous = nodes;
@@ -231,7 +263,14 @@ export function createTracking(store) {
     if (errors.length) throw new AggregateError(errors, "Reactive notifications failed after state committed.");
   }
   return Object.freeze({
-    state, observe, computed, publish,
+    state, observe, computed, publish, cell, updateCells,
+    counts() {
+      return { observers: [...resources].filter(resource => resource.kind === "observer").length,
+        computed: [...resources].filter(resource => resource.kind === "computed").length,
+        cells: [...resources].filter(resource => resource.kind === "cell").length,
+        subscriptions: [...subscriptions.values()].reduce((sum, set) => sum + set.size, 0) +
+          [...resources].reduce((sum, resource) => sum + resource.sources.size, 0) };
+    },
     isBusy: () => active !== null || notifying,
     dispose() {
       if (disposed) return;

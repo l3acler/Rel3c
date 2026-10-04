@@ -39,12 +39,15 @@ export async function withLocalBrowser(run) {
     const open = async relativePath => {
       const { targetId } = await command('Target.createTarget', { url: server.url + relativePath, background: false });
       const { sessionId } = await command('Target.attachToTarget', { targetId, flatten: true });
+      // Native animation frames and keyboard input belong to the active page.
+      // Creating another target does not reliably activate it in headless Chrome.
+      await command('Page.bringToFront', {}, sessionId);
       const evaluate = async expression => {
         const result = await command('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sessionId);
         if (result.exceptionDetails) throw new Error(JSON.stringify(result.exceptionDetails));
         return result.result.value;
       };
-      return { evaluate, waitFor: async expression => {
+      return { evaluate, command: (method, params) => command(method, params, sessionId), waitFor: async expression => {
         for (let attempt = 0; attempt < 80; attempt++) {
           if (await evaluate(expression)) return;
           await new Promise(resolve => setTimeout(resolve, 100));

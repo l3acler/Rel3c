@@ -1,4 +1,4 @@
-// Public-only form and conditional example. Event handling comes in A.9/B.
+// Public-only form and conditional example. Scoped clicks are supported; text-input synchronization follows in Phase B.
 import { createApp, createActionSchema, div, form, label, input, span, section } from '../../src/index.js';
 const schema = createActionSchema()(({ action }) => ({
   rename: action(value => typeof value === 'string', (draft, value) => { draft.name = value; }),

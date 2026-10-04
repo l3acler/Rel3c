@@ -71,8 +71,8 @@ observed.dirty = false;
 import { div, input, derive, when } from 'mini-framework';
 // @ts-expect-error functions must be explicit binding tokens
 createApp({ view: () => div(() => 'text') });
-// @ts-expect-error events are not an A.6 element capability
-div({ onClick() {} }, 'button');
+// @ts-expect-error click handlers cannot be strings
+div({ onClick: 'handler' }, 'button');
 // @ts-expect-error raw CSS strings are unsupported
 div({ style: 'color:red' });
 // @ts-expect-error checked accepts boolean values
@@ -94,3 +94,24 @@ when(true, async () => div('text'));
 
 // @ts-expect-error flush takes no arguments
 app.flush(1);
+
+import { keyed } from 'mini-framework';
+// @ts-expect-error list sources require binding tokens
+keyed([], (row: string) => row, () => div());
+// @ts-expect-error missing keys must not typecheck
+keyed(app.bind.rows, () => undefined, () => div());
+// @ts-expect-error object keys are unsupported
+keyed(app.bind.rows, row => row, () => div());
+// @ts-expect-error async keys are unsupported
+keyed(app.bind.rows, async () => 'key', () => div());
+// @ts-expect-error async item views are unsupported
+keyed(app.bind.rows, () => 'key', async () => div());
+// @ts-expect-error item state is read-only
+keyed(app.bind.rows, () => 'key', context => { context.value.id = 'changed'; return div(); });
+// @ts-expect-error index bindings cannot be mutated
+keyed(app.bind.rows, () => 'key', context => { context.index = derive(() => 0); return div(); });
+
+// @ts-expect-error async click handlers are unsupported
+div({ onClick: async () => {} });
+// @ts-expect-error a required native Event parameter is not supplied by the A.9 API
+div({ onClick: (event: MouseEvent) => { event.preventDefault(); } });

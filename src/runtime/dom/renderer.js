@@ -1,16 +1,18 @@
 import { fail, observePromise, requireSync } from '../errors.js';
-import { isBinding, resolveBinding } from './bindings.js';
+import { createBindings, derive, isBinding, resolveBinding } from './bindings.js';
 import { isViewNode } from './nodes.js';
 import { text, prepareProperty, applyProperty, hasBindings, propertyName, validateName } from './properties.js';
 
 import { createRenderQueue } from './queue.js';
 
-export function createRenderer(document, tracking, owner, makeContext, render, report) {
+export function createRenderer(document, tracking, owner, makeContext, render, report, events) {
   const pending = createRenderQueue(document.defaultView, render, report);
   let disposed = false;
+  const scopes = new Set(), bindings = new Set();
   function scope(parent = null) {
     const result = { parent, depth: parent ? parent.depth + 1 : 0,
       children: new Set(), nodes: [], cleanups: [], disposed: false };
+    scopes.add(result);
     if (parent) parent.children.add(result);
     result.context = makeContext(cleanup => result.cleanups.push(cleanup), () => !result.disposed && !disposed);
     return result;
@@ -19,6 +21,7 @@ export function createRenderer(document, tracking, owner, makeContext, render, r
   function removeScope(current) {
     if (current.disposed) return [];
     current.disposed = true;
+    scopes.delete(current);
     const errors = [];
     for (const child of [...current.children]) errors.push(...removeScope(child));
     while (current.cleanups.length) {
@@ -48,7 +51,8 @@ export function createRenderer(document, tracking, owner, makeContext, render, r
         initial = false;
       } };
     const observer = tracking.observe(state => { normalized = read(state); return normalized; }, () => pending.add(job));
-    current.cleanups.push(() => { pending.delete(job); observer.dispose(); });
+    bindings.add(job);
+    current.cleanups.push(() => { bindings.delete(job); pending.delete(job); observer.dispose(); });
     // Initial reads already established dependencies; never evaluate twice.
     apply(normalized, initial);
     initial = false;
@@ -116,17 +120,131 @@ export function createRenderer(document, tracking, owner, makeContext, render, r
       else apply(value.condition);
       return;
     }
+    if (value.kind === 'keyed') {
+      append(document.createComment('keyed'), parent, current);
+      const end = append(document.createComment('/keyed'), parent, current);
+      let entries = new Map();
+      const range = entry => {
+        const result = [];
+        for (let node = entry.start; node; node = node.nextSibling) {
+          result.push(node);
+          if (node === entry.end) return result;
+        }
+        fail('LIST_RANGE_INVALID', 'A list range was externally modified.');
+      };
+      const place = (entry, anchor) => {
+        if (entry.end.nextSibling === anchor) return;
+        for (const node of range(entry)) end.parentNode.insertBefore(node, anchor);
+      };
+      const apply = rows => {
+        const next = new Map(), candidates = [];
+        try {
+          for (const row of rows) {
+            let entry = entries.get(row.key);
+            if (!entry) {
+              const owned = scope(current);
+              const container = document.createDocumentFragment();
+              entry = { scope: owned, start: null, end: null, container };
+              candidates.push(entry);
+              const itemCell = tracking.cell(row.item), indexCell = tracking.cell(row.index);
+              owned.cleanups.push(itemCell.dispose, indexCell.dispose);
+              const check = () => {
+                if (disposed || owned.disposed) fail('SCOPE_DISPOSED', 'List item scope is disposed.');
+              };
+              const context = Object.freeze(Object.defineProperties({ key: row.key,
+                item: createBindings(owner, check, [], () => itemCell.value),
+                index: derive(() => { check(); return indexCell.value; }, owner),
+                get value() { check(); return itemCell.value; },
+                get position() { check(); return indexCell.value; },
+              }, Object.getOwnPropertyDescriptors(owned.context)));
+              entry.itemCell = itemCell; entry.indexCell = indexCell;
+              entry.start = append(document.createComment('item'), container, owned);
+              const output = value.view(context);
+              requireSync(output, 'VIEW_RESULT_INVALID', 'Keyed item views must synchronously return declarative children.');
+              build(output, container, owned, depth + 1);
+              entry.end = append(document.createComment('/item'), container, owned);
+            }
+            next.set(row.key, entry);
+          }
+        } catch (error) {
+          const errors = candidates.flatMap(entry => removeScope(entry.scope));
+          if (errors.length) throw new AggregateError([error, ...errors], 'List construction and cleanup failed.');
+          throw error;
+        }
+        // Determine the focused retained range before inserting or moving nodes.
+        const active = document.activeElement;
+        const ordered = [...next.values()];
+        const focused = active ? ordered.findIndex(entry => !entry.container &&
+          range(entry).some(node => node === active || node.contains?.(active))) : -1;
+        try {
+          for (const entry of candidates) {
+            for (const node of [...entry.container.childNodes]) end.parentNode.insertBefore(node, end);
+            entry.container = null;
+          }
+          // Arrange around the focused range, leaving that range connected and
+          // untouched. Native focus/selection survive without blur/refocus tricks.
+          let anchor = end;
+          for (let i = ordered.length - 1; i > focused; i--) {
+            place(ordered[i], anchor); anchor = ordered[i].start;
+          }
+          if (focused !== -1) {
+            anchor = ordered[focused].start;
+            for (let i = focused - 1; i >= 0; i--) {
+              place(ordered[i], anchor); anchor = ordered[i].start;
+            }
+          }
+        } catch (error) {
+          const errors = candidates.flatMap(entry => removeScope(entry.scope));
+          if (errors.length) throw new AggregateError([error, ...errors], 'List placement and cleanup failed.');
+          throw error;
+        }
+        const errors = [];
+        for (const [key, entry] of entries) if (!next.has(key)) errors.push(...removeScope(entry.scope));
+        entries = next;
+        try {
+          tracking.updateCells(rows.flatMap(row => {
+            const entry = next.get(row.key);
+            return [[entry.itemCell, row.item], [entry.indexCell, row.index]];
+          }));
+        } catch (error) { errors.push(error); }
+        if (errors.length === 1) throw errors[0];
+        if (errors.length) throw new AggregateError(errors, 'List replacement completed with resource errors.');
+      };
+      watch(current, state => {
+        const items = resolveBinding(value.items, state, owner);
+        requireSync(items, 'REACTIVITY_ASYNC', 'List source must be synchronous.');
+        if (!Array.isArray(items)) fail('LIST_SOURCE_INVALID', 'keyed requires an array.');
+        const keys = new Set(), rows = [];
+        const keyOf = value.key;
+        for (let index = 0; index < items.length; index++) {
+          if (!Object.hasOwn(items, index)) fail('LIST_ITEM_MISSING', 'Keyed arrays cannot contain holes.');
+          const item = items[index], key = keyOf(item);
+          requireSync(key, 'REACTIVITY_ASYNC', 'List keys must be synchronous.');
+          if (key === null || key === undefined) fail('LIST_KEY_MISSING', `Missing list key at index ${index}.`);
+          if (typeof key !== 'string' && !(typeof key === 'number' && Number.isFinite(key)))
+            fail('LIST_KEY_INVALID', 'List keys must be strings or finite numbers.');
+          if (keys.has(key)) fail('LIST_KEY_DUPLICATE', `Duplicate list key ${String(key)}.`);
+          keys.add(key); rows.push({ key, item, index });
+        }
+        return rows;
+      }, apply, true);
+      return;
+    }
     const node = append(document.createElement(value.tag), parent, current);
     const keys = Object.keys(value.props), names = new Set();
     // Establish input type/multiple before children and value properties, even
     // when authored props use a different order. Reject alias collisions.
     for (const key of keys) {
       const name = propertyName(key).toLowerCase();
-      validateName(name);
+      if (key !== 'onClick') validateName(name);
       if (names.has(name)) fail('DOM_ATTRIBUTE_INVALID', `Duplicate attribute/alias ${name}.`);
       names.add(name);
     }
     const apply = key => {
+      if (key === 'onClick') {
+        current.cleanups.push(events.register(node, value.props[key], () => !disposed && !current.disposed));
+        return;
+      }
       let previousStyle;
       const applyPrepared = (prepared, initial) => {
         if (prepared.kind === 'style' && !initial && previousStyle === prepared.value) return;
@@ -151,11 +269,15 @@ export function createRenderer(document, tracking, owner, makeContext, render, r
     },
     flush: pending.flush,
     schedule: pending.schedule,
+    counts() { return { scopes: scopes.size, bindings: bindings.size,
+      ownedNodes: [...scopes].reduce((sum, scope) => sum + scope.nodes.length, 0), ...pending.counts() }; },
     dispose() {
       if (disposed) return [];
       disposed = true;
-      pending.dispose();
-      return removeScope(root);
+      const errors = [];
+      try { pending.dispose(); } catch (error) { errors.push(error); }
+      errors.push(...removeScope(root));
+      return errors;
     },
   });
 }

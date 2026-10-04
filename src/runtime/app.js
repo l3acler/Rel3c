@@ -5,7 +5,9 @@ import { createActionSchema, ownActionRegistry } from "./actions/schema.js";
 import { createDispatcher } from "./actions/dispatch.js";
 import { createTracking } from "./reactivity/tracking.js";
 import { createBindings, derive as binding } from "./dom/bindings.js";
-import { when } from "./dom/nodes.js";
+import { when, keyed } from "./dom/nodes.js";
+import { registerDiagnostics } from "./diagnostics.js";
+import { createClickEvents } from "./dom/events.js";
 import { createRenderer } from "./dom/renderer.js";
 
 const targets = new WeakMap();
@@ -80,6 +82,7 @@ export function createApplication(config, frameworkVersion) {
   let status = "created";
   let target = null;
   let renderer = null;
+  let events = null, handlingEvent = false;
   let rendering = false;
   let mountCleanups = [];
   const appCleanups = [];
@@ -136,6 +139,16 @@ export function createApplication(config, frameworkVersion) {
     rendering = true;
     try { return run(); } finally { rendering = previous; }
   }
+  function runEvent(run) {
+    if (!handlingEvent && !reporting && !dispatcher?.isActive()) reported = new WeakSet();
+    try {
+      live();
+      if (status !== "mounted" || handlingEvent || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
+        fail("EVENT_REENTRANT", "Cannot invoke click handlers during mounting, actions, rendering, reactive reads/notifications or another event/error handler.");
+      handlingEvent = true;
+      try { return run(); } finally { handlingEvent = false; }
+    } catch (error) { report(error, "event"); }
+  }
   function flush() {
     if (!rendering && !reporting && !dispatcher?.isActive() && !tracking.isBusy()) reported = new WeakSet();
     try {
@@ -159,7 +172,7 @@ export function createApplication(config, frameworkVersion) {
       get bind() { scopeLive(); return bind; },
       actions, dispatch,
       derive(read) { scopeLive(); return derive(read); },
-      when,
+      when, keyed,
       observe(read, notify) {
         scopeLive();
         const resource = observe(read, notify);
@@ -197,7 +210,7 @@ export function createApplication(config, frameworkVersion) {
       live();
       return dispatcher.dispatch(...args);
     } catch (error) {
-      if (nested) throw error;
+      if (nested || handlingEvent) throw error;
       report(error, "dispatch");
     }
   }
@@ -218,7 +231,7 @@ export function createApplication(config, frameworkVersion) {
     observe,
     computed,
     derive,
-    when,
+    when, keyed,
     get bind() { live(); return bind; },
     get status() {
       return status;
@@ -271,10 +284,11 @@ export function createApplication(config, frameworkVersion) {
       const context = makeContext(cleanup => register(attemptCleanups, cleanup),
         () => mountCleanups === attemptCleanups && ["mounting", "mounted"].includes(status));
       try {
+        events = createClickEvents(target, runEvent);
         renderer = createRenderer(target.ownerDocument, tracking, bindingOwner, makeContext, render, error => {
           reported = new WeakSet();
           report(error, "render");
-        });
+        }, events);
         render(() => {
           const output = view(context);
           observePromise(output);
@@ -285,7 +299,10 @@ export function createApplication(config, frameworkVersion) {
       } catch (cause) {
         // Invalidate the failed view scope before running its cleanup hooks.
         mountCleanups = [];
-        const cleanupErrors = renderer ? renderer.dispose() : [];
+        const cleanupErrors = [];
+        try { events?.dispose(); } catch (error) { cleanupErrors.push(error); }
+        events = null;
+        if (renderer) cleanupErrors.push(...renderer.dispose());
         cleanupErrors.push(...drain(attemptCleanups));
         renderer = null;
         targets.delete(target);
@@ -323,8 +340,11 @@ export function createApplication(config, frameworkVersion) {
       status = "disposing";
       // Stop the complete graph before scoped/user cleanup can dispose sources
       // and accidentally notify other resources in this closing application.
+      const errors = [];
+      try { events?.dispose(); } catch (error) { errors.push(error); }
+      events = null;
       tracking.dispose();
-      const errors = renderer ? renderer.dispose() : [];
+      if (renderer) errors.push(...renderer.dispose());
       errors.push(...drain(mountCleanups));
       errors.push(...drain(appCleanups));
       renderer = null;
@@ -353,6 +373,9 @@ export function createApplication(config, frameworkVersion) {
       }
     },
   });
+  registerDiagnostics(app, () => ({ ...tracking.counts(),
+    ...(renderer?.counts() ?? { scopes: 0, bindings: 0, ownedNodes: 0, queuedBindings: 0, frames: 0 }),
+    ...(events?.counts() ?? { handlers: 0, listeners: 0 }) }));
   if (defaultTarget !== undefined) app.mount(defaultTarget);
   return app;
 }

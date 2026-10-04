@@ -2,7 +2,7 @@
 
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
-application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM (A.1–A.7).
+application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM (A.1–A.9).
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -16,13 +16,15 @@ Import from `src/index.js`; applications do not need runtime internals.
 | Reactive observers | Exact property, presence, key and array subscriptions with dynamic reads |
 | Computed values | Lazy caching, chained/dynamic dependencies, disposal and cycle errors |
 | Declarative DOM | Elements, text/attribute/class/style bindings, native form properties and scoped conditionals |
+| Keyed collections | Insert/remove/reorder with retained nodes, scoped item/index reads and replacement retargeting |
+| Click events | Zero-argument callbacks, one bubbling delegate per app and scoped handler disposal |
 | Render frames | Deduplicated latest-value writes, cancelled disposed work and explicit `app.flush()` |
 | Error reporting | Readable framework error codes and a synchronous application error hook |
 | TypeScript | Inferred action names/payloads and read-only state declarations |
 
 Views construct their static tree once per mount; explicit bindings update affected
 text, attributes, classes and styles on render frames after committed actions. Conditional factories
-run when their selected boolean branch changes. Keyed lists, events, routing,
+run when their selected boolean branch changes. Scroll/keyboard/input event APIs, routing,
 persistence, controlled services, recording and replay remain unimplemented.
 
 ## Start from the project root
@@ -47,7 +49,7 @@ For a fuller example, open
 The Launch Board combines nested state, lazy computed progress, direct/derived
 bindings, class/style updates, scoped conditionals, observers, FIFO action bursts,
 rollback and optional explicit flush. Change its settings and submit the native
-GET form to reload with a new scenario. Live event-to-state synchronization is
+GET form to reload with a new scenario. Text-input-to-state synchronization is
 not implemented; the example also provides console commands for live public
 state actions. See [example instructions](examples/features/README.md).
 
@@ -88,6 +90,7 @@ explicit bindings below for updates.
 | `createApp(config)` | Create an application with owned state, registered actions and a view |
 | `createActionSchema(options)(build)` | Define explicit action input modes and an optional schema version |
 | `element(tag, props?, ...children)` and HTML helpers | Create immutable declarative elements |
+| `keyed(itemsBinding, key, view)` | Retain item scopes and DOM across list updates |
 | `derive(read)` and `when(condition, yes, no?)` | Explicit derived bindings and scoped conditional children |
 | `FrameworkError` | Framework error class with a readable message and `code` |
 | `VERSION` | Package version string |
@@ -180,7 +183,94 @@ false branch is empty. Failed construction cleans its partial scope and preserve
 the previous branch. Application disposal removes owned descendants and leaves
 host children alone. Raw HTML, event attributes, script/style elements, unsupported
 tags and executable URL protocols reject. See [DOM API](docs/api/dom.md) for the
-supported tags, errors and limits. Keyed collections and event props are future work.
+supported tags, errors and limits. Keyed collections and `onClick` are implemented; general event props remain future work.
+
+## Keyed collections
+
+Use `keyed(itemsBinding, keyOfItem, view)` to insert, remove or reorder rows while
+preserving each retained key's DOM and view scope. It is available as a public
+export and on applications/view contexts. Keys must be unique strings or finite
+numbers; missing/null keys, unsupported keys, duplicate keys, array holes and
+non-array sources reject. String `"1"` and number `1` are different keys; numeric
+0 and -0 are the same key. Validate keys before mutating an application list.
+
+```js
+import { createApp, createActionSchema, ul, li, input } from './src/index.js';
+const schema = createActionSchema()(({ action }) => ({
+  reverse: action(draft => { draft.rows.reverse(); }),
+  rename: action(draft => { draft.rows[0].name = 'Grace'; }),
+}));
+const app = createApp({ initialState: { rows: [{ id: 'a', name: 'Ada' }, { id: 'b', name: 'Lin' }] }, schema,
+  view: ({ bind, keyed }) => ul(keyed(bind.rows, row => row.id, context =>
+    li(context.index, ': ', input({ value: context.item.name })))),
+});
+app.mount();
+app.actions.reverse();
+app.flush(); // Retained inputs keep identity, focus and selection.
+app.actions.rename(); // Only the affected item's name binding changes next frame.
+```
+
+The item context includes the normal app view context plus `key`, `item` path
+bindings, an `index` binding, and read-only current `value`/`position` getters.
+The normal `bind` and `state` remain application-root reads. Read `context.value`
+and `context.position` at use time; destructured/saved values can become stale.
+Item factories run once per key; replacing an object with the same key retargets
+its bindings, observers and computed values without reconstructing its DOM.
+Static values captured by the factory remain static. Non-key item edits do not
+rerun the key selector or unrelated item bindings. Key changes remove/recreate
+that scope. Removal disposes its bindings, observers, computed values, cleanup
+hooks and pending work. Filtered/reordered arrays may come from explicit `derive`.
+
+The complete key set and new item views are prepared before the existing list
+changes. Failed preparation preserves the prior list and cleans candidates;
+correct the source and flush/commit again. Render errors preserve state and do
+not make all DOM operations atomic. Focused retained ranges remain connected
+during reorder; removing a focused row uses normal browser focus behavior.
+See [keyed list API](docs/api/collections.md) for errors and cleanup details.
+
+## Click actions and cleanup
+
+`onClick` registers a synchronous callback with no arguments and no bound `this`.
+A no-payload action wrapper can be used directly; wrap payload actions in a closure:
+
+```js
+import { createApp, createActionSchema, div, button, span } from './src/index.js';
+const schema = createActionSchema()(({ action }) => ({
+  increment: action(draft => { draft.count++; }),
+}));
+const app = createApp({ initialState: { count: 0 }, schema,
+  view: ({ actions, bind }) => div(
+    button({ type: 'button', onClick: actions.increment }, 'Increment'),
+    span(bind.count),
+  ),
+});
+app.mount();
+```
+
+The framework installs one bubbling click listener per app while it owns handlers.
+Registered child handlers run before registered ancestors. Native button keyboard
+activation, links, disabled controls and form submission retain their default
+behavior; use `type: 'button'` for controls that should not submit a form. There
+is no native Event argument or cancellation API yet. Returning a Promise/thenable
+rejects `EVENT_ASYNC`; the framework cannot cancel arbitrary user async work.
+Null/undefined registers no handler; other values reject `EVENT_HANDLER_INVALID`.
+
+Removing a conditional/keyed scope disposes its handlers, observers, computed
+values, bindings and pending work. App disposal ends the whole graph, removes the
+delegate, cancels frames, then attempts every child/root/app cleanup even when a
+hook fails. A callback may explicitly flush removal or dispose its app; later
+handlers in disposed scopes are skipped. Uncaught action/handler failures reach
+`onError` once at the event boundary (phase `event`) after remaining live handlers;
+listener exceptions surface to the browser. Successful earlier commits survive.
+Reentrant programmatic clicks during mounting/actions/reactive/render/event/error
+callbacks reject `EVENT_REENTRANT`. See [click API](docs/api/events.md) for limits.
+
+Open [http://localhost:3000/examples/keyed/](http://localhost:3000/examples/keyed/)
+for a public-import list with clickable increment, add/remove/reorder, completion,
+visibility and rollback controls. Text edits are native/local until Phase B input
+synchronization. The [example guide](examples/keyed/README.md) describes focus and
+scope behavior. Scroll/key/input handler APIs, routing, priorities and replay remain
+unimplemented; A.10's full core acceptance gate is still a separate task.
 
 ## Render frames and explicit flush
 
@@ -218,7 +308,7 @@ Rendering is not an atomic DOM transaction: successful writes survive another
 binding's failure. Derived callbacks must stay pure and synchronous.
 
 This is visual batching only. Scheduler priorities, fairness budgets, fixed
-simulation ticks, interpolation, event handling and keyed collections remain
+simulation ticks, interpolation, general event handling remain
 future work. Hidden-tab rendering follows native animation-frame behavior; use
 explicit flush for deterministic checks. No speed or heap claims are made.
 
@@ -454,7 +544,7 @@ disposal still completes and then throws an AggregateError. Hooks must be
 synchronous, and disposed view scopes reject new registrations.
 
 An optional synchronous `onError(error, { phase })` observes creation, mounting,
-dispatch, rendering and disposal failures without swallowing them. For a dispatch batch it
+dispatch, click event, rendering and disposal failures without swallowing them. For a dispatch batch it
 runs once after draining, when committed state is complete. If the hook also
 throws, its failure aggregates with the original. It cannot dispatch recovery
 work; the caller can catch the outer error and dispatch afterward. Unknown
@@ -466,8 +556,9 @@ Common error codes include `ACTION_UNKNOWN`, `ACTION_ARITY`, `ACTION_ASYNC`,
 `PAYLOAD_LIMIT`, `PAYLOAD_ASYNC`, `STATE_INVALID`, `STATE_CYCLE`, `STATE_LIMIT`,
 `TARGET_INVALID`, `APP_DISPOSED`, `LIFECYCLE_REENTRANT`, `STATE_READONLY`,
 `STATE_DETACHED`, `SCOPE_DISPOSED`, `REACTIVITY_INVALID`, `REACTIVITY_ASYNC`,
-`REACTIVITY_REENTRANT`, `REACTIVITY_CYCLE`, `COMPUTED_CYCLE` and `FLUSH_REENTRANT`.
-DOM errors and supported tags are listed in [DOM API](docs/api/dom.md).
+`REACTIVITY_REENTRANT`, `REACTIVITY_CYCLE`, `COMPUTED_CYCLE`, `FLUSH_REENTRANT`, `EVENT_REENTRANT`, `EVENT_HANDLER_INVALID` and `EVENT_ASYNC`.
+DOM errors and supported tags are listed in [DOM API](docs/api/dom.md);
+key/source errors are listed in [collections API](docs/api/collections.md).
 
 ## Resource limits
 
@@ -503,6 +594,6 @@ npm run test:types
 Browser checks require installed Chrome. Type checks require the development-only
 TypeScript installation; startup and Node tests do not. For the full reference,
 see [application API](docs/api/application.md). For current validation results,
-see [A.6/A.7 evidence](docs/reports/task-A.6-A.7-dom-frames.md). The
+see [A.8/A.9 evidence](docs/reports/task-A.8-A.9-keyed-events.md). The
 [README](README.md) provides repository structure, feature status and the remaining
 verification commands; the [PRD](Framework_PRD.md) defines future acceptance gates.

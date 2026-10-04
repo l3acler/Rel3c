@@ -1,7 +1,17 @@
 // Unit-test DOM double. Browser checks independently verify native behavior.
 export function fakeDocument() {
   class Node {
-    constructor(type) { this.ownerDocument = document; this.nodeType = type; this.childNodes = []; this.parentNode = null; }
+    constructor(type) { this.ownerDocument = document; this.nodeType = type; this.childNodes = []; this.parentNode = null; this.listeners = new Map(); }
+    addEventListener(type, listener) { if (!this.listeners.has(type)) this.listeners.set(type, new Set()); this.listeners.get(type).add(listener); }
+    removeEventListener(type, listener) { this.listeners.get(type)?.delete(listener); }
+    dispatchEvent(event) {
+      const path = []; for (let node = this; node; node = node.parentNode) path.push(node);
+      event.target = this; event.composedPath = () => path;
+      for (const node of path) for (const listener of [...node.listeners.get(event.type) ?? []]) listener(event);
+      return true;
+    }
+    click() { this.dispatchEvent({ type: 'click' }); }
+    get nextSibling() { const list = this.parentNode?.childNodes; return list ? list[list.indexOf(this) + 1] ?? null : null; }
     appendChild(node) { return this.insertBefore(node, null); }
     insertBefore(node, reference) {
       if (node.nodeType === 11) { for (const child of [...node.childNodes]) this.insertBefore(child, reference); return node; }

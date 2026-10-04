@@ -46,8 +46,8 @@ and selected on option update live booleans. The initial input/textarea defaultV
 and initial defaultChecked/defaultSelected are established once. Later commits
 update live properties, leaving reset defaults intact. Select children are built
 before its value is set; input type is set first. Nonempty file input values reject.
-Native form reset/editing do not synchronize state (events are future work).
-Other props are attributes. Inline events, raw HTML and srcdoc reject; URL props
+Native form reset/editing do not synchronize state (input events are future work).
+Other props are attributes. Inline event attributes, raw HTML and srcdoc reject; URL props
 allow relative URLs and http/https/mailto/tel protocols only.
 
 `when(condition, yes, no?)` takes a boolean/binding returning exactly boolean and
@@ -62,7 +62,7 @@ Errors include DOM_TAG_INVALID, DOM_PROPS_INVALID, DOM_CHILD_INVALID,
 DOM_ATTRIBUTE_INVALID, DOM_CLASS_INVALID, DOM_STYLE_INVALID, DOM_TEXT_INVALID,
 DOM_PROPERTY_INVALID, DOM_CONDITION_INVALID, DOM_LIMIT, BINDING_READONLY,
 BINDING_OWNER, VIEW_RESULT_INVALID, REACTIVITY_ASYNC and STATE_READONLY.
-Events and keyed collections remain unimplemented.
+Keyed collections are implemented; see [collections API](collections.md). Scoped `onClick` callbacks are implemented; see [click API](events.md). General event props remain unimplemented.
 
 ## Scheduling and flush (A.7)
 

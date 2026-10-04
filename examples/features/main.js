@@ -1,5 +1,5 @@
 // Every view and state change uses public exports. Native GET forms provide
-// controls while framework event handlers are still a future feature.
+// controls for inputs until framework input synchronization is implemented.
 import {
   createApp,
   createActionSchema,

@@ -1,11 +1,11 @@
-# Application lifecycle, named actions and reactivity — A.1–A.7
+# Application lifecycle, named actions and reactivity — A.1–A.9
 
 Experimental public API. Implemented: owned initial state/schema registration,
 synchronous declarative mounting, cleanup and disposal. A.2/A.3 add production COW
 transactions, payload ownership/guards and bounded FIFO named dispatch.
 A.4/A.5 add exact observers and lazy computed values.
 Declarative elements, exact bindings and frame batching are implemented in A.6/A.7; see [DOM API](dom.md).
-Keyed lists (A.8), events (A.9/B), routing and replay remain unimplemented. This document describes what actually runs today.
+A.8/A.9 add keyed collections and scoped click callbacks. General events, routing and replay remain unimplemented. This document describes what actually runs today.
 
 ## Run from the root
 
@@ -186,7 +186,7 @@ then app hooks run. Each scope runs hooks LIFO. Failed mounts
 drain only the failed view scope. Disposed/failed view contexts cannot register
 more hooks. All callbacks are attempted even if some fail; disposal completes
 and throws an AggregateError afterward. Bindings and pending visual work are
-disposed with their scopes; listener ownership remains A.9.
+disposed with their scopes; click delegates and handlers share scope ownership.
 
 ```js
 const app = createApp({
@@ -197,7 +197,7 @@ const app = createApp({
 });
 ```
 
-`onError` observes create/mount/dispatch/render/dispose operation errors and does not
+`onError` observes create/mount/dispatch/event/render/dispose operation errors and does not
 swallow them. Config validation before a valid observer exists and property/scope
 access errors throw directly. FrameworkError exposes a code and readable message;
 view failures preserve their original `cause`. Observer failures aggregate with
@@ -239,3 +239,6 @@ for runnable public-import examples, errors, disposal and cache semantics.
 
 `onError` also observes render failures (phase `render`); state remains committed.
 See [DOM scheduling API](dom.md#scheduling-and-flush-a7) for retry/disposal behavior.
+
+See [keyed collections](collections.md) and [click events](events.md) for current
+item contexts, listener ownership, native defaults and event error boundaries.

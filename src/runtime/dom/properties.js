@@ -11,7 +11,7 @@ const aliases = { className: 'class', htmlFor: 'for', readOnly: 'readonly', tabI
 export const propertyName = name => Object.hasOwn(aliases, name) ? aliases[name] : name;
 export function validateName(name) {
   if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(name) || /^on/i.test(name) || forbidden.has(name.toLowerCase()))
-    fail('DOM_ATTRIBUTE_INVALID', `Unsupported attribute ${name}; event props are deferred to A.9.`);
+    fail('DOM_ATTRIBUTE_INVALID', `Unsupported attribute ${name}; Only the onClick function prop is supported; other event attributes are unavailable.`);
 }
 const scalar = value => value === null || value === undefined || ['string', 'boolean'].includes(typeof value) ||
   (typeof value === 'number' && Number.isFinite(value));

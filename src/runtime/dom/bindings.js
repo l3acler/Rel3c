@@ -11,14 +11,14 @@ export function derive(read, owner = null) {
   return token;
 }
 
-export function createBindings(owner, check, path = []) {
+export function createBindings(owner, check, path = [], source = state => state) {
   const children = new Map();
   const immutable = () => fail('BINDING_READONLY', 'Binding tokens are read-only.');
   const token = new Proxy(Object.create(null), {
     get(_target, key) {
       check();
       if (typeof key !== 'string') return undefined;
-      if (!children.has(key)) children.set(key, createBindings(owner, check, [...path, key]));
+      if (!children.has(key)) children.set(key, createBindings(owner, check, [...path, key], source));
       return children.get(key);
     },
     set: immutable, deleteProperty: immutable, defineProperty: immutable,
@@ -26,6 +26,7 @@ export function createBindings(owner, check, path = []) {
   });
   readers.set(token, { owner, read(state) {
     check();
+    state = source(state);
     for (const key of path) {
       if (state === null || state === undefined) return undefined;
       state = state[key];

@@ -1,9 +1,9 @@
 
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
-**Status:** Product definition; Phase 0 decisions recorded, A.1–A.7 lifecycle, transactions, named dispatch, exact dependencies, computed values and frame-batched declarative DOM implemented
-**Version:** 2.7
-**Date:** 3 October 2026
+**Status:** Product definition; Phase 0 decisions recorded, A.1–A.9 lifecycle, transactions, named dispatch, exact dependencies, computed values, frame-batched DOM, keyed lists and scoped clicks implemented
+**Version:** 2.9
+**Date:** 5 October 2026
 **Working name:** Undecided
 
 ## 1. Product overview
@@ -55,7 +55,7 @@ flowchart TD
 
 ### Illustrative API
 
-**Current A.1–A.7 surface:** [ADR 0005](docs/adr/0005-application-lifecycle.md) and
+**Current A.1–A.9 surface:** [ADR 0005](docs/adr/0005-application-lifecycle.md) and
 [application API docs](docs/api/application.md) describe implemented owned
 construction, schema registration, declarative mount/dispose and cleanup/errors.
 Explicit `app.mount()` resolves the conventional `#app` container at mount time;
@@ -74,7 +74,9 @@ cycle diagnostics and scoped disposal. [Reactivity API](docs/api/reactivity.md)
 contains implemented public examples. A.6 implements elements, binding tokens, native form properties and conditional scopes;
 see [DOM API](docs/api/dom.md). A.7 adds latest-value frame batching, cancellation and explicit `app.flush()`.
 State commits remain synchronous; render failures preserve state and permit retry.
-The public APIs are experimental. Keyed lists, events,
+A.8 adds keyed collection scopes with retained nodes/focus and item retargeting;
+see [collections API](docs/api/collections.md). A.9 adds scoped zero-argument onClick callbacks with native defaults and complete
+resource cleanup; see [click API](docs/api/events.md). The public APIs are experimental. General events,
 routing and replay remain later acceptance gates; the candidate snippets below
 are not current runnable API examples.
 

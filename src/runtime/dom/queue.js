@@ -43,6 +43,7 @@ export function createRenderQueue(window, render, report) {
       });
     },
     flush,
+    counts: () => ({ queuedBindings: pending.size, frames: Number(frame !== null) }),
     dispose() { disposed = true; pending.clear(); cancel(); },
   });
 }

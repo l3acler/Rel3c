@@ -22,7 +22,7 @@ committed progress to the browser console; disposing the app releases the scope.
 Controls are a native GET form: **Apply scenario reloads the page**. Browser input
 values remain local until submission. Query values are normalized outside actions,
 then copied/validated as action payloads. This is example startup configuration;
-framework events, routing, persistence and recordable input adapters are not
+framework input events, routing, persistence and recordable input adapters are not
 implemented. Project configuration is visible in the URL. Reset clears the query.
 
 For live updates without reloading, open the browser developer console:
@@ -39,3 +39,5 @@ runRollback();
 
 See [main.js](main.js) for the view/actions and [styles.css](styles.css) for the
 responsive layout. Neither file uses application DOM patches or event listeners.
+
+For live clickable list controls using A.8/A.9, try the [keyed example](../keyed/README.md).

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Keyed tasks · mini-framework</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #243a35; background: #f4f2ea; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 30px 18px; }
+    main { max-width: 760px; margin: auto; }
+    h1 { font: 44px Georgia, serif; margin: 16px 0; }
+    p { line-height: 1.7; color: #62756d; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 25px 0; }
+    button { font: inherit; padding: 10px 14px; border: 1px solid #cbd6cc; background: white; color: #174f45; border-radius: 8px; cursor: pointer; }
+    button:hover { background: #e3eee7; }
+    button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid #315dc4; outline-offset: 3px; }
+    ul { padding: 0; list-style: none; }
+    li { display: flex; align-items: center; gap: 12px; background: white; border: 1px solid #dce2d7; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    input { font: inherit; padding: 10px; width: 100%; min-width: 0; border: 1px solid #d4dccd; border-radius: 6px; }
+    .row-name { flex: 1; min-width: 0; }
+    .done input { color: #7b887f; }
+    .index { color: #849489; font-size: 12px; min-width: 18px; }
+    .notice { min-height: 28px; }
+    .hint { font-size: 13px; }
+    @media(max-width: 500px) { li { flex-wrap: wrap; } .row-name { flex-basis: 70%; } h1 { font-size: 36px; } }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

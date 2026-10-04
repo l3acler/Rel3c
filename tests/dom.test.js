@@ -154,7 +154,7 @@ test('A.6 malformed props/children reject before invoking accessors and forbid i
   assert.throws(() => div(children), code('DOM_CHILD_INVALID')); assert.equal(calls, 0);
   const cyclic = []; cyclic.push(cyclic); assert.throws(() => div(cyclic), code('DOM_CHILD_INVALID'));
   assert.throws(() => div(() => 'text'), code('DOM_CHILD_INVALID')); assert.throws(() => input('child'), code('DOM_CHILD_INVALID'));
-  for (const props of [{ onclick: 'bad' }, { onClick() {} }, { innerHTML: '<b>x</b>' }, { srcdoc: 'bad' },
+  for (const props of [{ onclick: 'bad' }, { onClick: 'bad' }, { innerHTML: '<b>x</b>' }, { srcdoc: 'bad' },
     { style: 'color:red' }, { href: 'javascript:alert(1)' }, { disabled: 'false' }, { class: 'a', className: 'b' }]) {
     const app = createApp({ view: () => div(props) }); assert.throws(() => app.mount(fakeDocument().createElement())); app.dispose();
   }

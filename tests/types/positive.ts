@@ -16,7 +16,7 @@ const app = createApp({ schema, initialState,
     onDispose(() => {}); void noPayload; void payload; void named;
     return String(count);
   },
-  onError(error, info) { const phase: 'create' | 'mount' | 'dispatch' | 'render' | 'dispose' = info.phase; void phase; void error; },
+  onError(error, info) { const phase: 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' = info.phase; void phase; void error; },
 });
 const detached: typeof app.mount = app.mount;
 const defaultMounted: typeof app = detached();
@@ -78,3 +78,21 @@ void reusable;
 domApp.flush();
 const renderPhase: import('mini-framework').ErrorPhase = 'render';
 void renderPhase;
+
+import { keyed, li, ul } from 'mini-framework';
+const listApp = createApp({ initialState: { rows: [{ id: 'a', name: 'Ada' }] },
+  view({ bind, keyed }) { return ul(keyed(bind.rows, row => row.id, context => {
+    const name: string = context.value.name;
+    const key: string = context.key;
+    const position: number = context.position;
+    void name; void key; void position;
+    return li(context.index, ': ', context.item.name, context.derive(() => context.value.name));
+  })); },
+});
+const standalone = keyed(listApp.bind.rows, row => row.id, ({ item }) => li(item.name));
+void standalone;
+
+import { button } from 'mini-framework';
+const clickButton = button({ type: 'button', onClick: app.actions.increment }, 'Go');
+const payloadButton = button({ onClick: () => app.actions.rename({ name: 'Grace' }) }, 'Rename');
+void clickButton; void payloadButton;
