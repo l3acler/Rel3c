@@ -107,6 +107,12 @@ npm run dev
 ```
 Open [http://localhost:3000/](http://localhost:3000/) in your browser (redirects automatically to the basic example at `/examples/basic/`).
 
+Try the current feature showcase at
+[http://localhost:3000/examples/features/](http://localhost:3000/examples/features/):
+a responsive Launch Board with computed progress, conditional content, native
+form settings, burst updates and rollback. Its [instructions](examples/features/README.md)
+explain native form reloads and console commands for live updates.
+
 ### 2. Run the Smoke Test
 Verifies public imports, module integrity, and dev server response headers:
 ```bash

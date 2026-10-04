@@ -2,6 +2,8 @@
 
 Public imports come from `src/index.js`; see the copyable form/conditional example
 in [DOCUMENTATION.md](../../DOCUMENTATION.md#declarative-elements-and-bindings).
+The [Launch Board example](../../examples/features/README.md) combines these APIs
+with computed values, named actions, native GET controls and rollback.
 
 `element(tag, props?, ...children)` returns an immutable descriptor. Helpers:
 `div`, `span`, `p`, `button`, `form`, `label`, `input`, `textarea`, `select`,

@@ -42,6 +42,15 @@ checks, and TypeScript 5.9.3 for type checks. Visit
 [http://localhost:3000/examples/dom/](http://localhost:3000/examples/dom/) for a
 public-import form, bound greeting and conditional section.
 
+For a fuller example, open
+[http://localhost:3000/examples/features/](http://localhost:3000/examples/features/).
+The Launch Board combines nested state, lazy computed progress, direct/derived
+bindings, class/style updates, scoped conditionals, observers, FIFO action bursts,
+rollback and optional explicit flush. Change its settings and submit the native
+GET form to reload with a new scenario. Live event-to-state synchronization is
+not implemented; the example also provides console commands for live public
+state actions. See [example instructions](examples/features/README.md).
+
 For your own page, save this as `guide.html` at the repository root and open
 `http://localhost:3000/guide.html` while the server runs:
 
