@@ -3,7 +3,7 @@
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
 application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.8 add native events, semantic keyboard/text inputs, cooperative priority lanes and History/hash routing with one shared application store, plus guarded memory/session/local/URL state locations. APIs remain experimental and browser qualification is limited.
-B.9–B.11 refine the public declarations and root auditor walkthrough. C.1/C.2 add versioned checkpoints and controlled manual time/seeded draws.
+B.9–B.11 refine the public declarations and root auditor walkthrough. C.1–C.4 add versioned checkpoints, controlled time/seeded draws, fixed ticks and scoped external-input adapters.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -32,8 +32,7 @@ Import from `src/index.js`; applications do not need runtime internals.
 Views construct their static tree once per mount; explicit bindings update affected
 text, attributes, classes and styles on render frames after committed actions. Conditional factories
 run when their selected boolean branch changes. Native events, keyboard and text editing
-are implemented alongside routing, priorities, state locations and controlled services. Fixed ticks, recording and
-replay remain unimplemented. Broad browser/OS IME qualification remains open.
+are implemented alongside routing, priorities, state locations, controlled services, fixed ticks and external-input adapters. Recording and replay remain unimplemented. Broad browser/OS IME qualification remains open.
 
 ## Start from the project root
 
@@ -114,7 +113,7 @@ called; `app.mount(element)` uses a custom DOM Element. Passing `target` to
 `createApp` mounts immediately. Invalid explicit targets do not fall back to `#app`.
 A missing target/document rejects clearly, and the app may retry later.
 
-Config supports only `initialState`, `schema`, `view`, `target`, `onError`, `router`, `persistence`, `controls` and `snapshot`. Snapshot construction replaces initial state/control initialization; do not combine them.
+Config supports only `initialState`, `schema`, `view`, `target`, `onError`, `router`, `persistence`, `controls`, `snapshot` and `simulation`. Snapshot construction replaces initial state/control initialization; do not combine them.
 Defaults are `{}` state, an empty schema and an empty text view; with a router, the default view is an outlet. Unknown options
 and accessor configuration properties reject. Inline `actions` and `seed`
 configuration are not implemented.
@@ -440,7 +439,7 @@ cleanup and disposal also pass. These are correctness observations, not a perfor
 or heap-collection claim. See [core acceptance evidence](docs/reports/task-A.10-core-slice.md).
 
 The API stays experimental. B.1–B.3 now add native events and keyboard/text
-synchronization. B.4–B.6 add priority work and shared-state routing. B.7/B.8 add guarded state locations. B.9–B.11 complete the public contracts and auditor walkthrough. C.1/C.2 add checkpoints and controlled services; fixed ticks and replay remain future work.
+synchronization. B.4–B.6 add priority work and shared-state routing. B.7/B.8 add guarded state locations. B.9–B.11 complete the public contracts and auditor walkthrough. C.1–C.4 add checkpoints, controlled services, fixed ticks and external-input adapters; recording/replay remain future work.
 
 ## Render frames and explicit flush
 
@@ -478,7 +477,7 @@ Rendering is not an atomic DOM transaction: successful writes survive another
 binding's failure. Derived callbacks must stay pure and synchronous.
 
 This is visual batching only. Priority work is described below; fixed
-simulation ticks and interpolation remain future work. Hidden-tab rendering follows native animation-frame behavior; use
+simulation ticks are documented below; interpolation remains future work. Hidden-tab rendering follows native animation-frame behavior; use
 explicit flush for deterministic checks. No speed or heap claims are made.
 
 ## Priority work and cancellation
@@ -778,8 +777,7 @@ remain unimplemented. See [persistence reference](docs/api/persistence.md) and
 ## Checkpoints and controlled services
 
 C.1/C.2 make time and simulation draws explicit and restore their continuation
-with committed state. This provides a reproducible transition foundation; fixed
-ticks, input logs, recording and replay are still unimplemented.
+with committed state. C.3/C.4 extend this foundation with fixed ticks and external-input adapters below. Input logs, recording and replay are still unimplemented.
 
 ```js
 import { createApp, createActionSchema, hashSnapshot } from './src/index.js';
@@ -823,7 +821,7 @@ An action stages draws: success publishes state and service advancement together
 while throws, invalid final graphs, Promise returns or version overflow discard
 both. Failures after commit keep successful state and service advancement.
 
-`app.setLogicalTime(time)` advances monotonically at an explicit boundary
+In manual mode, `app.setLogicalTime(time)` advances monotonically at an explicit boundary
 outside actions, guards, mounting, rendering, reactive/error work. Equal time is
 a no-op; invalid/backward time leaves the clock unchanged. It changes no state
 version, binding or numbered tick. `app.controls` is frozen committed metadata
@@ -832,7 +830,7 @@ and nonreactive, so copy time/draws into action state for display. The runnable
 and verifies a restored continuation without replacing mounted state.
 
 `app.snapshot()` exports committed state/version and controls as canonical JSON
-outside active work, without publishing state, touching storage or changing URLs.
+outside active work, without publishing state, touching storage or changing URLs. Pending queued inputs/effects reject with `SNAPSHOT_PENDING`; drain or cancel them first.
 `hashSnapshot(text)` validates and returns lowercase SHA-256 of its canonical
 UTF-8 text. Versions, key/alias topology and clock/PRNG continuation are included;
 DOM/browser queues/effects are not. Hashes compare checkpoints; they do not
@@ -851,7 +849,7 @@ apply. Schema labels are at most 128 UTF-16 units for checkpoint use. Invalid,
 incompatible, oversize, noncanonical or conflicting inputs reject with
 `SNAPSHOT_INVALID`, `SNAPSHOT_INCOMPATIBLE`, `SNAPSHOT_LIMIT` or `SNAPSHOT_CONFLICT`.
 Service/time errors use `CONTROL_INVALID`, `CONTROL_LIMIT`, `CONTROL_REENTRANT`
-or `CONTROL_EXPIRED`; exporting during active work uses `SNAPSHOT_REENTRANT`.
+or `CONTROL_EXPIRED`; fixed-mode manual changes use `CONTROL_MODE`. Exporting during active work uses `SNAPSHOT_REENTRANT`.
 App operations report `create`, `control`, `snapshot` or the action/event phase,
 then rethrow. Standalone hashing has no app hook. Disposal releases app controls;
 caller-retained checkpoint strings remain caller-owned.
@@ -860,6 +858,151 @@ See [the full API](docs/api/determinism.md) and
 [ADR 0016](docs/adr/0016-deterministic-checkpoints-services.md) for exact encoding,
 seed initialization, budgets and future recording-format boundaries. There is
 no automatic migration, public persistence-codec decoder or implemented recording.
+
+## Fixed ticks and external inputs
+
+C.3/C.4 let a simulation advance independently of rendering and receive owned
+external values. Apps with `simulation` start paused. This public-import example
+runs without a document; mounting later adds an owned browser frame driver.
+
+```js
+import { createApp, createActionSchema } from './src/index.js';
+const schema = createActionSchema({version:'motion/1'})(({action}) => ({
+  tick: action((draft, services) => {
+    draft.position += draft.speed;
+    draft.time = services.now();
+  }),
+  speed: action(value => typeof value === 'number' && Number.isFinite(value),
+    (draft, value) => { draft.speed = value; }),
+  external: action(value => value?.version === 1 &&
+    ['success', 'error', 'cancelled'].includes(value.status), (draft, input) => {
+    draft.result = input; // Supported data, never a native Event/Response/Error.
+  }),
+}));
+const simulation = {tickDuration:10000, action:'tick', maxCatchUp:4};
+const app = createApp({schema, simulation,
+  initialState:{position:0,speed:1,time:0,result:null}});
+app.enqueueAt(2, 'speed', 3);
+app.inputs.sample('viewport', 'external', () => ({width:800,height:600}));
+app.resumeTicks();
+app.advanceTicks(30000); // Three ticks; speed input runs before tick 2.
+console.log(app.state.position, app.controls.clock.tick); // 7, 3
+app.pauseTicks();
+const fork = createApp({schema, simulation, snapshot:app.snapshot()});
+console.log(fork.snapshot() === app.snapshot()); // true; fork starts paused.
+app.dispose(); fork.dispose();
+```
+
+`simulation.tickDuration` is a positive safe integer in logical microseconds;
+`action` optionally names a registered no-payload action. `maxCatchUp` defaults to
+8 and must be an integer from 1 to 1024. Each tick first advances `controls.clock`
+time/ID, consumes its queued roots in admission order, then dispatches tick logic.
+Each successful action publishes one state version; a tick itself does not.
+No-payload tick logic reads current state and controlled services; it can dispatch
+ordinary nested actions through existing FIFO rules. Direct `dispatch` and
+`actions` remain synchronous at current logical time, including while paused.
+Use `enqueue(name,...payload)` for the next tick or
+`enqueueAt(futureTick,name,...payload)` for a specified future tick. Payload arity
+matches dispatch. Admission owns/freezes supported data; application payload
+validators run when that input executes. Tickets expose frozen `sequence`, `tick`,
+`time` and `cancel()`. Cancel removes a pending root and releases its queue budget.
+
+`resumeTicks()` enables simulation; `pauseTicks()` stops elapsed sampling while
+retaining backlog and queued inputs. `advanceTicks(elapsedMicroseconds)` accepts
+nonnegative safe integers and returns the number of consumed ticks, bounded by
+`maxCatchUp`. A paused call returns zero and ignores elapsed time. Excess elapsed
+work stays in `app.ticks.accumulator`; `advanceTicks(0)` can drain it. No numbered
+tick is dropped to catch up. Mounted resumed apps also use their target window's
+animation frames; do not supply a second elapsed driver for the same interval.
+The first frame establishes an epoch. Hiding the document stops this driver;
+visibility/resume resets its epoch, excluding hidden/paused wall time while
+retaining earlier backlog. Explicit advances remain available when hidden.
+Rendering still coalesces latest bindings independently; `flush()` does not tick.
+
+`app.ticks` is frozen, nonreactive metadata: `enabled`, `paused`, `accumulator`,
+`queuedInputs`, `maxCatchUp`. Copy clock values into action state for display.
+A fixed clock rejects `setLogicalTime` with `CONTROL_MODE`. Empty-queue fixed
+checkpoints preserve tick/time/duration and seeded stream. Restoring requires a
+matching `simulation.tickDuration`; configure compatible tick logic/schema.
+Pause state, catch-up budget, frame epoch and elapsed accumulator are live
+configuration and reset to paused/zero on restoration. Manual checkpoints require
+manual configuration. Pending roots/effects reject snapshot export rather than
+silently losing their continuation. C.1 manual checkpoint encoding is unchanged.
+
+A failed input rolls back its action and staged draws, discards its nested
+children, and lets healthy sibling roots and tick logic run. The tick remains
+consumed; successful commits remain. The driver pauses, reports/rethrows the
+failure (or aggregate), and leaves later tick backlog/inputs intact. Resume is
+explicit. Tick/time overflow leaves that numbered tick and its roots pending.
+Tick APIs, admission/cancellation and snapshots reject during actions, payload
+admission, reads/notifications, rendering or error hooks. Native event callbacks
+may call them at a boundary after dispatch. Errors include `TICK_INVALID`,
+`TICK_MISSING`, `INPUT_LIMIT`, `PAYLOAD_LIMIT`, `INPUT_REENTRANT`,
+`CONTROL_REENTRANT` and existing action/payload errors. A queue holds at most 1024
+root inputs with aggregate payload limits: 10,000 nodes, 100,000 entries/array
+slots and 1,000,000 UTF-16 text units; depth remains 128. Per-action nested batch
+limits still apply. Catch-up bounds ticks, not arbitrary callback execution time.
+
+`app.inputs` owns effects for the app; `context.inputs` owns them for a root,
+conditional, keyed item or route view. Use the latter for requests that should
+stop when that view disappears. All adapters target an action accepting this
+supported version-1 payload:
+
+```js
+{ version:1, origin:'viewport', status:'success', value:{width:800}, error:null }
+// Errors: value:null, error:{name:'Error', message:'...'}, status:'error'.
+// Explicit cancellation: value:null, error:null, status:'cancelled'.
+```
+
+| Adapter | Arguments and result |
+| --- | --- |
+| `send` | `(origin, action, supportedValue)` delivers an owned success value |
+| `sample` | `(origin, action, synchronousReader)` samples outside actions; thrown reads become error inputs |
+| `measure` | `(origin, action, 'viewport')` gives width/height/device-pixel scale; `'layout', element` gives x/y/width/height/top/right/bottom/left; `'scroll', element?` gives x/y from element or window |
+| `storage` | `(origin, action, storage, key)` gives `{key,value}` from `getItem`; missing values are null; denied reads become errors |
+| `timer` | `(origin, action, delayMilliseconds, supportedValue = null)` returns an owned effect task; delay is finite, 0–2147483647 |
+| `effect` | `(origin, action, run)` starts in a microtask, supplies an AbortSignal, awaits supported values and normalizes rejection |
+
+Origin is a nonempty string of at most 128 UTF-16 units. Readers cannot enter
+another action/input or dispose the app while sampling. Native measurement fields
+must be finite; source failures become error inputs. Returning a Promise from
+`sample` rejects with `INPUT_ASYNC`; use `effect`. Unsupported returned data rejects
+with payload errors. Error inputs keep only a bounded name/message (128/2048 units),
+not a native Error or stack. Async callback effects cannot be rolled back.
+
+Network normalization belongs in the effect callback, outside the transaction:
+
+```js
+const task = app.inputs.effect('profile-request', 'external', async signal => {
+  const response = await fetch('/profile.json', {signal});
+  return {status:response.status, body:await response.text()};
+});
+await task.done; // Receipt after immediate dispatch or fixed-tick admission.
+```
+
+`effect`/`timer` return `{cancel,done}`. At most 1024 effects may be pending per
+app. Explicit `cancel()` aborts and delivers one cancellation input while the
+scope is live. Disposal aborts, suppresses delivery, cancels already queued scoped
+inputs, and resolves `done` to null. Late success/rejection is consumed. Completed
+live tasks resolve `done` to a receipt containing sequence/tick/time/input/cancel;
+in fixed mode it confirms admission, not eventual action success. Delivery
+failures reject `done`; queued guard/body failures arise later from the tick.
+Receipts for immediate dispatch cannot undo a committed action. Sequences are
+app-session admission metadata, not restored recording positions; they are
+outside the action payload. Scoped tasks can register during view construction;
+read/send delivery waits until outside construction. Reusing disposed scoped
+adapters fails with `SCOPE_DISPOSED`. App disposal also stops its tick driver and
+visibility listener. Abort cannot undo a completed remote effect or force an
+uncooperative promise to terminate.
+
+The [ticks example](examples/ticks/README.md) demonstrates run/pause, manual
+advance, viewport sampling, timers and a local network request using public
+imports. [ADR 0017](docs/adr/0017-fixed-ticks-external-inputs.md),
+[API reference](docs/api/ticks-inputs.md) and
+[verification report](docs/reports/task-C.3-C.4-ticks-inputs.md) specify the limits.
+These adapters make values suitable for later recording. Semantic event/router/
+persistence integration, interpolation, bounded recording and public replay
+remain unimplemented; saved input injection tests do not implement replay.
 
 ## State and named actions
 
@@ -1093,7 +1236,7 @@ only its attempted view scope. All hooks are attempted even if one fails;
 disposal still completes and then throws an AggregateError. Hooks must be
 synchronous, and disposed view scopes reject new registrations.
 
-An optional synchronous `onError(error, { phase })` observes creation, checkpoint export, manual clock changes, mounting,
+An optional synchronous `onError(error, { phase })` observes creation, checkpoint export, clock/tick operations, external input delivery, mounting,
 dispatch, native event, rendering, scheduled work, navigation, persistence and disposal failures without swallowing them. For a dispatch batch it
 runs once after draining, when committed state is complete. If the hook also
 throws, its failure aggregates with the original. It cannot dispatch recovery

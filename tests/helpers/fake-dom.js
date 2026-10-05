@@ -74,7 +74,7 @@ export function fakeDocument() {
     activeElement: null, visibilityState: 'visible',
     createElement: tag => new Element(tag),
     get pendingFrames() { return frames.size; },
-    flushFrame() { const batch = [...frames.values()]; frames.clear(); for (const callback of batch) callback(0); },
+    flushFrame(timestamp = 0) { const batch = [...frames.values()]; frames.clear(); for (const callback of batch) callback(timestamp); },
     createTextNode: data => Object.assign(new Node(3), { data }),
     createComment: data => Object.assign(new Node(8), { data }), createDocumentFragment: () => new Node(11) };
   document.defaultView = Object.assign(new Node(0), { Element,

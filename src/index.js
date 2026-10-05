@@ -25,7 +25,7 @@ export const VERSION = "0.1.0";
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "C.1–C.2 - Versioned Checkpoints and Controlled Services",
+  phase: "C.1–C.4 - Checkpoints, Controlled Services, Fixed Ticks and External Inputs",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
     "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
@@ -43,7 +43,8 @@ export const FRAMEWORK_INFO = Object.freeze({
     "Phase A: Public click/action/binding/list/cleanup acceptance verified (A.10)",
     "Public declarations, root documentation and routed form/list walkthrough (B.9–B.11; browser qualification remains limited)",
     "C.1/C.2: Versioned checkpoints, SHA-256 comparison, manual logical clock and transactional seeded randomness",
-    "TIME-1: Deterministic simulation ticks (planned Phase C)",
+    "TIME-1: Fixed simulation ticks, ordered inputs, pause/hidden policy and bounded catch-up (implemented C.3)",
+    "INPUT-1: Scoped serializable measurements, storage, timer and async effect results (implemented C.4; recording/replay planned)",
     "RECORD-1: Action recording & replay (planned Phase C)",
   ]),
 });

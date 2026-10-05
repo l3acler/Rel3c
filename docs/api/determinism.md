@@ -1,8 +1,9 @@
 # Checkpoints and controlled services — C.1/C.2
 
 Implemented: versioned state/control checkpoints, canonical SHA-256 comparison,
-manual logical time and transactional seeded simulation draws. Fixed ticks,
-recording, replay, external-input logs and interpolation remain unimplemented.
+manual logical time and transactional seeded simulation draws. C.3/C.4 add
+[fixed ticks and external-input adapters](ticks-inputs.md). Recording, replay,
+external-input logs and interpolation remain unimplemented.
 Public APIs are experimental; [ADR 0016](../adr/0016-deterministic-checkpoints-services.md)
 defines the exact format and compatibility contract.
 
@@ -125,7 +126,7 @@ key order, plain/null prototypes, distinct nodes and acyclic aliases. Rejected:
 cycles, unsupported/native values, symbols, functions, accessors, nonenumerable
 data except array length, nonfinite numbers, incompatible versions, invalid
 references, unused nodes, duplicate fields and noncanonical encodings/whitespace.
-Tick metadata is reserved at manual tick 0; fixed mode is rejected until C.3.
+Manual clocks retain tick 0/null duration. C.3 now accepts fixed clock continuation with nonnegative ticks and positive integer duration; see the ticks reference.
 
 ## Errors and cleanup
 
@@ -134,7 +135,9 @@ Tick metadata is reserved at manual tick 0; fixed mode is rejected until C.3.
 | `CONTROL_INVALID` | Invalid controls/time or backward clock movement |
 | `CONTROL_REENTRANT` | Clock/service access during forbidden runtime work/admission |
 | `CONTROL_EXPIRED` | A service was used after its action body ended |
-| `CONTROL_LIMIT` | Draw count would overflow the safe integer range |
+| `CONTROL_LIMIT` | Draw count, fixed tick or logical time would overflow the safe integer range |
+| `CONTROL_MODE` | Manual clock changes attempted in fixed mode |
+| `SNAPSHOT_PENDING` | Queued inputs or pending effects prevent snapshot export |
 | `SNAPSHOT_CONFLICT` | Snapshot combined with initial state/control initialization |
 | `SNAPSHOT_INVALID` | Malformed/noncanonical metadata or unsupported state |
 | `SNAPSHOT_INCOMPATIBLE` | Format/runtime/schema/random/clock mode mismatch |
@@ -147,3 +150,11 @@ operations use `control`/`snapshot`; action service failures keep the normal
 `dispatch` or `event` boundary. Hooks observe and do not swallow errors. App
 disposal releases control metadata; leaked services remain expired. Snapshots
 already exported or retained by callers remain caller-owned.
+
+C.3 accepts the reserved fixed clock shape in format/runtime version 1. Empty
+queues/effects are required for `snapshot()` (`SNAPSHOT_PENDING`). Fixed imports
+require `simulation` with matching tick duration and compatible logic, and reset
+to paused with zero elapsed accumulator. Manual imports require manual
+configuration. Tick/time/random/state continuation remains authoritative; frame
+sampling and live resources are not restored. Fixed mode rejects manual time
+changes (`CONTROL_MODE`). See [ADR 0017](../adr/0017-fixed-ticks-external-inputs.md).

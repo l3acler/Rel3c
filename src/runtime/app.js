@@ -14,6 +14,9 @@ import { ownRouterConfig, createRouter } from "./routing/router.js";
 import { ownPersistenceConfig, createPersistence } from "./persistence/locations.js";
 import { createControls } from "./determinism/controls.js";
 import { encodeCheckpoint, decodeCheckpoint } from "./serialization/checkpoint.js";
+import { ownSimulation, createTicks } from './determinism/ticks.js';
+import { ownInput } from './inputs/ownership.js';
+import { createInputs } from './inputs/adapters.js';
 
 const targets = new WeakMap();
 const emptySchema = createActionSchema()(() => ({}));
@@ -29,6 +32,7 @@ export function createApplication(config, frameworkVersion) {
     "persistence",
     "controls",
     "snapshot",
+    "simulation",
   ]);
   let { view = options.router === undefined ? () => "" : () => outlet(), onError } = options;
   if (
@@ -76,6 +80,7 @@ export function createApplication(config, frameworkVersion) {
   let routerConfig;
   let persistenceConfig;
   let controls;
+  let simulationConfig;
   try {
     registry = ownActionRegistry(
       options.schema === undefined ? emptySchema : options.schema,
@@ -85,6 +90,9 @@ export function createApplication(config, frameworkVersion) {
     const restored = options.snapshot === undefined ? null : decodeCheckpoint(options.snapshot,
       options.schema?.version ?? emptySchema.version);
     controls = createControls(options.controls, restored?.controls);
+    if (restored && restored.controls.clock.mode === 'manual' && options.simulation !== undefined)
+      fail('SNAPSHOT_CONFLICT', 'A manual checkpoint requires manual clock configuration.');
+    simulationConfig = ownSimulation(options.simulation, registry, controls.snapshot.clock);
     store = createTransactionStore(
       restored?.state ?? (options.initialState === undefined ? {} : options.initialState),
       restored?.stateVersion ?? 1,
@@ -221,7 +229,7 @@ export function createApplication(config, frameworkVersion) {
     if (!reporting && !dispatcher?.isActive() && !handlingEvent) reported = new WeakSet();
     try {
       live();
-      if (status === 'mounting' || inputBusy || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
+      if (status === 'mounting' || ticks.busy || inputBusy || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
         fail(phase === 'snapshot' ? 'SNAPSHOT_REENTRANT' : 'CONTROL_REENTRANT',
           'Checkpoint/control operations require a boundary outside active runtime work.');
       return run();
@@ -230,9 +238,44 @@ export function createApplication(config, frameworkVersion) {
       report(error, phase);
     }
   }
+  function inputOperation(run, allowMount = false) {
+    if (!reporting && !dispatcher?.isActive() && !handlingEvent) reported = new WeakSet();
+    try {
+      live();
+      if ((!allowMount && status === 'mounting') || ticks.busy || inputBusy ||
+          (!allowMount && rendering) || reporting || dispatcher.isActive() || tracking.isBusy())
+        fail('INPUT_REENTRANT', 'External inputs require a boundary outside active runtime work.');
+      return run();
+    } catch (error) {
+      if (handlingEvent || dispatcher?.isActive()) throw error;
+      report(error, 'input');
+    }
+  }
+  const ticks = createTicks(simulationConfig, controls, (...args) => dispatcher.dispatch(...args),
+    run => checkpointOperation(run, 'control'), error => report(error, 'control'));
+  simulationConfig = null;
+  let inputSequence = 0;
+  const inputs = createInputs((name, payload, active) => {
+    const owned = ownInput(registry, name, [payload]);
+    if (controls.snapshot.clock.mode === 'fixed') return ticks.enqueue(owned, undefined, active);
+    if (inputSequence >= Number.MAX_SAFE_INTEGER) fail('INPUT_LIMIT', 'Input sequence exceeds the safe integer range.');
+    const receipt = Object.freeze({ sequence: ++inputSequence, tick: 0, time: controls.snapshot.clock.time });
+    if (active()) dispatcher.dispatch(name, payload);
+    return receipt;
+  }, run => inputOperation(run), (run, scopedConstruction) => inputOperation(run, scopedConstruction || status === 'mounting'), name => {
+    if (registry.get(name)?.input !== 'payload') fail('INPUT_INVALID', 'External inputs require a registered payload action.');
+  }, () => target?.ownerDocument.defaultView ?? globalThis, withInput);
+  const appInputs = inputs.scoped();
+  function enqueue(tick, name, args) {
+    return inputOperation(() => {
+      const ticket = ticks.enqueue(ownInput(registry, name, args), tick);
+      return Object.freeze({ ...ticket, cancel: () => inputOperation(ticket.cancel) });
+    });
+  }
   function makeContext(addCleanup, isActive) {
     const scheduled = new Set();
     let ownsScheduled = false;
+    let scopedInputs;
     const scopeLive = () => {
       if (!isActive()) fail("SCOPE_DISPOSED", "This view scope is no longer active.");
       live();
@@ -241,6 +284,7 @@ export function createApplication(config, frameworkVersion) {
       get state() { live(); return tracking.state(); },
       get bind() { scopeLive(); return bind; },
       actions, dispatch,
+      get inputs() { scopeLive(); return scopedInputs ??= inputs.scoped(isActive, addCleanup); },
       derive(read) { scopeLive(); return derive(read); },
       when, keyed,
       outlet,
@@ -376,9 +420,19 @@ export function createApplication(config, frameworkVersion) {
     dispatch,
     flush,
     flushPersistence,
-    snapshot() { return checkpointOperation(() => encodeCheckpoint(store.getState(), store.getVersion(), schemaVersion, controls.snapshot), 'snapshot'); },
+    snapshot() { return checkpointOperation(() => {
+      if (ticks.pending || inputs.pending) fail('SNAPSHOT_PENDING', 'Drain/cancel queued inputs and pending effects before exporting a checkpoint.');
+      return encodeCheckpoint(store.getState(), store.getVersion(), schemaVersion, controls.snapshot);
+    }, 'snapshot'); },
     setLogicalTime(time) { return checkpointOperation(() => controls.setTime(time), 'control'); },
     get controls() { live(); return controls.snapshot; },
+    get ticks() { live(); return ticks.status; },
+    inputs: appInputs,
+    enqueue(name, ...args) { return enqueue(undefined, name, args); },
+    enqueueAt(tick, name, ...args) { return enqueue(tick, name, args); },
+    advanceTicks(elapsed) { return checkpointOperation(() => ticks.advance(elapsed), 'control'); },
+    pauseTicks() { return checkpointOperation(() => ticks.pause(), 'control'); },
+    resumeTicks() { return checkpointOperation(() => ticks.resume(), 'control'); },
     get persistence() {
       live();
       return persistence?.status ?? Object.freeze({ active: false, pending: false, errors: Object.freeze([]) });
@@ -411,7 +465,7 @@ export function createApplication(config, frameworkVersion) {
     mount(mountTarget = defaultTarget) {
       try {
         live();
-        if (inputBusy || dispatcher.isActive() || rendering || tracking.isBusy())
+        if (ticks.busy || inputBusy || dispatcher.isActive() || rendering || tracking.isBusy())
           fail(
             "LIFECYCLE_REENTRANT",
             "Cannot mount during action dispatch or payload validation.",
@@ -458,11 +512,13 @@ export function createApplication(config, frameworkVersion) {
           renderer.mount(output, target);
         });
         status = "mounted";
+        ticks.connect(target.ownerDocument.defaultView, target.ownerDocument);
         return app;
       } catch (cause) {
         // Invalidate the failed view scope before running its cleanup hooks.
         mountCleanups = [];
         const cleanupErrors = [];
+        try { ticks.disconnect(); } catch (error) { cleanupErrors.push(error); }
         try { persistence?.stop(); } catch (error) { cleanupErrors.push(error); }
         try { router?.stop(); } catch (error) { cleanupErrors.push(error); }
         try { events?.dispose(); } catch (error) { cleanupErrors.push(error); }
@@ -495,7 +551,7 @@ export function createApplication(config, frameworkVersion) {
     },
     dispose() {
       if (status === "disposed" || status === "disposing") return;
-      if (status === "mounting" || inputBusy || dispatcher.isActive() || rendering || tracking.isBusy())
+      if (status === "mounting" || ticks.busy || inputBusy || dispatcher.isActive() || rendering || tracking.isBusy())
         report(
           new FrameworkError(
             "LIFECYCLE_REENTRANT",
@@ -507,6 +563,8 @@ export function createApplication(config, frameworkVersion) {
       // Stop the complete graph before scoped/user cleanup can dispose sources
       // and accidentally notify other resources in this closing application.
       const errors = [];
+      try { ticks.dispose(); } catch (error) { errors.push(error); }
+      try { inputs.dispose(); } catch (error) { errors.push(error); }
       try { scheduler.dispose(); } catch (error) { errors.push(error); }
       try { persistence?.dispose(); } catch (error) { errors.push(error); }
       tracking.dispose();
@@ -544,6 +602,7 @@ export function createApplication(config, frameworkVersion) {
     },
   });
   registerDiagnostics(app, () => ({ ...tracking.counts(),
+    ...ticks.counts(), ...inputs.counts(),
     ...scheduler.counts(),
     ...(persistence?.counts() ?? { persistenceTasks: 0 }),
     ...(router?.counts() ?? { routeListeners: 0 }),

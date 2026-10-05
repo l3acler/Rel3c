@@ -9,7 +9,7 @@ Chrome version or support parity elsewhere.
 | --- | --- | --- |
 | DOM, forms, keyed identity, focus/selection, cleanup | Real Chrome fixtures and README app | Native HTML subset in DOM reference |
 | Actions, reactivity, priorities | Node and Chrome integration | Cooperative work; no CPU preemption or heap-collection guarantee |
-| C.1/C.2 clock/draw rollback, checkpoints and restored continuation | Node/native browser hash oracles and varied manual render boundaries | Fixed ticks/recording/replay remain unimplemented |
+| C.1/C.2 clock/draw rollback, checkpoints and restored continuation | Node/native browser hash oracles and varied manual render boundaries | Fixed ticks/adapters implemented in C.3/C.4; recording/replay remain unimplemented |
 | History/hash, direct loads, reload, back/forward | Real Chrome and scoped History fallback | One router per Window; hosts configure production fallback |
 | Local/session/URL hydration, failures and reload | Browser storage and injected failure fixtures | No cross-tab merging, migration or unload flush |
 | Enter/Space, shortcuts, held/repeat/release, keyboard scroll | Trusted Chrome automation and unit fixtures | Desktop automation only |
@@ -31,3 +31,10 @@ Use `npm run test:browser` or `npm run audit:frontend`. Override installed Chrom
 with `MINI_FRAMEWORK_CHROME_PATH`. Root startup/Node checks need Node 18+; current
 evidence uses Node 26. TypeScript 5.9.3 is development-only. Browser JavaScript
 requires no compilation.
+
+C.3/C.4 add fake 30/60/120 Hz/irregular tick comparisons, hidden/paused epoch tests,
+and native Chrome frame, measurement/storage/network/timer and scoped cancellation
+checks. Hidden-tab policy is unit-tested with controlled document visibility;
+native background-tab behavior across browsers remains unqualified. See
+[verification](reports/task-C.3-C.4-ticks-inputs.md). Resource counters demonstrate
+owned cleanup, not heap collection. Saved input injection is not public replay.

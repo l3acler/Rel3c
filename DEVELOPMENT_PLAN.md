@@ -4,9 +4,9 @@
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.15, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.16, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** C.1/C.2 implement versioned state/control checkpoints, SHA-256 comparison, a manual logical clock and transactional seeded randomness. B.1–B.11 frontend candidate remains verified. Native OS/clipboard/mobile/other-browser qualification stays open. Next implementation batch: C.3 fixed ticks and C.4 external-input/effect adapters; recording/replay remain later gates.
+**Current milestone:** C.1–C.4 implement checkpoints, controlled services, fixed ticks and external-input/effect adapters. B.1–B.11 frontend candidate remains verified. Native OS/clipboard/mobile/other-browser qualification stays open. Next implementation batch: C.5 semantic event input integration and C.6 display interpolation; recording/replay remain later gates.
 
 ## 1. Purpose and scope
 
@@ -173,8 +173,8 @@ Before calling the general frontend API stable, resolve the applicable decisions
 
 - [x] **C.1 — Finalize deterministic serialization and versions.** Dependencies: 0.8, Phase B. Specify snapshot/recording/runtime/action-schema versions, canonical encoding/hash rules, object/alias identity, supported numeric/value cases, and import limits. Include logical clock/PRNG continuation state in restorable checkpoints. Acceptance: round trips preserve supported state meaning; incompatible/invalid inputs fail clearly; a versioned format ADR describes migration/rejection behavior.
 - [x] **C.2 — Add controlled clock and seeded randomness.** Dependencies: A.3, C.1. Provide runtime services to actions and define seed initialization, logical timestamps, draw ordering, and transaction failure semantics. Acceptance: identical seeds/inputs yield identical draws/times; failed actions leave controlled services in the documented state, with no unrecorded advancement affecting later replay.
-- [ ] **C.3 — Implement fixed simulation ticks.** Dependencies: B.4, C.2. Add configurable tick duration, ordered tick input queues, pause/resume, elapsed-time accumulator, bounded catch-up, and a hidden-tab policy. Specify input assignment and actions dispatched from tick logic. Acceptance: tick IDs never silently skip; overload can lag with bounded per-frame work; fake 30/60/120 Hz and irregular schedules produce identical corresponding tick states.
-- [ ] **C.4 — Implement external-input and effect adapters.** Dependencies: C.1–C.3. Normalize viewport/layout/scroll measurements, storage reads, timers, and network/effect results outside actions. Define serializable success/error/cancellation inputs, ordering, origin metadata, and scope disposal. Acceptance: actions receive recorded values rather than querying ambient APIs; replay works with different live dimensions/network; late results cannot update disposed apps/routes contrary to the documented ownership policy.
+- [x] **C.3 — Implement fixed simulation ticks.** Dependencies: B.4, C.2. Add configurable tick duration, ordered tick input queues, pause/resume, elapsed-time accumulator, bounded catch-up, and a hidden-tab policy. Specify input assignment and actions dispatched from tick logic. Acceptance: tick IDs never silently skip; overload can lag with bounded per-frame work; fake 30/60/120 Hz and irregular schedules produce identical corresponding tick states.
+- [x] **C.4 — Implement external-input and effect adapters.** Dependencies: C.1–C.3. Normalize viewport/layout/scroll measurements, storage reads, timers, and network/effect results outside actions. Define serializable success/error/cancellation inputs, ordering, origin metadata, and scope disposal. Acceptance: actions receive recorded values rather than querying ambient APIs; replay works with different live dimensions/network; late results cannot update disposed apps/routes contrary to the documented ownership policy.
 - [ ] **C.5 — Integrate semantic event inputs.** Dependencies: C.4, B.2, B.3, B.6, B.8. Route keyboard/text/navigation/location inputs through the ordered recordable boundary. Specify which native observations become authoritative input and which remain browser-only presentation. Acceptance: key/repeat/held-key, IME/paste, route, and hydration fixtures produce identical committed values from recorded inputs.
 - [ ] **C.6 — Add optional render interpolation.** Dependencies: C.3, A.7. Expose previous/current committed tick values and display-only alpha for opt-in bindings. Define alpha behavior during overload, pause, and resume; avoid extrapolation by accident. Acceptance: position/transform visuals can differ across frame rates while tick hashes match; interpolation cannot mutate state and ordinary text/forms use committed values.
 - [ ] **C.7 — Record ordered transitions.** Dependencies: C.1–C.5. Capture a baseline snapshot/reference, seed/PRNG state, versions, action/payload order, measured inputs, tick IDs, and checkpoint metadata. Distinguish queued/dispatched/committed/failed inputs so failed transitions and nested dispatches are not replayed twice. Acceptance: export/import round trips; recorded nested action fixtures reproduce version order; exports happen only through explicit developer action.
@@ -717,7 +717,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [x] Implemented frontend capabilities are independent; development dependencies and limitations are disclosed (B.11).
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** C.1/C.2 implemented and verified; see [checkpoint/services report](docs/reports/task-C.1-C.2-checkpoints-controls.md). Batch 4 committed as 35bd747; Batch 3 as c278bd0; Batch 2 as 24a0636. Batch 5 remains uncommitted; no push. Next: C.3/C.4. The frontend auditor still passes, with native OS/mobile/browser qualification open.
+**Current batch:** C.3/C.4 complete and verified; see [ticks/input report](docs/reports/task-C.3-C.4-ticks-inputs.md). Batch 4 committed as 35bd747; Batch 3 as c278bd0; Batch 2 as 24a0636. Batch 5 committed as 3a4c6b8; Batch 6 remains uncommitted; no push. Next: C.5/C.6. The frontend auditor still passes, with native OS/mobile/browser qualification open.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -876,7 +876,22 @@ across failures/FIFO and varied render boundaries. Guide/README/API/PRD v2.15,
 ADR and runnable controlled-services example are updated. See the report/artifact
 for commands, hashes, environment and limits.
 
-Batch 5 remains uncommitted. Fixed ticks, recorded external adapters, interpolation,
+Batch 5 committed as 3a4c6b8 at user request. At that milestone, fixed ticks, external adapters, interpolation,
 recording/replay, undo/inspector and full native input/browser qualification remain
 open. No new performance/security certification, deployment or separate demo app
 is claimed. Next: C.3/C.4.
+
+### C.3/C.4 fixed ticks and external inputs — complete (6 October 2026)
+
+Owner: Codex. Baseline: Batch 5 commit 3a4c6b8. ADR 0017 precedes implementation.
+Fixed ticks and bounded queues separate simulation from rendering. Scope-owned
+external adapters normalize serializable success/error/cancel results and suppress
+late work after disposal. Fixed checkpoints preserve authoritative continuation
+and reject pending roots/effects. Public guide/example/types/PRD v2.16 are updated.
+Final clean-candidate audit: 525 runtime tests (24 tick / 15 adapter), 292 spike
+and 15 benchmark correctness tests; strict positive TS/checked JS and 127 negative
+lines; 123 Chrome checks, root smoke and empty runtime dependencies. Every
+candidate source fingerprint matches the final workspace. See the report/raw
+artifact for exact commands, environment and limits.
+No recording/replay, interpolation, semantic-input integration or performance
+claim is included. Next: C.5/C.6. Batch 6 remains uncommitted; no push.

@@ -161,3 +161,23 @@ type RestoredInference = Expect<Equal<typeof fork.state.n, number>>;
 type ServiceDispatchArgs = Expect<Equal<Parameters<typeof fork.actions.draw>, []>>;
 type ServicePayloadArgs = Expect<Equal<Parameters<typeof fork.actions.scale>, [payload: number]>>;
 void hash; void control;
+
+// C.3/C.4 preserve action arity, tick names and the external envelope boundary.
+import type { ExternalInput, EffectTask, InputTicket } from 'mini-framework';
+const ticked = createApp({ schema: controlledSchema, initialState: { n:0,time:0 },
+  simulation: { tickDuration:10000, action:'draw', maxCatchUp:4 } });
+const queued: InputTicket = ticked.enqueue('scale', 2);
+ticked.enqueueAt(10, 'draw'); ticked.resumeTicks();
+const consumed: number = ticked.advanceTicks(10000); queued.cancel();
+const externalSchema = createActionSchema<{ result: unknown }>()(({action})=>({
+  result: action((value: unknown): value is ExternalInput => !!value && typeof value === 'object' && 'version' in value,
+    (draft,input) => { draft.result=input.value; }),
+}));
+const externalApp=createApp({schema:externalSchema,initialState:{result:null}});
+externalApp.inputs.send('typed','result', {width:100});
+externalApp.inputs.sample('typed','result',()=>123);
+const task: EffectTask=externalApp.inputs.effect('network','result',async signal=>{
+  const response=await fetch('/data',{signal});return {status:response.status,body:await response.text()};
+});
+externalApp.inputs.measure('viewport','result','viewport');externalApp.inputs.timer('timer','result',10);
+void task; void consumed;

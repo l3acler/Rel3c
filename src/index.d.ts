@@ -18,7 +18,8 @@ export interface ActionServices {
 }
 export interface ControlOptions { readonly seed?: number; readonly time?: number; }
 export interface ControlSnapshot {
-  readonly clock: { readonly mode: 'manual'; readonly time: number; readonly tick: 0; readonly tickDuration: null };
+  readonly clock: { readonly mode: 'manual'; readonly time: number; readonly tick: 0; readonly tickDuration: null }
+    | { readonly mode: 'fixed'; readonly time: number; readonly tick: number; readonly tickDuration: number };
   readonly random: { readonly algorithm: 'xorshift32-13-17-5/1'; readonly seed: number; readonly state: number; readonly draws: number };
 }
 
@@ -47,8 +48,39 @@ export function createActionSchema<S extends object = Record<string, unknown>>(o
   <D extends Definitions<S>>(build: (helpers: ActionBuilder<S>) => D) => ActionSchema<S, D>;
 type ArgsOf<T> = T extends ActionSpec<unknown, infer Args> ? Args : never;
 type DispatchArgs<D> = { [K in keyof D & string]: [name: K, ...ArgsOf<D[K]>] }[keyof D & string];
+type TickNames<D> = { [K in keyof D & string]: ArgsOf<D[K]> extends [] ? K : never }[keyof D & string];
+type ExternalNames<D> = { [K in keyof D & string]: [ExternalInput] extends ArgsOf<D[K]> ? K : never }[keyof D & string];
+export interface SimulationConfig<D> {
+  readonly tickDuration: number; readonly maxCatchUp?: number; readonly action?: TickNames<D>;
+}
+export interface TickStatus {
+  readonly enabled: boolean; readonly paused: boolean; readonly accumulator: number;
+  readonly queuedInputs: number; readonly maxCatchUp: number | null;
+}
+export interface InputTicket {
+  readonly sequence: number; readonly tick: number; readonly time: number;
+  readonly cancel: () => void;
+}
+export interface ExternalInput {
+  readonly version: 1; readonly origin: string; readonly status: 'success' | 'error' | 'cancelled';
+  readonly value: unknown; readonly error: Readonly<{ name: string; message: string }> | null;
+}
+export interface ExternalReceipt extends InputTicket { readonly input: ExternalInput; }
+export interface EffectTask {
+  readonly cancel: () => void; readonly done: Promise<ExternalReceipt | null>;
+}
+export interface InputAdapters<D> {
+  send(origin: string, action: ExternalNames<D>, value: unknown): ExternalReceipt;
+  sample<F extends () => unknown>(origin: string, action: ExternalNames<D>, read: F & Sync<F>): ExternalReceipt;
+  effect(origin: string, action: ExternalNames<D>, run: (signal: AbortSignal) => unknown): EffectTask;
+  measure(origin: string, action: ExternalNames<D>, kind: 'viewport'): ExternalReceipt;
+  measure(origin: string, action: ExternalNames<D>, kind: 'layout', target: Element): ExternalReceipt;
+  measure(origin: string, action: ExternalNames<D>, kind: 'scroll', target?: Element): ExternalReceipt;
+  storage(origin: string, action: ExternalNames<D>, storage: Pick<Storage, 'getItem'>, key: string): ExternalReceipt;
+  timer(origin: string, action: ExternalNames<D>, delay: number, value?: unknown): EffectTask;
+}
 export type AppStatus = 'created' | 'mounting' | 'mounted' | 'disposing' | 'disposed';
-export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' | 'schedule' | 'navigation' | 'persistence' | 'control' | 'snapshot';
+export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' | 'schedule' | 'navigation' | 'persistence' | 'control' | 'snapshot' | 'input';
 export type ErrorHandler = (error: Error, info: Readonly<{ phase: ErrorPhase }>) => unknown;
 type SyncErrorHook<F extends ErrorHandler> = { readonly onError?: F & Sync<F> };
 type Cleanup<F extends () => unknown> = F & Sync<F>;
@@ -195,6 +227,7 @@ export interface ViewContext<S, D extends Definitions<S>> {
   readonly actions: { readonly [K in keyof D]: (...args: ArgsOf<D[K]>) => void };
   /** Drains an outer batch synchronously; nested calls only admit queued work. */
   readonly dispatch: (...args: DispatchArgs<D>) => void;
+  readonly inputs: InputAdapters<D>;
   readonly route: RouteSnapshot | null;
   navigate(to: string, options?: NavigationOptions): void;
   readonly link: LinkBuilder;
@@ -216,6 +249,7 @@ export interface AppConfig<S extends object, D extends Definitions<S> = {}> {
   readonly persistence?: PersistenceConfig<S>;
   readonly controls?: ControlOptions;
   readonly snapshot?: string;
+  readonly simulation?: SimulationConfig<D>;
 }
 export type PersistenceField =
   | Readonly<{ location: 'memory'; validate?: never; key?: never }>
@@ -245,6 +279,12 @@ export interface AppInstance<S extends object, D extends Definitions<S> = {}> ex
   setLogicalTime(time: number): void;
   /** Frozen, nonreactive committed control snapshot. */
   readonly controls: ControlSnapshot;
+  readonly ticks: TickStatus;
+  readonly enqueue: (...args: DispatchArgs<D>) => InputTicket;
+  readonly enqueueAt: (tick: number, ...args: DispatchArgs<D>) => InputTicket;
+  advanceTicks(elapsedMicroseconds: number): number;
+  pauseTicks(): void;
+  resumeTicks(): void;
   /** Without a target, resolves #app at mount time (or uses the configured target). */
   mount(target?: Element): AppInstance<S, D>;
   dispose(): void;

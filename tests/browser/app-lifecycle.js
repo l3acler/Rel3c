@@ -7,6 +7,7 @@ import { runInputTests } from './events-input.js';
 import { runRoutingSchedulerTests } from './routing-scheduler.js';
 import { runPersistenceTests } from './persistence.js';
 import { runDeterminismTests } from './determinism.js';
+import { runTickInputTests } from './ticks-inputs.js';
 import { runClickTests } from './click.js';
 import { runKeyedTests } from './keyed.js';
 import { runDOMTests } from './dom.js';
@@ -307,5 +308,6 @@ window.runAppLifecycleTests = async () => {
   await runRoutingSchedulerTests(test, assert, throws, host);
   await runPersistenceTests(test, assert, throws, host);
   await runDeterminismTests({ test, host, assert, throws });
+  await runTickInputTests({ test, host, assert, throws });
   return { passed: results.length, results, coreSlice };
 };

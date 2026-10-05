@@ -246,6 +246,23 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
   })()`);
   if (!deterministicExample) throw Error('Public deterministic continuation example failed');
   tests.results.push({ name: 'C.1/C.2 public example accepts native Enter samples, rolls back draws, advances manual time and compares a restored continuation', passed: true }); tests.passed++;
+  const tickPage = await open('examples/ticks/');
+  await tickPage.waitFor('document.getElementById("step") !== null');
+  const tickExample = await tickPage.evaluate( `(async () => {
+    const { app } = await import('/examples/ticks/main.js');
+    const { resourceCounts } = await import('/src/runtime/diagnostics.js');
+    document.getElementById('viewport').click();
+    const queued = app.ticks.queuedInputs === 1;
+    document.getElementById('step').click(); app.flush();
+    const stepped = app.state.ticks === 1 && app.state.time === 10000 && app.state.result.startsWith('viewport: success');
+    document.getElementById('network').click();
+    for (let attempts = 0; !app.ticks.queuedInputs && attempts < 100; attempts++) await new Promise(resolve => setTimeout(resolve,20));
+    document.getElementById('step').click(); app.flush();
+    const network = app.state.result.startsWith('network: success');
+    app.dispose(); return queued && stepped && network && Object.values(resourceCounts(app)).every(n => n === 0);
+  })()`);
+  if (!tickExample) throw Error('Public tick/input example failed');
+  tests.results.push({ name: 'C.3/C.4 public example advances ticks and queues viewport/local network results', passed: true }); tests.passed++;
   const paths = ['src/index.js', 'src/index.d.ts', 'src/runtime/app.js', 'src/runtime/errors.js', 'src/runtime/records.js',
     'src/runtime/state/initial-state.js', 'src/runtime/state/transactions.js', 'src/runtime/state/data.js',
     'src/runtime/state/draft.js', 'src/runtime/state/graph.js', 'src/runtime/reactivity/tracking.js', 'src/runtime/dom/bindings.js', 'src/runtime/dom/nodes.js', 'src/runtime/dom/properties.js', 'src/runtime/dom/renderer.js', 'src/runtime/dom/queue.js', 'src/runtime/dom/events.js', 'src/runtime/diagnostics.js', 'src/runtime/actions/schema.js', 'src/runtime/actions/dispatch.js', 'examples/basic/main.js', 'examples/basic/index.html',
@@ -258,12 +275,15 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
     'src/runtime/serialization/checkpoint.js', 'src/runtime/serialization/sha256.js',
     'tests/deterministic-services.test.js', 'tests/checkpoint.test.js', 'tests/browser/determinism.js',
     'examples/determinism/main.js', 'examples/determinism/index.html');
+  paths.push('src/runtime/determinism/ticks.js', 'src/runtime/inputs/ownership.js', 'src/runtime/inputs/adapters.js',
+    'tests/fixed-ticks.test.js', 'tests/external-inputs.test.js', 'tests/browser/ticks-inputs.js',
+    'examples/ticks/main.js', 'examples/ticks/index.html', 'examples/ticks/sample.json');
   const sourceFiles = await Promise.all(paths.map(async file => ({ file,
     sha256: createHash('sha256').update(await readFile(path.join(root, file))).digest('hex') })));
-  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'C.1–C.2', formatVersion: 1, recordedAt: new Date().toISOString(),
+  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'C.3–C.4', formatVersion: 1, recordedAt: new Date().toISOString(),
     browserVersion, flags, machine: { cpu: os.cpus()[0]?.model, cpuCount: os.cpus().length,
       platform: os.platform(), release: os.release(), arch: os.arch(), node: process.version },
-    sourceFiles, example, tests, nativeInputs, limitations: 'Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. History/hash routing and cooperative priorities covered; memory/session/local/URL hydration and writes covered; controlled manual time/draws, checkpoints and restored continuation covered; no fixed ticks or replay. Resource counters are not a heap-leak proof.' };
+    sourceFiles, example, tests, nativeInputs, limitations: 'Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. History/hash routing and cooperative priorities covered; memory/session/local/URL hydration and writes covered; controlled manual time/draws, checkpoints and restored continuation covered; fixed ticks, scoped external measurements/timers/network and cancellation covered; recording/replay remain unimplemented. Resource counters are not a heap-leak proof.' };
   const directory = path.join(root, 'tests/results'); await mkdir(directory, { recursive: true });
   const file = path.join(directory, 'app-lifecycle-' + Date.now() + '-' + randomUUID().slice(0, 8) + '.json');
   await writeFile(file, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });

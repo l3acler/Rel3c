@@ -18,10 +18,22 @@ export function createControls(options = {}, restored = null) {
     get snapshot() { live(); return Object.freeze({ clock, random }); },
     setTime(value) {
       live();
+      if (clock.mode !== 'manual') fail('CONTROL_MODE', 'Fixed simulation owns logical time.');
       if (active) fail('CONTROL_REENTRANT', 'Cannot advance time during an action.');
       if (!logicalTime(value) || value < clock.time)
         fail('CONTROL_INVALID', 'Logical time must be a nonnegative safe integer at or after the current time.');
       if (value !== clock.time) clock = Object.freeze({ ...clock, time: value });
+    },
+    fixed(duration) {
+      live();
+      if (clock.mode === 'manual') clock = Object.freeze({ ...clock, mode: 'fixed', tickDuration: duration });
+    },
+    nextTick() {
+      live();
+      const time = clock.time + clock.tickDuration, tick = clock.tick + 1;
+      if (active || clock.mode !== 'fixed') fail('CONTROL_REENTRANT', 'Ticks require an idle fixed clock.');
+      if (!logicalTime(time) || !logicalTime(tick)) fail('CONTROL_LIMIT', 'Tick/time exceeds the safe integer range.');
+      clock = Object.freeze({ ...clock, time, tick });
     },
     begin(canUse = () => true) {
       live();

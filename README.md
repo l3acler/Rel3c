@@ -2,8 +2,7 @@
 
 A JavaScript frontend framework built here, with no third-party runtime dependencies.
 It provides transactional state, precise DOM bindings, native events, keyed lists,
-routing, priorities and selected state persistence. C.1/C.2 also provide versioned checkpoints and controlled clock/random. Fixed
-ticks, recording, replay and developer tools remain planned for Phases C/D.
+routing, priorities and selected state persistence. C.1–C.4 also provide versioned checkpoints, controlled clock/random, fixed ticks and scoped external-input/effect adapters. Recording, replay and developer tools remain planned for Phases C/D.
 
 The public API is experimental (`0.1.0`). The Phase B frontend walkthrough is
 qualified in desktop Chrome; OS IMEs, system clipboard paste, mobile and other
@@ -184,7 +183,7 @@ For URL-backed fields, see [the persistence example](examples/persistence/README
   publishes none. Nested dispatches run FIFO after a successful parent. Side effects
   outside the draft cannot roll back. Async effects run outside actions and dispatch
   their results. Controlled `now()`/`random()` services are available to actions;
-  fixed ticks and replay remain unimplemented.
+  fixed ticks/external adapters are implemented; recording/replay remain unimplemented.
 - **Events belong to view scopes.** `onClick` needs no event argument; `on.submit`
   supplies cancellation and native event access; `onText` supplies semantic text;
   `onKey` supplies key/held/reset information. Scroll reads happen in the event
@@ -205,6 +204,37 @@ For URL-backed fields, see [the persistence example](examples/persistence/README
 For disposal, argument validation, errors, resource budgets and copyable focused
 examples, read [DOCUMENTATION.md](DOCUMENTATION.md). Runtime validation remains
 necessary for imported data even when TypeScript accepts its declared type.
+
+## Fixed ticks and external inputs
+
+Use `simulation: {tickDuration:10000, action:'tick', maxCatchUp:8}` to run a
+registered no-payload action on 10 ms logical ticks. Apps start paused.
+`resumeTicks()` enables the mounted frame driver; `pauseTicks()` retains backlog.
+Headless apps can supply integer elapsed microseconds through `advanceTicks()`.
+Tick IDs never skip under overload; hiding a tab excludes hidden wall time.
+
+```js
+import {createApp, createActionSchema} from './src/index.js';
+const schema = createActionSchema()(({action}) => ({
+  tick: action((draft, services) => { draft.count++; draft.time=services.now(); }),
+}));
+const app = createApp({schema, initialState:{count:0,time:0},
+  simulation:{tickDuration:10000, action:'tick'}});
+app.enqueue('tick'); // One queued root, followed by configured tick logic.
+app.resumeTicks(); app.advanceTicks(10000);
+console.log(app.state.count, app.controls.clock.tick); // 2, 1
+app.dispose();
+```
+
+Use `context.inputs` for view-owned viewport/layout/scroll/storage samples,
+timers and network effects. Results enter payload actions as versioned
+success/error/cancelled inputs. Removing a view aborts pending effects and removes
+its queued results. `app.inputs` owns work until app disposal. Fixed inputs wait
+for the next tick; manual inputs dispatch immediately. Snapshots require no
+pending inputs/effects, and fixed restoration needs matching simulation duration.
+See the [guide](DOCUMENTATION.md#fixed-ticks-and-external-inputs),
+[API reference](docs/api/ticks-inputs.md), and runnable
+[ticks example](examples/ticks/README.md) at `/examples/ticks/`.
 
 ## Controlled services and checkpoints
 
@@ -235,7 +265,7 @@ expire after the action body; explicit clock changes are monotone and change no
 state version. Checkpoints restore a new owned app with the same state version,
 clock and random position, without replacing mounted state or restoring browser
 effects. `app.controls` is frozen/nonreactive; copy service values into state to
-display them. This is not fixed ticks, recording or replay.
+display them. This manual-clock example does not exercise fixed ticks. Recording/replay remain unimplemented.
 
 Try [http://localhost:3000/examples/determinism/](http://localhost:3000/examples/determinism/)
 after `npm run dev`, or read the [guide](DOCUMENTATION.md#checkpoints-and-controlled-services)
@@ -253,7 +283,8 @@ for schema/runtime versions, supported data, import limits, errors and cleanup.
 | Memory/session/local/URL field locations | Top-level fields, guarded bounded format; no cross-tab merging or migrations |
 | Declarations, error codes and root public examples | Experimental compatibility policy; no stable release claim |
 | Versioned checkpoints, manual logical clock and transactional seeded draws | C.1/C.2; see the controlled-services example below |
-| Fixed ticks, recording/replay, history/inspector | Unimplemented later Phase C/D |
+| Fixed ticks and scoped external-input/effect adapters | C.3/C.4; see `/examples/ticks/` and the guide |
+| Recording/replay, history/inspector | Unimplemented later Phase C/D |
 
 [Compatibility and versioning](docs/adr/0015-public-frontend-compatibility.md)
 explain how the experimental frontend can evolve into Phase C without treating

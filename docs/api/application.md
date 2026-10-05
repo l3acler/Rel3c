@@ -66,7 +66,7 @@ invalid objects reject even when `#app` exists; they do not trigger fallback.
 ## Config and instance
 
 Config keys: `initialState` (default `{}`), `schema` (default empty), `view`
-(default empty text, or outlet with routing), optional Element `target`, optional `onError`, `router`, `persistence`, `controls` and `snapshot`. Unknown
+(default empty text, or outlet with routing), optional Element `target`, optional `onError`, `router`, `persistence`, `controls`, `snapshot` and `simulation`. Unknown
 keys/accessors/symbol keys reject. The placeholder's `actions`/`seed` options
 are not implemented; do not treat planned PRD sketches as current examples.
 
@@ -305,3 +305,14 @@ metadata. `app.snapshot()` exports canonical state/version/control JSON;
 `controls`. `hashSnapshot(text)` validates and compares checkpoints with SHA-256.
 See [the full contract](determinism.md) for versions, limits, expiration, errors,
 ordinary mount hydration and the boundary between restoration and future replay.
+
+## Fixed ticks and owned external inputs (C.3/C.4)
+
+`simulation` configures positive integer microsecond ticks, a no-payload action
+and bounded catch-up. `enqueue`/`enqueueAt` admit future inputs; `resumeTicks`,
+`pauseTicks` and `advanceTicks` drive the clock independently of rendering.
+`app.ticks` exposes frozen nonreactive status. `app.inputs` owns adapter work for
+the app; `context.inputs` owns it for that view. See [ticks/inputs](ticks-inputs.md)
+and the [guide](../../DOCUMENTATION.md#fixed-ticks-and-external-inputs) for arguments,
+errors, hidden policy, cancellation and fixed-checkpoint restoration. Recording
+and replay remain unimplemented.

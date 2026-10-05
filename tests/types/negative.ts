@@ -209,3 +209,22 @@ createActionSchema<State>()(({ action }) => ({ bad: action((draft, services) => 
 // @ts-expect-error Async action bodies remain forbidden when using services.
 createActionSchema<State>()(({ action }) => ({ bad: action(async (draft, services) => { draft.count = services.random(); }) }));
 import { hashSnapshot } from 'mini-framework';
+
+// C.3/C.4 queue arity and adapter callback contracts remain strict.
+// @ts-expect-error Missing payload remains invalid at queue admission.
+app.enqueue('rename');
+// @ts-expect-error Queue no-payload actions still accept no arguments.
+app.enqueue('increment', 1);
+// @ts-expect-error Future ticks are numeric.
+app.enqueueAt('one', 'increment');
+// @ts-expect-error A configured tick action must take no payload.
+createApp({ schema, simulation:{tickDuration:10,action:'rename'} });
+// @ts-expect-error Unknown simulation options reject.
+createApp({ simulation:{tickDuration:10,clock:'wall'} });
+// @ts-expect-error Runtime tick status is read-only.
+app.ticks.paused=false;
+// @ts-expect-error Ordinary payload actions do not accept the external envelope.
+app.inputs.send('origin','rename', 'value');
+const anyEnvelope=createApp({schema:createActionSchema<State>()(({action})=>({ any:action((v:unknown):v is unknown=>true,()=>{}) }))});
+// @ts-expect-error Samplers must be synchronous.
+anyEnvelope.inputs.sample('origin','any',async()=>1);

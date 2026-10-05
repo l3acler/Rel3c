@@ -33,8 +33,14 @@ function metadata(value) {
   fields(value.controls, ['clock', 'random']);
   const { clock, random } = value.controls;
   fields(clock, ['mode', 'time', 'tick', 'tickDuration']);
-  if (clock.mode !== 'manual' || clock.tick !== 0 || Object.is(clock.tick, -0) || clock.tickDuration !== null)
-    fail('SNAPSHOT_INCOMPATIBLE', 'Only the manual clock (tick 0, no tick duration) is supported in C.1/C.2.');
+  if (clock.mode === 'manual') {
+    if (clock.tick !== 0 || Object.is(clock.tick, -0) || clock.tickDuration !== null)
+      fail('SNAPSHOT_INCOMPATIBLE', 'Manual clocks require tick 0 and no tick duration.');
+  } else if (clock.mode === 'fixed') {
+    if (!logicalTime(clock.tick) || !logicalTime(clock.tickDuration) || clock.tickDuration === 0
+      || !logicalTime(clock.tick * clock.tickDuration) || clock.time < clock.tick * clock.tickDuration)
+      invalid('Invalid fixed clock continuation.');
+  } else fail('SNAPSHOT_INCOMPATIBLE', 'Unsupported clock mode.');
   if (!logicalTime(clock.time)) invalid('Invalid logical clock time.');
   fields(random, ['algorithm', 'seed', 'state', 'draws']);
   if (random.algorithm !== RANDOM_ALGORITHM) fail('SNAPSHOT_INCOMPATIBLE', 'Unsupported random algorithm.');

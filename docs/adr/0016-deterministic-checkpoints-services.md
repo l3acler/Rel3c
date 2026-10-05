@@ -113,3 +113,12 @@ FIFO child ordering; post-commit failures; expired services; uninterrupted vs
 restored continuation; Node and browser hash oracles; frontend regression and
 root startup. C.3–C.10 ticks, adapters, interpolation, recording and replay remain
 unimplemented and no replay/performance/security certification is claimed.
+
+## C.3/C.4 follow-up
+
+[ADR 0017](0017-fixed-ticks-external-inputs.md) implements the reserved fixed clock
+mode in checkpoint/runtime v1. Earlier manual checkpoints retain their encoding.
+Fixed imports require matching simulation duration; pending inputs/effects reject
+snapshot export. External adapters now normalize owned values, with recording,
+replay and interpolation still unimplemented. The C.1/C.2 verification above
+remains historical evidence for that milestone.
