@@ -64,6 +64,12 @@ DOM_PROPERTY_INVALID, DOM_CONDITION_INVALID, DOM_LIMIT, BINDING_READONLY,
 BINDING_OWNER, VIEW_RESULT_INVALID, REACTIVITY_ASYNC and STATE_READONLY.
 Keyed collections are implemented; see [collections API](collections.md). Scoped `onClick` callbacks are implemented; see [click API](events.md). General event props remain unimplemented.
 
+The [A.10 core example](../../examples/core/README.md) combines these contracts.
+Its [acceptance evidence](../reports/task-A.10-core-slice.md) counts binding evaluations,
+setter calls and native mutations: one independent increment reads/writes one text
+binding; rollback reads/writes none. These checks use the current APIs without
+application DOM patches and do not establish performance or cross-browser claims.
+
 ## Scheduling and flush (A.7)
 
 Initial mounting is synchronous. After mounting, successful commits dirty exact

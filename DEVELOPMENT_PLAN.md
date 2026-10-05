@@ -1,18 +1,18 @@
 # Framework development plan
 
-**Status:** Phase 0 complete; Phase A in progress with A.1–A.9 verified. Later tasks remain planned.
+**Status:** Phase 0 and Phase A complete; A.1–A.10 verified. Phases B–D remain planned.
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.9, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.10, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** Phase A — core runtime (A.1–A.9 complete; A.10 next).
+**Current milestone:** Phase A complete; Phase B next, starting with B.1 native event handling.
 
 ## 1. Purpose and scope
 
 This document turns the product requirements into an implementation backlog. The framework is the product: its state engine, DOM abstraction, event system, router, scheduler, deterministic runtime, tools, package, and documentation. Small examples validate public APIs. The assignment's separate demonstration application is a later integration task and must not determine the framework architecture.
 
-The repository contains browser-native public lifecycle exports, a development server/public-only text example, tested transaction/view/action-schema spikes, equivalent-work Node/browser measurements, and typed dispatch/graph snapshot evidence. Phase 0 is complete: copy-on-write is selected for Phase A, with stable graph IDs, explicit action inputs, acyclic supported data, element/binding syntax and proposed browser/input qualification recorded in ADRs. Task 0.8's shared validation findings were corrected and remeasured in 0.9. A.1 implements initial ownership, schema registration, mount/dispose and cleanup/errors; A.2 adds app-owned production COW transactions, revocation, stable IDs and state/scratch growth guards with fresh port evidence. A.3 implements public dispatch with owned payloads, synchronous guards, bounded FIFO queues and failure propagation. A.4/A.5 add exact observers, current-state read facades, lazy computed caches, chained/dynamic dependencies, cycle errors and scoped disposal. A.6/A.7 add declarative DOM and frame batching; A.8/A.9 add keyed collection scopes and minimal click events with resource cleanup. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
+The repository contains browser-native public lifecycle exports, a development server/public-only text example, tested transaction/view/action-schema spikes, equivalent-work Node/browser measurements, and typed dispatch/graph snapshot evidence. Phase 0 is complete: copy-on-write is selected for Phase A, with stable graph IDs, explicit action inputs, acyclic supported data, element/binding syntax and proposed browser/input qualification recorded in ADRs. Task 0.8's shared validation findings were corrected and remeasured in 0.9. A.1 implements initial ownership, schema registration, mount/dispose and cleanup/errors; A.2 adds app-owned production COW transactions, revocation, stable IDs and state/scratch growth guards with fresh port evidence. A.3 implements public dispatch with owned payloads, synchronous guards, bounded FIFO queues and failure propagation. A.4/A.5 add exact observers, current-state read facades, lazy computed caches, chained/dynamic dependencies, cycle errors and scoped disposal. A.6/A.7 add declarative DOM and frame batching; A.8/A.9 add keyed collection scopes and minimal click events with resource cleanup. A.10 verifies the integrated public core example with binding/setter counters and native mutation records. Unchecked tasks and proposed future paths/commands describe planned deliverables, not existing functionality.
 
 The PRD remains the source of truth for acceptance criteria. Changes to product scope or execution contracts require corresponding PRD changes and an explanation. Architecture choices require an architecture decision record (ADR), supporting tests, and measurements where applicable.
 
@@ -129,7 +129,7 @@ Deliver the root scaffold, isolated prototypes, shared fixture suite, reproducib
 - [x] **A.7 — Add frame batching and explicit flush.** Dependencies: A.3, A.6. Deduplicate dirty bindings, read latest committed values, avoid unnecessary writes, and cancel disposed work. Acceptance: several commits before one frame cause at most one latest-value write per binding; explicit flush is deterministic in tests and does not create duplicate scheduled writes.
 - [x] **A.8 — Implement keyed collections.** Dependencies: A.4, A.6, A.7. Add keyed insertion/removal/reorder, item binding ownership, and missing/duplicate-key diagnostics. Acceptance: retained items preserve DOM identity and focus after reorder; item edits affect only dependent bindings; removed items dispose resources.
 - [x] **A.9 — Implement scoped cleanup and minimal click events.** Dependencies: A.1, A.6, A.7. Own handlers, subscriptions, computed values, child scopes, and scheduled callbacks. Add the public click mechanism needed for the vertical slice. Acceptance: repeated mount/unmount restores resource counts; disposed scopes receive neither events nor queued writes.
-- [ ] **A.10 — Verify the core vertical slice.** Dependencies: A.3–A.9. Build a public-import counter with an unrelated bound node, a nested field, conditional content, and keyed items. Instrument binding evaluations and DOM writes. Acceptance: one click commits one version and updates exactly its dependent text; the unrelated node is unchanged; a failing action changes neither committed state nor UI.
+- [x] **A.10 — Verify the core vertical slice.** Dependencies: A.3–A.9. Build a public-import counter with an unrelated bound node, a nested field, conditional content, and keyed items. Instrument binding evaluations and DOM writes. Acceptance: one click commits one version and updates exactly its dependent text; the unrelated node is unchanged; a failing action changes neither committed state nor UI. Evidence: [core example](examples/core/README.md), [guide](DOCUMENTATION.md#verified-core-example) and [A.10 report](docs/reports/task-A.10-core-slice.md); 278 runtime and 80 Chrome checks pass, with one counter evaluation/text write and zero rollback work.
 
 ### Exit gate and artifacts
 
@@ -711,7 +711,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** A.8/A.9 complete; local commit requested after verification. A.10 remains planned. See the [batch report](docs/reports/task-A.8-A.9-keyed-events.md) and [ADR 0010](docs/adr/0010-keyed-scopes-clicks.md).
+**Current batch:** A.10 complete and uncommitted; Phase A exit gate passes. B.1 is next. See the [core report](docs/reports/task-A.10-core-slice.md). A.8/A.9 were committed at user request; their [report](docs/reports/task-A.8-A.9-keyed-events.md) and [ADR 0010](docs/adr/0010-keyed-scopes-clicks.md) remain historical evidence.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -745,3 +745,29 @@ commit after verification; no push was requested. A.10 is next. General native
 event/cancellation APIs, input synchronization/IME, routing, priorities and replay
 remain unimplemented. Resource-count checks are not a heap-collection proof;
 rendering remains non-atomic and browser qualification is Chrome-only.
+
+
+### A.10 core acceptance — complete (5 October 2026)
+
+Owner: Codex. Change reference: uncommitted A.10 task diff; baseline
+`7d85afd`. `/examples/core/` combines the counter, unrelated bound value, nested
+profile field, conditional details and keyed rows using only public imports.
+Six integrated Node checks and six native Chrome checks instrument evaluations,
+setter calls and structural operations outside application code. Independent
+MutationObserver records confirm one click: one version, one counter evaluation,
+one text setter and one characterData mutation; unrelated bindings/structure
+remain untouched. The failing action attempts changes across every section and
+retains snapshot/version/UI/focus with zero reads, setters or mutations. Additional
+checks cover item/nested exactness, focus-preserving reorder, add/remove resources,
+conditional stale jobs/handlers, burst coalescing and terminal disposal.
+
+Final: 278 runtime, 292 spike and 15 workload tests pass; positive TS/checked JS
+(including the new core modules) and 76 independent negative type lines pass;
+80 Chrome checks and root startup smoke pass. README, DOCUMENTATION.md,
+application/DOM references, PRD v2.10 and metadata describe Phase A as complete;
+no runtime contract/public API change was needed. Detailed evidence and limits:
+[core acceptance report](docs/reports/task-A.10-core-slice.md). Existing AGENTS.md
+changes/reports are preserved; nothing staged or committed. Next is B.1; general
+events/cancellation, input synchronization/IME, routing, priorities, deterministic
+services and replay remain unimplemented. Chrome qualification and ownership
+counters do not establish cross-browser, heap or performance guarantees.

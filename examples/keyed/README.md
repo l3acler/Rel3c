@@ -25,4 +25,4 @@ app.dispose(); // releases handlers, computed/binding scopes and queued frames
 
 See [main.js](main.js), [collections API](../../docs/api/collections.md) and
 [click API](../../docs/api/events.md). General input events and routing are future
-work. The full A.10 acceptance gate remains a separate task.
+work. The [core example](../core/README.md) now passes the full A.10 acceptance gate.

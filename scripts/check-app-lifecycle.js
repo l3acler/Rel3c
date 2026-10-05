@@ -69,14 +69,35 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
   if (!keyedExample || !keyboard) throw new Error('Public keyed/click example failed');
   tests.results.push({ name: 'native Enter/Space activation dispatches public click actions', passed: true }); tests.passed++;
   tests.results.push({ name: 'public keyed/click example preserves identity, edits and selection; actions and disposal work', passed: true }); tests.passed++;
+  const core = await open('examples/core/');
+  await core.waitFor('document.querySelector("#core-count")?.textContent === "0"');
+  const coreExample = await core.evaluate(`(async () => {
+    const { app } = await import('/examples/core/main.js');
+    const independent = document.getElementById('core-unrelated'), version = app.stateVersion;
+    document.getElementById('core-increment').click();
+    const committed = app.state.count === 1 && app.stateVersion === version + 1;
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    const rendered = document.getElementById('core-count').textContent === '1' && document.getElementById('core-unrelated') === independent;
+    document.getElementById('core-rename').click(); app.flush();
+    const nested = document.getElementById('core-name').textContent === 'Grace';
+    document.getElementById('core-toggle').click(); app.flush();
+    const conditional = !document.getElementById('core-details');
+    const field = document.getElementById('core-input-1'); field.focus(); field.setSelectionRange(1, 3);
+    document.getElementById('core-reverse').click(); app.flush();
+    const retained = document.getElementById('core-input-1') === field && document.activeElement === field && field.selectionStart === 1 && field.selectionEnd === 3;
+    app.dispose(); return committed && rendered && nested && conditional && retained && !document.getElementById('app').firstChild;
+  })()`);
+  if (!coreExample) throw new Error('Public core example failed');
+  tests.results.push({ name: 'public core example mounts from the root and runs counter, nested, conditional, keyed and disposal behavior', passed: true }); tests.passed++;
   const paths = ['src/index.js', 'src/index.d.ts', 'src/runtime/app.js', 'src/runtime/errors.js', 'src/runtime/records.js',
     'src/runtime/state/initial-state.js', 'src/runtime/state/transactions.js', 'src/runtime/state/data.js',
     'src/runtime/state/draft.js', 'src/runtime/state/graph.js', 'src/runtime/reactivity/tracking.js', 'src/runtime/dom/bindings.js', 'src/runtime/dom/nodes.js', 'src/runtime/dom/properties.js', 'src/runtime/dom/renderer.js', 'src/runtime/dom/queue.js', 'src/runtime/dom/events.js', 'src/runtime/diagnostics.js', 'src/runtime/actions/schema.js', 'src/runtime/actions/dispatch.js', 'examples/basic/main.js', 'examples/basic/index.html',
     'tests/browser/app-lifecycle.js', 'tests/browser/reactivity.js', 'tests/browser/click.js', 'tests/browser/keyed.js', 'tests/browser/dom.js', 'tests/browser/render-queue.js', 'examples/dom/main.js', 'examples/dom/index.html', 'examples/keyed/main.js', 'examples/keyed/index.html', 'tests/browser/app-lifecycle.html', 'scripts/check-app-lifecycle.js',
-    'scripts/local-browser.js', 'scripts/dev-server.js'];
+    'scripts/local-browser.js', 'scripts/dev-server.js', 'tests/browser/core-slice.js', 'tests/helpers/core-probe.js',
+    'tests/core-slice.test.js', 'examples/core/app.js', 'examples/core/main.js', 'examples/core/index.html'];
   const sourceFiles = await Promise.all(paths.map(async file => ({ file,
     sha256: createHash('sha256').update(await readFile(path.join(root, file))).digest('hex') })));
-  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'A.8/A.9', formatVersion: 1, recordedAt: new Date().toISOString(),
+  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'A.10', formatVersion: 1, recordedAt: new Date().toISOString(),
     browserVersion, flags, machine: { cpu: os.cpus()[0]?.model, cpuCount: os.cpus().length,
       platform: os.platform(), release: os.release(), arch: os.arch(), node: process.version },
     sourceFiles, example, tests, limitations: 'Public lifecycle, declarative DOM, named dispatch, exact observers and lazy computed values; frame batching and explicit flush; minimal click events; no scroll/keyboard/input APIs or replay or cross-browser/IME qualification. Resource counters are not a heap-leak proof.' };

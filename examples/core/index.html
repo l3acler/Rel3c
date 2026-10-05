@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Core example · mini-framework</title>
+  <style>
+    :root { font: 17px/1.6 system-ui, sans-serif; color: #243a35; background: #f4f2ea; }
+    body { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    h1 { font: 40px Georgia, serif; }
+    .controls, li { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    button, input { font: inherit; padding: 8px 12px; border: 1px solid #adbdb6; border-radius: 6px; background: white; color: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #315dc4; outline-offset: 3px; }
+    ul { padding: 0; list-style: none; }
+    li, section { padding: 16px; margin: 12px 0; border: 1px solid #dce2d7; border-radius: 8px; background: white; }
+    li input { flex: 1; min-width: 120px; }
+    section button { margin-left: 12px; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

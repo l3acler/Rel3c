@@ -22,7 +22,7 @@ framework addition or change.
 
 ## Overview & Purpose
 
-`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and A.1–A.9 lifecycle, transactions, named dispatch, exact dependencies and computed values are complete. Declarative elements and exact bindings are implemented; scoped click callbacks are implemented; general events and routing remain later tasks.
+`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and Phase A (A.1–A.10) are complete: lifecycle, transactions, named dispatch, exact dependencies, computed values, declarative DOM, keyed lists and scoped clicks. General events and routing remain Phase B tasks; deterministic services and replay remain Phase C tasks.
 
 The runtime implements named transactions and frame-batched reactive rendering.
 Deterministic simulation services remain planned:
@@ -63,7 +63,7 @@ Deterministic simulation services remain planned:
   - [x] **0.8 Action Schema & Serialization**: Typed named actions, independent runtime payload validation, and alias-preserving canonical snapshots; cycles rejected. See the [schema ADR](docs/adr/0002-action-schema-serialization.md) and [evidence report](docs/reports/task-0.8-actions-serialization.md).
   - [x] **0.9 Architecture Review & Selection**: COW selected after validation fixes and fresh equivalent-work benchmarks. Stable graph IDs, data/action/view decisions and proposed browser/input targets are documented. See [engine ADR](docs/adr/0003-transaction-engine-identity.md), [browser/input ADR](docs/adr/0004-browser-input-support.md), and [review/evidence](docs/reports/task-0.9-architecture-review.md).
 
-- **Phase A — Core Runtime (In Progress)**:
+- **Phase A — Core Runtime (Complete; experimental API)**:
   - [x] **A.1 Public Application Lifecycle**: Owned initial state/action registration, framework-called text views, mount/dispose, cleanup/error reporting and public-only root example. See [current API](docs/api/application.md), [ADR 0005](docs/adr/0005-application-lifecycle.md) and [verification](docs/reports/task-A.1-application-lifecycle.md).
   - [x] **A.2 Production Transactions**: App-owned COW store, frozen snapshots, stable IDs, aliases/arrays, atomic publication/rollback, native draft revocation and growth guards. See [ADR 0006](docs/adr/0006-production-transactions.md) and [verification/measurements](docs/reports/task-A.2-production-transactions.md).
   - [x] **A.3 Named Dispatch and Ordering**: Owned validated payloads, synchronous transactional actions, bounded FIFO queues and failure propagation. See [ADR 0007](docs/adr/0007-named-dispatch-ordering.md) and [verification](docs/reports/task-A.3-named-dispatch.md).
@@ -78,10 +78,12 @@ Deterministic simulation services remain planned:
 
   - [x] **A.9 Scoped Clicks and Cleanup**: One bubbling delegate, zero-argument action callbacks and full scope disposal. See [click API](docs/api/events.md).
 
+  - [x] **A.10 Core Acceptance**: One click commits once, evaluates one binding and changes one text node; rollback leaves state/UI unchanged. The integrated example also verifies nested fields, conditionals, keyed identity and cleanup. See [core guide](DOCUMENTATION.md#verified-core-example) and [verification](docs/reports/task-A.10-core-slice.md).
+
 Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Declarative elements and bindings are shipped; general events, routing, controlled services, recording and replay remain future work.
 
 > [!NOTE]
-> Per the project instructions, planned features for Phases A–D (core runtime, router, deterministic ticks, replay, inspector) are currently under development or scheduled. They are not claimed as shipped until their respective acceptance gates pass.
+> Phase A's core gate passes. General frontend, deterministic runtime and tooling features in Phases B–D remain planned and are not claimed as shipped.
 
 ---
 
@@ -123,6 +125,12 @@ The [keyed tasks example](examples/keyed/README.md) demonstrates public `onClick
 item bindings, retained rows, scope cleanup and rollback. Native text edits remain
 local until input synchronization is implemented.
 
+The [core example](http://localhost:3000/examples/core/) combines the counter,
+nested state, independent bindings, conditional details and keyed rows in one
+public-import application. Its [guide](examples/core/README.md) explains the controls
+and intentional rollback error. Tests measure one binding evaluation and one text
+mutation for one increment; unrelated bindings do no work.
+
 ### 2. Run the Smoke Test
 Verifies public imports, module integrity, and dev server response headers:
 ```bash
@@ -142,10 +150,10 @@ override its location with `MINI_FRAMEWORK_CHROME_PATH`):
 npm run test:browser
 ```
 
-Current verification: 272 runtime tests, 292 spike tests and 15 workload tests,
-76 negative type lines, and 73 browser
+Current verification: 278 runtime tests, 292 spike tests and 15 workload tests,
+76 negative type lines, and 80 browser
 lifecycle/transaction/dispatch/reactivity/DOM/list/click checks.
-Type checks include the plain-JS root example and require `npm ci`. Startup and
+Type checks include the plain-JS root and core examples and require `npm ci`. Startup and
 Node tests still need no dependency installation. Native input/IME and broad
 cross-browser qualification remain later work.
 

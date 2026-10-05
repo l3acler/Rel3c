@@ -5,6 +5,7 @@
  *
  * A.1–A.9 implement lifecycle, COW actions, exact reactivity and frame-batched DOM.
  * Keyed collections and scoped clicks are implemented; general events and routing follow.
+ * A.10 verifies the integrated Phase A core through public imports.
  */
 
 import { createApplication } from "./runtime/app.js";
@@ -17,12 +18,12 @@ export { FrameworkError } from "./runtime/errors.js";
 export const VERSION = "0.1.0";
 
 /**
- * Implemented and planned capabilities, without implying full core acceptance.
+ * Implemented core and planned later capabilities; public APIs remain experimental.
  */
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "A.9 - Keyed Collections and Scoped Click Events",
+  phase: "A.10 - Verified Core Runtime",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
     "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
@@ -34,6 +35,7 @@ export const FRAMEWORK_INFO = Object.freeze({
     "ACTION-1: Synchronous transactional named actions (implemented A.3; reactive observers implemented A.4)",
     "ROUTE-1: Reactive router (planned Phase B)",
     "EVENT-1: Scoped zero-argument clicks (implemented A.9; general events planned Phase B)",
+    "Phase A: Public click/action/binding/list/cleanup acceptance verified (A.10)",
     "TIME-1: Deterministic simulation ticks (planned Phase C)",
     "RECORD-1: Action recording & replay (planned Phase C)",
   ]),

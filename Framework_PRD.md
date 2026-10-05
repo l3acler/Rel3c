@@ -1,8 +1,8 @@
 
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
-**Status:** Product definition; Phase 0 decisions recorded, A.1–A.9 lifecycle, transactions, named dispatch, exact dependencies, computed values, frame-batched DOM, keyed lists and scoped clicks implemented
-**Version:** 2.9
+**Status:** Product definition; Phase 0 and Phase A complete. A.1–A.10 lifecycle, transactions, exact reactivity, declarative DOM, keyed lists and scoped clicks implemented and core acceptance verified. Phases B–D remain planned.
+**Version:** 2.10
 **Date:** 5 October 2026
 **Working name:** Undecided
 
@@ -55,7 +55,7 @@ flowchart TD
 
 ### Illustrative API
 
-**Current A.1–A.9 surface:** [ADR 0005](docs/adr/0005-application-lifecycle.md) and
+**Current Phase A surface (A.1–A.10):** [ADR 0005](docs/adr/0005-application-lifecycle.md) and
 [application API docs](docs/api/application.md) describe implemented owned
 construction, schema registration, declarative mount/dispose and cleanup/errors.
 Explicit `app.mount()` resolves the conventional `#app` container at mount time;
@@ -80,7 +80,16 @@ resource cleanup; see [click API](docs/api/events.md). The public APIs are exper
 routing and replay remain later acceptance gates; the candidate snippets below
 are not current runnable API examples.
 
-These are illustrative design sketches, not implemented public exports. Phase 0 selects element functions with explicit binding tokens; the exact application/action registration surface remains to be integrated in Phase A.
+A.10 verifies the full public-import core example: one click publishes one version
+and evaluates/writes only its dependent text; a throwing action publishes no
+version and leaves state/UI unchanged. Nested properties, conditional scopes,
+keyed identity/focus and disposal pass. See [core guide](DOCUMENTATION.md#verified-core-example)
+and [acceptance report](docs/reports/task-A.10-core-slice.md). Phase A's exit gate
+passes; general events/routing, deterministic runtime and tooling remain future work.
+
+These are historical illustrative design sketches, not current runnable API examples.
+Phase 0 selected element functions with explicit binding tokens; Phase A integrated
+application/action registration using createActionSchema and the documented public APIs.
 
 **Candidate A: Native Tagged Template Literals (Evaluated; Public Adoption Deferred)**
 ```js

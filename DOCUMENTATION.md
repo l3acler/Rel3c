@@ -2,25 +2,25 @@
 
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
-application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM (A.1–A.9).
+application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete and verified through public imports.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
 
-| Capability | Available behavior |
-| --- | --- |
-| Application lifecycle | Create headlessly, mount declarative views, register cleanup and dispose |
-| State ownership | Private deeply frozen snapshots; nested objects, arrays and acyclic aliases |
-| Named actions | Validated inputs, writable transaction drafts, atomic commit or rollback |
-| Nested dispatch | Bounded FIFO execution with defined parent and child failure behavior |
-| Reactive observers | Exact property, presence, key and array subscriptions with dynamic reads |
-| Computed values | Lazy caching, chained/dynamic dependencies, disposal and cycle errors |
-| Declarative DOM | Elements, text/attribute/class/style bindings, native form properties and scoped conditionals |
-| Keyed collections | Insert/remove/reorder with retained nodes, scoped item/index reads and replacement retargeting |
-| Click events | Zero-argument callbacks, one bubbling delegate per app and scoped handler disposal |
-| Render frames | Deduplicated latest-value writes, cancelled disposed work and explicit `app.flush()` |
-| Error reporting | Readable framework error codes and a synchronous application error hook |
-| TypeScript | Inferred action names/payloads and read-only state declarations |
+| Capability            | Available behavior                                                                             |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
+| Application lifecycle | Create headlessly, mount declarative views, register cleanup and dispose                       |
+| State ownership       | Private deeply frozen snapshots; nested objects, arrays and acyclic aliases                    |
+| Named actions         | Validated inputs, writable transaction drafts, atomic commit or rollback                       |
+| Nested dispatch       | Bounded FIFO execution with defined parent and child failure behavior                          |
+| Reactive observers    | Exact property, presence, key and array subscriptions with dynamic reads                       |
+| Computed values       | Lazy caching, chained/dynamic dependencies, disposal and cycle errors                          |
+| Declarative DOM       | Elements, text/attribute/class/style bindings, native form properties and scoped conditionals  |
+| Keyed collections     | Insert/remove/reorder with retained nodes, scoped item/index reads and replacement retargeting |
+| Click events          | Zero-argument callbacks, one bubbling delegate per app and scoped handler disposal             |
+| Render frames         | Deduplicated latest-value writes, cancelled disposed work and explicit`app.flush()`          |
+| Error reporting       | Readable framework error codes and a synchronous application error hook                        |
+| TypeScript            | Inferred action names/payloads and read-only state declarations                                |
 
 Views construct their static tree once per mount; explicit bindings update affected
 text, attributes, classes and styles on render frames after committed actions. Conditional factories
@@ -85,16 +85,16 @@ explicit bindings below for updates.
 
 ## Public exports
 
-| Export | Purpose |
-| --- | --- |
-| `createApp(config)` | Create an application with owned state, registered actions and a view |
-| `createActionSchema(options)(build)` | Define explicit action input modes and an optional schema version |
-| `element(tag, props?, ...children)` and HTML helpers | Create immutable declarative elements |
-| `keyed(itemsBinding, key, view)` | Retain item scopes and DOM across list updates |
-| `derive(read)` and `when(condition, yes, no?)` | Explicit derived bindings and scoped conditional children |
-| `FrameworkError` | Framework error class with a readable message and `code` |
-| `VERSION` | Package version string |
-| `FRAMEWORK_INFO` | Frozen metadata describing implemented and planned capabilities |
+| Export                                                 | Purpose                                                               |
+| ------------------------------------------------------ | --------------------------------------------------------------------- |
+| `createApp(config)`                                  | Create an application with owned state, registered actions and a view |
+| `createActionSchema(options)(build)`                 | Define explicit action input modes and an optional schema version     |
+| `element(tag, props?, ...children)` and HTML helpers | Create immutable declarative elements                                 |
+| `keyed(itemsBinding, key, view)`                     | Retain item scopes and DOM across list updates                        |
+| `derive(read)` and `when(condition, yes, no?)`     | Explicit derived bindings and scoped conditional children             |
+| `FrameworkError`                                     | Framework error class with a readable message and`code`             |
+| `VERSION`                                            | Package version string                                                |
+| `FRAMEWORK_INFO`                                     | Frozen metadata describing implemented and planned capabilities       |
 
 ## Application lifecycle and views
 
@@ -270,7 +270,66 @@ for a public-import list with clickable increment, add/remove/reorder, completio
 visibility and rollback controls. Text edits are native/local until Phase B input
 synchronization. The [example guide](examples/keyed/README.md) describes focus and
 scope behavior. Scroll/key/input handler APIs, routing, priorities and replay remain
-unimplemented; A.10's full core acceptance gate is still a separate task.
+unimplemented.
+
+## Verified core example
+
+Open [http://localhost:3000/examples/core/](http://localhost:3000/examples/core/)
+after `npm run dev`. The [example guide](examples/core/README.md) explains its
+counter, independent bound value, nested name, conditional details and keyed rows.
+All controls use public `onClick` actions; application code installs no listeners
+and makes no DOM patches. This smaller pattern also runs from a root HTML module
+with a native `<div id="app"></div>` mount container:
+
+```js
+import { createApp, createActionSchema, div, button, span, ul, li } from './src/index.js';
+const schema = createActionSchema()(({ action }) => ({
+  increment: action(draft => { draft.count++; }),
+  rename: action(draft => { draft.profile.name = 'Grace'; }),
+  toggle: action(draft => { draft.visible = !draft.visible; }),
+  reverse: action(draft => { draft.rows.reverse(); }),
+  fail: action(draft => { draft.count++; throw Error('Rolled back'); }),
+}));
+const app = createApp({
+  initialState: { count: 0, independent: 'Unchanged', profile: { name: 'Ada' },
+    visible: true, rows: [{ id: 1, name: 'First' }, { id: 2, name: 'Second' }] },
+  schema,
+  view: ({ actions, bind, when, keyed }) => div(
+    button({ type: 'button', onClick: actions.increment }, 'Increment'),
+    button({ type: 'button', onClick: actions.rename }, 'Rename'),
+    button({ type: 'button', onClick: actions.toggle }, 'Details'),
+    button({ type: 'button', onClick: actions.reverse }, 'Reverse'),
+    button({ type: 'button', onClick: actions.fail }, 'Try rollback'),
+    span({ id: 'count' }, bind.count),
+    span({ id: 'independent' }, bind.independent),
+    span(bind.profile.name),
+    when(bind.visible, () => div('Conditional details')),
+    ul(keyed(bind.rows, row => row.id, row => li(row.item.name))),
+  ),
+});
+app.mount();
+```
+
+A click commits its action synchronously; the dependent text updates on the next
+render frame. The root factory, unrelated bindings, conditions and list structure
+do not rerun for an independent counter change. Several clicks can publish several
+versions while coalescing to one latest-value text write. Use `app.flush()` for an
+explicit visual boundary. A throwing action publishes no version and invalidates
+no bindings; its native listener error is reported to the browser as described in
+[click errors](docs/api/events.md). Rollback does not undo external side effects.
+
+A.10 tests the full runnable example with read/setter counters outside application
+code and independent native MutationObserver records. One increment produces
+one binding evaluation, one text setter and one characterData mutation; all other
+bindings remain untouched. The example's failing action attempts changes across
+every section and preserves the original snapshot, version, nodes, focus and
+selection with zero evaluations/writes/mutations. Reorder/removal, queued conditional
+cleanup and disposal also pass. These are correctness observations, not a performance
+or heap-collection claim. See [core acceptance evidence](docs/reports/task-A.10-core-slice.md).
+
+The API stays experimental. Phase B will add general event options/cancellation,
+scroll/key/input synchronization, routing and scheduling priorities; Phase C adds
+deterministic services and replay. No new public runtime API was needed for A.10.
 
 ## Render frames and explicit flush
 
@@ -594,6 +653,6 @@ npm run test:types
 Browser checks require installed Chrome. Type checks require the development-only
 TypeScript installation; startup and Node tests do not. For the full reference,
 see [application API](docs/api/application.md). For current validation results,
-see [A.8/A.9 evidence](docs/reports/task-A.8-A.9-keyed-events.md). The
+see [A.10 core evidence](docs/reports/task-A.10-core-slice.md). The
 [README](README.md) provides repository structure, feature status and the remaining
 verification commands; the [PRD](Framework_PRD.md) defines future acceptance gates.

@@ -128,7 +128,12 @@ async function runSmoke() {
       assert.equal(response.statusCode, 200, 'Public DOM example must be served');
       assert.ok(!response.body.includes('addEventListener') && !response.body.includes('innerHTML'));
     }
-    console.log('[smoke]    A.1–A.9 lifecycle/dispatch/reactivity/DOM modules and public-only example OK');
+    for (const [file, mime] of [['examples/core/', 'text/html'], ['examples/core/app.js', 'application/javascript'], ['examples/core/main.js', 'application/javascript']]) {
+      const response = await fetchUrl(`${base}/${file}`);
+      assert.equal(response.statusCode, 200, 'Core example must be served: ' + file);
+      assert.ok(response.headers['content-type']?.includes(mime));
+    }
+    console.log('[smoke]    A.1–A.10 lifecycle/dispatch/reactivity/DOM modules and public-only examples OK');
 
     console.log('\n[smoke] ALL SMOKE CHECKS PASSED.');
   } finally {
