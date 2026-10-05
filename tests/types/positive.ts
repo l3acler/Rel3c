@@ -96,3 +96,11 @@ import { button } from 'mini-framework';
 const clickButton = button({ type: 'button', onClick: app.actions.increment }, 'Go');
 const payloadButton = button({ onClick: () => app.actions.rename({ name: 'Grace' }) }, 'Rename');
 void clickButton; void payloadButton;
+
+// B.1–B.3: contextual native events, semantic data and registration options.
+input({ on: { keydown: event => { const key: string = event.nativeEvent.key; event.preventDefault(); },
+  scroll: { handler: event => { const target: EventTarget = event.currentTarget; }, passive: true },
+  'custom-ready': event => { const native: Event = event.nativeEvent; } },
+  onKey: (value, event) => { const held: readonly import('../../src/index.js').HeldKey[] = value.held; if (value.ctrlKey) event.preventDefault(); },
+  onText: value => { const text: string = value.value; const composing: boolean = value.isComposing; },
+});

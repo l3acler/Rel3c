@@ -38,4 +38,6 @@ The acceptance tests instrument reads, setters and native mutation records outsi
 the application. One increment produces one committed version, one binding
 evaluation and one text mutation; rollback produces none. See the
 [A.10 report](../../docs/reports/task-A.10-core-slice.md) for evidence and limits.
-General events, input synchronization/IME, routing and replay remain future work.
+B.1–B.3 now add general events and opt-in input synchronization in the
+[inputs example](../inputs/README.md). This core example keeps edits local.
+Routing/replay and broad browser/OS IME qualification remain future work.

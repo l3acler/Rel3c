@@ -2,7 +2,7 @@
 
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
-application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete and verified through public imports.
+application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.3 add native events and semantic keyboard/text inputs, with experimental APIs and explicit browser qualification limits.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -17,15 +17,17 @@ Import from `src/index.js`; applications do not need runtime internals.
 | Computed values       | Lazy caching, chained/dynamic dependencies, disposal and cycle errors                          |
 | Declarative DOM       | Elements, text/attribute/class/style bindings, native form properties and scoped conditionals  |
 | Keyed collections     | Insert/remove/reorder with retained nodes, scoped item/index reads and replacement retargeting |
-| Click events          | Zero-argument callbacks, one bubbling delegate per app and scoped handler disposal             |
+| Native events         | Scoped on maps with capture/passive/once and cancellation; compatible zero-argument onClick    |
+| Keyboard/text inputs  | Serializable key/held/reset and native text snapshots; composition-safe value bindings         |
 | Render frames         | Deduplicated latest-value writes, cancelled disposed work and explicit`app.flush()`          |
 | Error reporting       | Readable framework error codes and a synchronous application error hook                        |
 | TypeScript            | Inferred action names/payloads and read-only state declarations                                |
 
 Views construct their static tree once per mount; explicit bindings update affected
 text, attributes, classes and styles on render frames after committed actions. Conditional factories
-run when their selected boolean branch changes. Scroll/keyboard/input event APIs, routing,
-persistence, controlled services, recording and replay remain unimplemented.
+run when their selected boolean branch changes. Native events, keyboard and text editing
+are implemented; routing, priorities, persistence, controlled services, recording and
+replay remain unimplemented. Broad browser/OS IME qualification remains open.
 
 ## Start from the project root
 
@@ -49,9 +51,9 @@ For a fuller example, open
 The Launch Board combines nested state, lazy computed progress, direct/derived
 bindings, class/style updates, scoped conditionals, observers, FIFO action bursts,
 rollback and optional explicit flush. Change its settings and submit the native
-GET form to reload with a new scenario. Text-input-to-state synchronization is
-not implemented; the example also provides console commands for live public
-state actions. See [example instructions](examples/features/README.md).
+GET form to reload with a new scenario. This example deliberately uses native reload semantics and local text editing;
+it also provides console commands for live public state actions. For live text
+synchronization, use the inputs example described below. See [example instructions](examples/features/README.md).
 
 For your own page, save this as `guide.html` at the repository root and open
 `http://localhost:3000/guide.html` while the server runs:
@@ -173,8 +175,10 @@ For `input`/`textarea`/`select`, `value` sets the live property; `checked` on in
 and `selected` on option are live booleans. Input/textarea initial `defaultValue`
 and initial checked/selected defaults support native form reset. Later updates
 change live values without rewriting defaults. Unchanged values avoid writes,
-preserving focus/selection. Native editing remains local to the control until
-future event APIs synchronize it with state; reset does not dispatch an action.
+preserving focus/selection. Register `onText` and dispatch its value to an action
+for text synchronization; without a handler, edits remain native/local. Bound
+text controls defer writes during composition and preserve/clamp focused selection
+for later differing values. Native reset does not dispatch an action.
 
 `when(booleanOrBinding, yesFactory, noFactory?)` retains its branch while the
 predicate stays equal. Replacements dispose branch-owned observers, computed
@@ -183,7 +187,7 @@ false branch is empty. Failed construction cleans its partial scope and preserve
 the previous branch. Application disposal removes owned descendants and leaves
 host children alone. Raw HTML, event attributes, script/style elements, unsupported
 tags and executable URL protocols reject. See [DOM API](docs/api/dom.md) for the
-supported tags, errors and limits. Keyed collections and `onClick` are implemented; general event props remain future work.
+supported tags, errors and limits. Keyed collections and `onClick` are implemented; native event maps and keyboard/text handlers are implemented (B.1–B.3).
 
 ## Keyed collections
 
@@ -251,7 +255,8 @@ The framework installs one bubbling click listener per app while it owns handler
 Registered child handlers run before registered ancestors. Native button keyboard
 activation, links, disabled controls and form submission retain their default
 behavior; use `type: 'button'` for controls that should not submit a form. There
-is no native Event argument or cancellation API yet. Returning a Promise/thenable
+is no Event argument on the compatible `onClick` prop; use `on.click`
+for a context with explicit cancellation methods. Returning a Promise/thenable
 rejects `EVENT_ASYNC`; the framework cannot cancel arbitrary user async work.
 Null/undefined registers no handler; other values reject `EVENT_HANDLER_INVALID`.
 
@@ -267,10 +272,109 @@ callbacks reject `EVENT_REENTRANT`. See [click API](docs/api/events.md) for limi
 
 Open [http://localhost:3000/examples/keyed/](http://localhost:3000/examples/keyed/)
 for a public-import list with clickable increment, add/remove/reorder, completion,
-visibility and rollback controls. Text edits are native/local until Phase B input
-synchronization. The [example guide](examples/keyed/README.md) describes focus and
-scope behavior. Scroll/key/input handler APIs, routing, priorities and replay remain
-unimplemented.
+visibility and rollback controls. Its text edits deliberately remain native/local;
+add `onText` to opt into action-based text synchronization. The [example guide](examples/keyed/README.md) describes focus and
+scope behavior. Routing, priorities and replay remain unimplemented.
+
+## Native events, keyboard and text editing
+
+Open [http://localhost:3000/examples/inputs/](http://localhost:3000/examples/inputs/)
+for a public-import form, semantic key status, live text/textarea editing and a
+scroll region. Native HTML handles editing, focus, form controls and keyboard
+activation; the framework owns registration and cleanup.
+
+```js
+import { createApp, createActionSchema, form, label, input, button, span } from './src/index.js';
+const schema = createActionSchema()(({ action }) => ({
+  name: action(value => typeof value === 'string', (draft, value) => { draft.name = value; }),
+  save: action(draft => { draft.saved = draft.name; }),
+}));
+const app = createApp({ initialState: { name: '', saved: '' }, schema,
+  view: ({ bind, actions }) => form({ on: {
+    submit: event => { event.preventDefault(); actions.save(); },
+  } },
+    label({ for: 'name' }, 'Name'),
+    input({ id: 'name', name: 'name', value: bind.name,
+      onText: value => {
+        // Dispatch actual control text, including in-progress composition.
+        if (value.value !== app.state.name) actions.name(value.value);
+      },
+      onKey: (value, event) => {
+        if (value.type === 'keydown' && value.ctrlKey && value.key === 'Enter' &&
+            !value.repeat && !value.isComposing) {
+          event.preventDefault(); actions.save();
+        }
+      },
+    }),
+    button({ type: 'submit' }, 'Save'), span(bind.saved),
+  ),
+});
+app.mount();
+```
+
+`on` maps lowercase native event names to a synchronous callback or
+`{ handler, capture?, passive?, once? }`; each option defaults to false.
+`null`/`undefined` registers nothing. The immutable registration is copied when
+an element descriptor is created. Known bubbling events share delegates; scroll,
+nonbubbling/custom events and capture handlers use direct native listeners.
+`on.click` and `onClick` on the same element reject `EVENT_DUPLICATE`.
+
+Event contexts expose `type`, native `target`, the handler's owning `currentTarget`,
+`nativeEvent`, live `defaultPrevented`, and cancellation/propagation methods.
+Use `event.preventDefault()` only when explicitly handling the native default.
+Returning false does nothing. Passive context cancellation rejects `EVENT_PASSIVE`;
+use the context methods rather than bypassing them through the live native event.
+A once handler is consumed before it runs, including if it throws. Keep native
+objects outside action payloads; sample scroll/layout in a handler and dispatch
+supported primitive/object data to an action.
+
+```js
+// Inside a view using an action schema with a numeric scroll action:
+div({ style: { height: '100px', overflow: 'auto' }, on: {
+  scroll: { passive: true, handler: event => actions.scroll(event.currentTarget.scrollTop) },
+} }, div({ style: { height: '400px' } }, 'Scroll me'));
+```
+
+`onKey(value, event)` supplies frozen serializable data: keydown/keyup/reset type,
+key, code, location, repeat, isComposing, modifier booleans, ordered held-key
+records, and reset reason. Repeats keep one held entry; release uses code/location.
+Focus leaving the element's subtree, window blur or a hidden document clears a
+nonempty held set and emits one reset; focus inside the subtree retains it.
+Disposal clears held state silently. At most 256 held keys are retained per scope.
+No global keyboard capture or default cancellation is implied.
+
+`onText(value, event)` supports textarea and text/search/url/tel/email/password/
+number inputs. Data contains type text, phase input/composition/commit, actual
+value, isComposing, inputType, data and nullable selection offsets/direction.
+Useful composition values dispatch while editing; text is never reconstructed
+from key events. Paste is observed through the ensuing input event after native
+editing, not the clipboard event before it. Identical value/composing pairs are
+deduplicated, including final input after compositionend. A final accepted
+snapshot with composing false is a separate semantic transition; the example
+skips an identical-text action because it stores only the text.
+
+Bound values on text controls defer writes throughout active composition, even
+without onText. Compositionend or element blur requeues a deferred binding to
+read the latest committed state on the next frame/explicit flush. Equal live
+values avoid setters; differing values preserve/clamp active selection and its
+direction. A rejected value does not force rendering when state was unchanged;
+applications must commit/invalidate an explicit correction if required. Checkbox,
+select and file controls use `on.input`/`on.change` with explicitly normalized
+payloads. Native form reset changes controls/defaults without changing state;
+use `on.reset` with an application-specific policy. Contenteditable is unsupported.
+
+Handlers, direct/global listeners, editing locks and deferred work follow element
+scope disposal. Errors keep the existing transactional action and event reporting
+rules. Invalid registrations/options/types and unsupported controls have explicit
+errors; async handlers reject EVENT_ASYNC. See [event API](docs/api/events.md)
+for exact data shapes, propagation timing, reset fields, errors and limits.
+
+Chrome fixtures plus trusted keyboard/Unicode editing and its composition engine
+are checked. CDP's final compositionend is untrusted; this is browser automation,
+not an OS IME session. Real clipboard paste, Chinese/Japanese/Korean OS input
+methods, Firefox/Safari and mobile qualification remain open. Recordable input
+snapshots do not imply implemented recording/replay. See the
+[batch evidence](docs/reports/task-B.1-B.3-inputs.md).
 
 ## Verified core example
 
@@ -327,9 +431,9 @@ selection with zero evaluations/writes/mutations. Reorder/removal, queued condit
 cleanup and disposal also pass. These are correctness observations, not a performance
 or heap-collection claim. See [core acceptance evidence](docs/reports/task-A.10-core-slice.md).
 
-The API stays experimental. Phase B will add general event options/cancellation,
-scroll/key/input synchronization, routing and scheduling priorities; Phase C adds
-deterministic services and replay. No new public runtime API was needed for A.10.
+The API stays experimental. B.1–B.3 now add native events and keyboard/text
+synchronization. Remaining Phase B work includes routing, priorities and state
+locations; Phase C adds deterministic services and replay.
 
 ## Render frames and explicit flush
 
@@ -367,7 +471,7 @@ Rendering is not an atomic DOM transaction: successful writes survive another
 binding's failure. Derived callbacks must stay pure and synchronous.
 
 This is visual batching only. Scheduler priorities, fairness budgets, fixed
-simulation ticks, interpolation, general event handling remain
+simulation ticks and interpolation remain
 future work. Hidden-tab rendering follows native animation-frame behavior; use
 explicit flush for deterministic checks. No speed or heap claims are made.
 
@@ -653,6 +757,7 @@ npm run test:types
 Browser checks require installed Chrome. Type checks require the development-only
 TypeScript installation; startup and Node tests do not. For the full reference,
 see [application API](docs/api/application.md). For current validation results,
-see [A.10 core evidence](docs/reports/task-A.10-core-slice.md). The
+see [B.1–B.3 input evidence](docs/reports/task-B.1-B.3-inputs.md) and
+[A.10 core evidence](docs/reports/task-A.10-core-slice.md). The
 [README](README.md) provides repository structure, feature status and the remaining
 verification commands; the [PRD](Framework_PRD.md) defines future acceptance gates.

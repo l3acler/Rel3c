@@ -1,4 +1,4 @@
-/** Experimental public lifecycle, named actions and exact observers/computed values and declarative frame-batched DOM with keyed collections and scoped clicks (A.1–A.9). */
+/** Experimental public runtime including native events and semantic keyboard/text inputs (B.1–B.3). */
 export const VERSION: string;
 export interface FrameworkInfo {
   readonly name: string; readonly version: string; readonly phase: string;
@@ -62,9 +62,49 @@ export type StyleValue = string | number | null | undefined;
 export type StyleMap = Readonly<Record<string, StyleValue | Binding<StyleValue>>>;
 export type ClassMap = Readonly<Record<string, boolean | null | undefined | Binding<boolean | null | undefined>>>;
 export type ClickHandler = (...args: []) => unknown;
+export interface FrameworkEvent<E extends Event = Event> {
+  readonly type: string;
+  readonly target: EventTarget | null;
+  /** The framework element owning this handler, including delegated events. */
+  readonly currentTarget: EventTarget;
+  /** Live browser object: never dispatch this as an action payload. */
+  readonly nativeEvent: E;
+  readonly defaultPrevented: boolean;
+  preventDefault(): void;
+  stopPropagation(): void;
+  stopImmediatePropagation(): void;
+}
+export type NativeEventHandler<E extends Event = Event> = {
+  callback(event: FrameworkEvent<E>): unknown;
+}['callback'];
+export type EventRegistration<E extends Event = Event> = NativeEventHandler<E> | Readonly<{
+  handler: NativeEventHandler<E>; capture?: boolean; passive?: boolean; once?: boolean;
+}> | null | undefined;
+export type NativeEvents = Readonly<{ [K in keyof HTMLElementEventMap]?: EventRegistration<HTMLElementEventMap[K]> }>
+  & Readonly<Record<string, EventRegistration>>;
+export interface HeldKey { readonly key: string; readonly code: string; readonly location: number; }
+export interface KeyboardInput extends HeldKey {
+  readonly type: 'keydown' | 'keyup' | 'reset';
+  readonly reason: 'focus' | 'window-blur' | 'hidden' | null;
+  readonly repeat: boolean; readonly isComposing: boolean;
+  readonly altKey: boolean; readonly ctrlKey: boolean; readonly metaKey: boolean; readonly shiftKey: boolean;
+  readonly held: readonly HeldKey[];
+}
+export interface TextInput {
+  readonly type: 'text'; readonly phase: 'input' | 'composition' | 'commit';
+  readonly value: string; readonly isComposing: boolean;
+  readonly inputType: string; readonly data: string | null;
+  readonly selectionStart: number | null; readonly selectionEnd: number | null;
+  readonly selectionDirection: string | null;
+}
+export type KeyboardHandler = (input: KeyboardInput, event: FrameworkEvent) => unknown;
+export type TextHandler = (input: TextInput, event: FrameworkEvent) => unknown;
 export interface ElementProps {
   readonly onClick?: ClickHandler | null;
-  readonly [name: string]: AttributeValue | StyleMap | ClassMap | Binding<StyleMap | null | undefined> | Binding<ClassMap> | ClickHandler;
+  readonly on?: NativeEvents | null;
+  readonly onKey?: KeyboardHandler | null;
+  readonly onText?: TextHandler | null;
+  readonly [name: string]: AttributeValue | StyleMap | ClassMap | Binding<StyleMap | null | undefined> | Binding<ClassMap> | ClickHandler | NativeEvents | KeyboardHandler | TextHandler;
   readonly class?: string | null | Binding<string | null | undefined> | ClassMap | Binding<ClassMap>;
   readonly className?: string | null | Binding<string | null | undefined> | ClassMap | Binding<ClassMap>;
   readonly style?: StyleMap | null | Binding<StyleMap | null | undefined>;
@@ -74,7 +114,12 @@ export interface ElementProps {
   readonly disabled?: boolean | null | Binding<boolean | null | undefined>;
 }
 export function element(tag: string, ...children: readonly Child[]): ViewNode;
-type SyncProps<P> = P extends { readonly onClick: infer F } ? F extends ClickHandler ? Sync<F> : unknown : unknown;
+type SyncCallback<F> = F extends (...args: never[]) => unknown ? Sync<F> : unknown;
+type SyncRegistration<R> = R extends { readonly handler: infer F } ? SyncCallback<F> : SyncCallback<R>;
+type SyncProps<P> = (P extends { readonly onClick: infer F } ? SyncCallback<F> : unknown)
+  & (P extends { readonly onKey: infer F } ? SyncCallback<F> : unknown)
+  & (P extends { readonly onText: infer F } ? SyncCallback<F> : unknown)
+  & (P extends { readonly on: infer M } ? { readonly on: { readonly [K in keyof M]: M[K] & SyncRegistration<M[K]> } } : unknown);
 export function element<P extends ElementProps>(tag: string, props: P & SyncProps<P>, ...children: readonly Child[]): ViewNode;
 export interface ElementBuilder {
   (...children: readonly Child[]): ViewNode;

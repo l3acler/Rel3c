@@ -1,8 +1,8 @@
 
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
-**Status:** Product definition; Phase 0 and Phase A complete. A.1–A.10 lifecycle, transactions, exact reactivity, declarative DOM, keyed lists and scoped clicks implemented and core acceptance verified. Phases B–D remain planned.
-**Version:** 2.10
+**Status:** Product definition; Phase 0 and Phase A complete. A.1–A.10 lifecycle, transactions, exact reactivity, declarative DOM, keyed lists and scoped clicks implemented and core acceptance verified. B.1–B.3 native events and semantic keyboard/text inputs implemented with Chrome evidence; OS/mobile/cross-browser input qualification remains open. Remaining B–D tasks are planned.
+**Version:** 2.11
 **Date:** 5 October 2026
 **Working name:** Undecided
 
@@ -76,8 +76,10 @@ see [DOM API](docs/api/dom.md). A.7 adds latest-value frame batching, cancellati
 State commits remain synchronous; render failures preserve state and permit retry.
 A.8 adds keyed collection scopes with retained nodes/focus and item retargeting;
 see [collections API](docs/api/collections.md). A.9 adds scoped zero-argument onClick callbacks with native defaults and complete
-resource cleanup; see [click API](docs/api/events.md). The public APIs are experimental. General events,
-routing and replay remain later acceptance gates; the candidate snippets below
+resource cleanup; see [click API](docs/api/events.md). B.1–B.3 implement native event maps/options and semantic keyboard/text adapters;
+[ADR 0011](docs/adr/0011-native-events-inputs.md) specifies cancellation, held-key resets
+and composition-safe binding writes. The public APIs are experimental. Broad native
+input qualification, routing and replay remain later acceptance gates; the candidate snippets below
 are not current runnable API examples.
 
 A.10 verifies the full public-import core example: one click publishes one version
@@ -85,7 +87,9 @@ and evaluates/writes only its dependent text; a throwing action publishes no
 version and leaves state/UI unchanged. Nested properties, conditional scopes,
 keyed identity/focus and disposal pass. See [core guide](DOCUMENTATION.md#verified-core-example)
 and [acceptance report](docs/reports/task-A.10-core-slice.md). Phase A's exit gate
-passes; general events/routing, deterministic runtime and tooling remain future work.
+passes. B.1–B.3 now implement native events and keyboard/text inputs; see
+[batch evidence](docs/reports/task-B.1-B.3-inputs.md). Broad input qualification,
+routing, remaining frontend facilities, deterministic runtime and tooling remain future work.
 
 These are historical illustrative design sketches, not current runnable API examples.
 Phase 0 selected element functions with explicit binding tokens; Phase A integrated

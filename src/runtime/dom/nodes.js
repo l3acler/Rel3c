@@ -1,6 +1,7 @@
 import { fail, observePromise } from '../errors.js';
 import { readRecord } from '../records.js';
 import { isBinding } from './bindings.js';
+import { eventMap } from './events.js';
 
 const descriptors = new WeakSet();
 const tags = new Set(['div', 'p', 'span', 'button', 'form', 'label', 'input', 'textarea',
@@ -48,6 +49,9 @@ export function element(tag, ...args) {
   const first = args[0];
   if (first !== null && typeof first === 'object' && !Array.isArray(first) && !isBinding(first) && !isViewNode(first)) {
     const copied = readRecord(args.shift(), 'DOM_PROPS_INVALID', 'element props');
+    if (Object.hasOwn(copied, 'on')) copied.on = eventMap(copied.on);
+    if (copied.on?.click != null && copied.onClick != null)
+      fail('EVENT_DUPLICATE', 'Use either on.click or onClick on an element.');
     for (const key of ['class', 'className', 'style']) {
       const value = copied[key];
       if (value !== null && typeof value === 'object' && !isBinding(value))

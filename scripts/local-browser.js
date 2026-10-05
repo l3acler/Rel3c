@@ -61,6 +61,6 @@ export async function withLocalBrowser(run) {
     if (child) { if (child.exitCode === null) child.kill('SIGTERM'); await exited?.catch(() => {}); }
     await server?.close();
     // Only the exact temporary profile returned by mkdtemp above is removed.
-    await rm(profile, { recursive: true, force: true });
+    await rm(profile, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
   }
 }

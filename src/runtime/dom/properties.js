@@ -11,7 +11,7 @@ const aliases = { className: 'class', htmlFor: 'for', readOnly: 'readonly', tabI
 export const propertyName = name => Object.hasOwn(aliases, name) ? aliases[name] : name;
 export function validateName(name) {
   if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(name) || /^on/i.test(name) || forbidden.has(name.toLowerCase()))
-    fail('DOM_ATTRIBUTE_INVALID', `Unsupported attribute ${name}; Only the onClick function prop is supported; other event attributes are unavailable.`);
+    fail('DOM_ATTRIBUTE_INVALID', `Unsupported attribute ${name}; use on, onClick, onKey or onText for framework events.`);
 }
 const scalar = value => value === null || value === undefined || ['string', 'boolean'].includes(typeof value) ||
   (typeof value === 'number' && Number.isFinite(value));
@@ -89,7 +89,14 @@ export function applyProperty(node, prepared, initial) {
   const { kind, name, value, defaultName } = prepared;
   if (kind === 'property') {
     if (initial && defaultName) node[defaultName] = value;
-    if (!Object.is(node[name], value)) node[name] = value;
+    if (!Object.is(node[name], value)) {
+      const focused = name === 'value' && node.ownerDocument.activeElement === node;
+      const start = focused ? node.selectionStart : null, end = focused ? node.selectionEnd : null;
+      const direction = focused ? node.selectionDirection : null;
+      node[name] = value;
+      if (typeof start === 'number' && typeof end === 'number')
+        node.setSelectionRange(Math.min(start, value.length), Math.min(end, value.length), direction ?? 'none');
+    }
   } else if (kind === 'style') {
     if (node.style.cssText !== value) node.style.cssText = value;
   } else if (value === null) {

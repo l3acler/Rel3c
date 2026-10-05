@@ -4,7 +4,7 @@
  * Public Entry Point
  *
  * A.1–A.9 implement lifecycle, COW actions, exact reactivity and frame-batched DOM.
- * Keyed collections and scoped clicks are implemented; general events and routing follow.
+ * B.1–B.3 add native events and semantic keyboard/text editing; routing follows.
  * A.10 verifies the integrated Phase A core through public imports.
  */
 
@@ -23,7 +23,7 @@ export const VERSION = "0.1.0";
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "A.10 - Verified Core Runtime",
+  phase: "B.1–B.3 - Native Events and Inputs",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
     "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
@@ -34,7 +34,8 @@ export const FRAMEWORK_INFO = Object.freeze({
     "STATE-1: Property-level observers and dynamic dependency tracking (implemented A.4; routed sharing follows Phase B)",
     "ACTION-1: Synchronous transactional named actions (implemented A.3; reactive observers implemented A.4)",
     "ROUTE-1: Reactive router (planned Phase B)",
-    "EVENT-1: Scoped zero-argument clicks (implemented A.9; general events planned Phase B)",
+    "EVENT-1: Scoped native events, options and compatible zero-argument clicks (implemented B.1)",
+    "EVENT-2: Semantic keyboard/text inputs and composition-safe bindings (implemented B.2/B.3; OS/mobile/cross-browser qualification and replay remain open)",
     "Phase A: Public click/action/binding/list/cleanup acceptance verified (A.10)",
     "TIME-1: Deterministic simulation ticks (planned Phase C)",
     "RECORD-1: Action recording & replay (planned Phase C)",

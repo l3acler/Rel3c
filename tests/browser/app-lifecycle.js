@@ -3,6 +3,7 @@ import { createApp, createActionSchema, FrameworkError, FRAMEWORK_INFO } from '.
 // Internal engine imports are test instrumentation, never normal application APIs.
 import { runRenderQueueTests } from './render-queue.js';
 import { runCoreSliceTests } from './core-slice.js';
+import { runInputTests } from './events-input.js';
 import { runClickTests } from './click.js';
 import { runKeyedTests } from './keyed.js';
 import { runDOMTests } from './dom.js';
@@ -49,7 +50,7 @@ window.runAppLifecycleTests = async () => {
     throws(() => a.mount(), 'APP_DISPOSED');
   });
   await test('public browser-native module exports current lifecycle metadata', () => {
-    assert(FRAMEWORK_INFO.phase.startsWith('A.10')); assert(Object.isFrozen(FRAMEWORK_INFO));
+    assert(FRAMEWORK_INFO.phase.startsWith('B.1')); assert(Object.isFrozen(FRAMEWORK_INFO));
     assert(typeof createActionSchema === 'function' && typeof FrameworkError === 'function');
   });
   await test('lazy create, explicit mount, terminal/idempotent dispose', () => {
@@ -299,5 +300,6 @@ window.runAppLifecycleTests = async () => {
   await runDOMTests(test, assert, throws, host);
   await runRenderQueueTests(test, assert, throws, host);
   const coreSlice = await runCoreSliceTests(test, assert, host);
+  await runInputTests(test, assert, host);
   return { passed: results.length, results, coreSlice };
 };

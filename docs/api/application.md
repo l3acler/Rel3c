@@ -5,7 +5,7 @@ synchronous declarative mounting, cleanup and disposal. A.2/A.3 add production C
 transactions, payload ownership/guards and bounded FIFO named dispatch.
 A.4/A.5 add exact observers and lazy computed values.
 Declarative elements, exact bindings and frame batching are implemented in A.6/A.7; see [DOM API](dom.md).
-A.8/A.9 add keyed collections and scoped click callbacks. General events, routing and replay remain unimplemented. This document describes what actually runs today.
+A.8/A.9 add keyed collections and scoped click callbacks. B.1–B.3 add [native events and semantic keyboard/text inputs](events.md); routing and replay remain unimplemented. This document describes what actually runs today.
 
 A.10 verifies these APIs together in the [public core example](../../examples/core/README.md)
 and [core acceptance report](../reports/task-A.10-core-slice.md). No new runtime API

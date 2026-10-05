@@ -46,7 +46,10 @@ and selected on option update live booleans. The initial input/textarea defaultV
 and initial defaultChecked/defaultSelected are established once. Later commits
 update live properties, leaving reset defaults intact. Select children are built
 before its value is set; input type is set first. Nonempty file input values reject.
-Native form reset/editing do not synchronize state (input events are future work).
+Register onText to dispatch native text edits as action payloads; on.input/on.change
+handle other controls. Bound text values defer writes during composition and
+preserve/clamp focused selection for differing updates. Native form reset does
+not synchronize state automatically; see [event API](events.md).
 Other props are attributes. Inline event attributes, raw HTML and srcdoc reject; URL props
 allow relative URLs and http/https/mailto/tel protocols only.
 
@@ -62,7 +65,7 @@ Errors include DOM_TAG_INVALID, DOM_PROPS_INVALID, DOM_CHILD_INVALID,
 DOM_ATTRIBUTE_INVALID, DOM_CLASS_INVALID, DOM_STYLE_INVALID, DOM_TEXT_INVALID,
 DOM_PROPERTY_INVALID, DOM_CONDITION_INVALID, DOM_LIMIT, BINDING_READONLY,
 BINDING_OWNER, VIEW_RESULT_INVALID, REACTIVITY_ASYNC and STATE_READONLY.
-Keyed collections are implemented; see [collections API](collections.md). Scoped `onClick` callbacks are implemented; see [click API](events.md). General event props remain unimplemented.
+Keyed collections are implemented; see [collections API](collections.md). Scoped `onClick` callbacks are implemented; see [click API](events.md). Native event maps and semantic keyboard/text props are implemented in B.1–B.3.
 
 The [A.10 core example](../../examples/core/README.md) combines these contracts.
 Its [acceptance evidence](../reports/task-A.10-core-slice.md) counts binding evaluations,

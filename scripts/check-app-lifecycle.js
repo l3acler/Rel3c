@@ -89,18 +89,84 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
   })()`);
   if (!coreExample) throw new Error('Public core example failed');
   tests.results.push({ name: 'public core example mounts from the root and runs counter, nested, conditional, keyed and disposal behavior', passed: true }); tests.passed++;
+  const inputs = await open('examples/inputs/');
+  await inputs.waitFor('document.querySelector("#input-name") !== null');
+  await inputs.evaluate(`(async () => {
+    const { app } = await import('/examples/inputs/main.js'); window.inputApp = app;
+    window.nativeInputLog = [];
+    const field = document.getElementById('input-name');
+    for (const type of ['input', 'compositionstart', 'compositionupdate', 'compositionend'])
+      field.addEventListener(type, event => window.nativeInputLog.push({ type, trusted: event.isTrusted,
+        inputType: event.inputType ?? null, isComposing: event.isComposing ?? null, value: field.value }));
+    field.focus(); return true;
+  })()`);
+  for (const autoRepeat of [false, true]) await inputs.command('Input.dispatchKeyEvent', {
+    type: 'keyDown', key: 'a', code: 'KeyA', windowsVirtualKeyCode: 65, text: 'a', autoRepeat });
+  await inputs.command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'a', code: 'KeyA', windowsVirtualKeyCode: 65 });
+  await inputs.waitFor('window.inputApp.state.name === "aa" && window.inputApp.state.held.length === 0');
+  const trustedKeys = await inputs.evaluate('window.nativeInputLog.some(event => event.type === "input" && event.trusted)');
+  if (!trustedKeys) throw Error('Trusted keyboard editing failed');
+  tests.results.push({ name: 'B.2 trusted keyboard edits, repeat and release update public semantic inputs', passed: true }); tests.passed++;
+  await inputs.evaluate('document.getElementById("input-name").setSelectionRange(0, 2); true');
+  await inputs.command('Input.insertText', { text: 'مرحبا 😀' });
+  await inputs.waitFor('window.inputApp.state.name === "مرحبا 😀"');
+  const unicodeSelection = await inputs.evaluate(`(async () => {
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    const field = document.getElementById('input-name');
+    return field.value === 'مرحبا 😀' && field.selectionStart === field.value.length && field.selectionEnd === field.value.length && document.activeElement === field;
+  })()`);
+  if (!unicodeSelection) throw Error('Native Unicode editing/selection failed');
+  tests.results.push({ name: 'B.3 trusted replacement editing preserves Arabic/emoji and the native selection after rendering', passed: true }); tests.passed++;
+  await inputs.evaluate('document.getElementById("input-name").setSelectionRange(0, document.getElementById("input-name").value.length); true');
+  await inputs.command('Input.imeSetComposition', { text: 'に', selectionStart: 1, selectionEnd: 1 });
+  await inputs.waitFor('window.inputApp.state.name === "に" && window.inputApp.state.composing');
+  const compositionProtected = await inputs.evaluate(`(async () => {
+    window.inputApp.actions.name({ type: 'text', value: 'external', isComposing: false });
+    window.inputApp.flush(); await new Promise(resolve => requestAnimationFrame(resolve));
+    return document.getElementById('input-name').value === 'に';
+  })()`);
+  await inputs.command('Input.imeSetComposition', { text: '日本', selectionStart: 2, selectionEnd: 2 });
+  await inputs.command('Input.insertText', { text: '日本' });
+  await inputs.waitFor('window.inputApp.state.name === "日本" && !window.inputApp.state.composing');
+  const browserComposition = await inputs.evaluate(`(async () => {
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    return document.getElementById('input-name').value === '日本' &&
+      window.nativeInputLog.some(event => event.type === 'compositionstart' && event.trusted) &&
+      window.nativeInputLog.some(event => event.type === 'input' && event.isComposing && event.trusted) &&
+      window.nativeInputLog.some(event => event.type === 'compositionend');
+  })()`);
+  if (!compositionProtected || !browserComposition) throw Error('Browser composition protection/acceptance failed: ' +
+    JSON.stringify({ compositionProtected, browserComposition, details: await inputs.evaluate('({ events: window.nativeInputLog, state: window.inputApp.state, value: document.getElementById("input-name").value })') }));
+  tests.results.push({ name: 'B.3 Chrome composition engine protects active text from external commits and accepts the latest native value', passed: true }); tests.passed++;
+  for (const type of ['keyDown', 'keyUp']) await inputs.command('Input.dispatchKeyEvent', {
+    type, key: 'Enter', code: 'Enter', modifiers: 2, windowsVirtualKeyCode: 13 });
+  await inputs.waitFor('window.inputApp.state.saves === 1 && window.inputApp.state.saved === "日本"');
+  await inputs.evaluate('document.getElementById("input-save").click(); document.getElementById("input-scroll").focus(); true');
+  for (const type of ['keyDown', 'keyUp']) await inputs.command('Input.dispatchKeyEvent', {
+    type, key: 'PageDown', code: 'PageDown', windowsVirtualKeyCode: 34 });
+  await inputs.waitFor('window.inputApp.state.scrollTop > 0 && window.inputApp.state.saves === 2');
+  const nativeInputs = await inputs.evaluate(`(async () => {
+    const { resourceCounts } = await import('/src/runtime/diagnostics.js');
+    const result = { name: window.inputApp.state.name, saves: window.inputApp.state.saves,
+      scrollTop: window.inputApp.state.scrollTop, events: window.nativeInputLog };
+    window.inputApp.dispose(); result.disposed = Object.values(resourceCounts(window.inputApp)).every(value => value === 0);
+    return result;
+  })()`);
+  if (!nativeInputs.disposed) throw Error('Native input example disposal failed');
+  tests.results.push({ name: 'B.1–B.3 public form, Ctrl+Enter shortcut, keyboard scrolling and disposal work without app-managed listeners', passed: true }); tests.passed++;
   const paths = ['src/index.js', 'src/index.d.ts', 'src/runtime/app.js', 'src/runtime/errors.js', 'src/runtime/records.js',
     'src/runtime/state/initial-state.js', 'src/runtime/state/transactions.js', 'src/runtime/state/data.js',
     'src/runtime/state/draft.js', 'src/runtime/state/graph.js', 'src/runtime/reactivity/tracking.js', 'src/runtime/dom/bindings.js', 'src/runtime/dom/nodes.js', 'src/runtime/dom/properties.js', 'src/runtime/dom/renderer.js', 'src/runtime/dom/queue.js', 'src/runtime/dom/events.js', 'src/runtime/diagnostics.js', 'src/runtime/actions/schema.js', 'src/runtime/actions/dispatch.js', 'examples/basic/main.js', 'examples/basic/index.html',
     'tests/browser/app-lifecycle.js', 'tests/browser/reactivity.js', 'tests/browser/click.js', 'tests/browser/keyed.js', 'tests/browser/dom.js', 'tests/browser/render-queue.js', 'examples/dom/main.js', 'examples/dom/index.html', 'examples/keyed/main.js', 'examples/keyed/index.html', 'tests/browser/app-lifecycle.html', 'scripts/check-app-lifecycle.js',
     'scripts/local-browser.js', 'scripts/dev-server.js', 'tests/browser/core-slice.js', 'tests/helpers/core-probe.js',
-    'tests/core-slice.test.js', 'examples/core/app.js', 'examples/core/main.js', 'examples/core/index.html'];
+    'tests/core-slice.test.js', 'examples/core/app.js', 'examples/core/main.js', 'examples/core/index.html',
+    'src/runtime/dom/inputs.js', 'tests/events-input.test.js', 'tests/browser/events-input.js', 'examples/inputs/main.js', 'examples/inputs/index.html'];
   const sourceFiles = await Promise.all(paths.map(async file => ({ file,
     sha256: createHash('sha256').update(await readFile(path.join(root, file))).digest('hex') })));
-  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'A.10', formatVersion: 1, recordedAt: new Date().toISOString(),
+  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'B.1–B.3', formatVersion: 1, recordedAt: new Date().toISOString(),
     browserVersion, flags, machine: { cpu: os.cpus()[0]?.model, cpuCount: os.cpus().length,
       platform: os.platform(), release: os.release(), arch: os.arch(), node: process.version },
-    sourceFiles, example, tests, limitations: 'Public lifecycle, declarative DOM, named dispatch, exact observers and lazy computed values; frame batching and explicit flush; minimal click events; no scroll/keyboard/input APIs or replay or cross-browser/IME qualification. Resource counters are not a heap-leak proof.' };
+    sourceFiles, example, tests, nativeInputs, limitations: 'Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. No routing/priorities/replay. Resource counters are not a heap-leak proof.' };
   const directory = path.join(root, 'tests/results'); await mkdir(directory, { recursive: true });
   const file = path.join(directory, 'app-lifecycle-' + Date.now() + '-' + randomUUID().slice(0, 8) + '.json');
   await writeFile(file, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });

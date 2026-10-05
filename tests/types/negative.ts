@@ -115,3 +115,18 @@ keyed(app.bind.rows, () => 'key', context => { context.index = derive(() => 0); 
 div({ onClick: async () => {} });
 // @ts-expect-error a required native Event parameter is not supplied by the A.9 API
 div({ onClick: (event: MouseEvent) => { event.preventDefault(); } });
+
+// @ts-expect-error Native callbacks must be synchronous.
+button({ on: { click: async () => {} } });
+// @ts-expect-error Options must be boolean.
+button({ on: { click: { handler() {}, capture: 'yes' } } });
+// @ts-expect-error Option callbacks must be synchronous.
+button({ on: { click: { handler: async () => {}, once: true } } });
+// @ts-expect-error Semantic keyboard callbacks must be synchronous.
+input({ onKey: async () => {} });
+// @ts-expect-error Semantic text callbacks must be synchronous.
+input({ onText: async () => {} });
+// @ts-expect-error Semantic input snapshots are read-only.
+input({ onKey: value => { value.held.push({ key: 'x', code: 'KeyX', location: 0 }); } });
+// @ts-expect-error Semantic input snapshots are read-only.
+input({ onText: value => { value.value = 'overwrite'; } });

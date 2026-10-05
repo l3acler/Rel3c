@@ -22,7 +22,7 @@ framework addition or change.
 
 ## Overview & Purpose
 
-`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and Phase A (A.1–A.10) are complete: lifecycle, transactions, named dispatch, exact dependencies, computed values, declarative DOM, keyed lists and scoped clicks. General events and routing remain Phase B tasks; deterministic services and replay remain Phase C tasks.
+`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and Phase A (A.1–A.10) are complete: lifecycle, transactions, named dispatch, exact dependencies, computed values, declarative DOM, keyed lists and scoped clicks. B.1–B.3 add native events and semantic keyboard/text inputs. Routing and remaining Phase B tasks are planned; deterministic services and replay remain Phase C tasks.
 
 The runtime implements named transactions and frame-batched reactive rendering.
 Deterministic simulation services remain planned:
@@ -46,7 +46,8 @@ Deterministic simulation services remain planned:
    Decoupling simulation updates from browser `requestAnimationFrame` allows applications to run at a consistent logical rate (e.g., 60 Hz simulation ticks) regardless of whether the user's monitor runs at 30 Hz, 60 Hz, 120 Hz, or 240 Hz. Optional render interpolation (`TIME-2`) visually smooths transforms without altering authoritative state hashes.
 
 4. **Why Framework-Owned Event Delegation?**
-   Native browser events are captured by framework-managed root delegates. Application components register declarative handlers via framework attributes rather than calling imperative `addEventListener()` on elements. This guarantees automatic resource cleanup (`LIFE-1`) when components unmount. Repeated-cycle resource checks cover owned cleanup; they do not prove heap collection.
+   Native browser events use framework-managed root delegates where suitable and
+   direct listeners for capture/nonbubbling events. Application components register declarative handlers via framework attributes rather than calling imperative `addEventListener()` on elements. This guarantees automatic resource cleanup (`LIFE-1`) when components unmount. Repeated-cycle resource checks cover owned cleanup; they do not prove heap collection.
 
 ---
 
@@ -80,10 +81,14 @@ Deterministic simulation services remain planned:
 
   - [x] **A.10 Core Acceptance**: One click commits once, evaluates one binding and changes one text node; rollback leaves state/UI unchanged. The integrated example also verifies nested fields, conditionals, keyed identity and cleanup. See [core guide](DOCUMENTATION.md#verified-core-example) and [verification](docs/reports/task-A.10-core-slice.md).
 
-Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Declarative elements and bindings are shipped; general events, routing, controlled services, recording and replay remain future work.
+- **Phase B — General frontend (In progress; experimental API)**:
+  - **B.1–B.3**: Native event maps/options, semantic keys/held/reset, native text snapshots and composition-safe bindings. See [input contracts](DOCUMENTATION.md#native-events-keyboard-and-text-editing) and [evidence](docs/reports/task-B.1-B.3-inputs.md). OS IMEs, clipboard paste and broad browser qualification remain open.
+  - **Next: B.4** priority scheduling, then routing and state locations; Phase B acceptance is pending.
+
+Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Declarative elements, bindings, native events and semantic keyboard/text inputs are implemented. Routing, priorities, persistence, controlled services, recording and replay remain future work.
 
 > [!NOTE]
-> Phase A's core gate passes. General frontend, deterministic runtime and tooling features in Phases B–D remain planned and are not claimed as shipped.
+> Phase A's core gate passes. B.1–B.3 implement events/editing with Chrome evidence; broad browser/OS input qualification remains open. Phase B is incomplete; deterministic runtime and tooling remain planned.
 
 ---
 
@@ -123,7 +128,7 @@ For clickable controls without a reload, open
 [http://localhost:3000/examples/keyed/](http://localhost:3000/examples/keyed/).
 The [keyed tasks example](examples/keyed/README.md) demonstrates public `onClick`,
 item bindings, retained rows, scope cleanup and rollback. Native text edits remain
-local until input synchronization is implemented.
+local in that example; the [inputs example](examples/inputs/README.md) demonstrates opt-in synchronization.
 
 The [core example](http://localhost:3000/examples/core/) combines the counter,
 nested state, independent bindings, conditional details and keyed rows in one
@@ -260,9 +265,9 @@ app.flush(); // Optional synchronous visual boundary; avoids a duplicate frame w
 ```
 
 Bindings track each property read, so unrelated nodes retain identity and focus.
-Native form editing remains local until event/state synchronization is implemented.
-`onClick` now registers scoped click callbacks; scroll/key registration, shared route state and navigation remain future
-APIs; the planned examples below are explicitly unimplemented.
+Native form editing remains local without a synchronization handler. `onText`
+now supplies actual text values to actions; `on` and `onKey` support native and
+semantic keyboard events. Shared route state and navigation remain future APIs; the planned examples below are explicitly unimplemented.
 
 Register an implemented click action using public imports:
 
@@ -340,14 +345,63 @@ Browser verification also disposes that app to check owned DOM removal.
 
 ---
 
+### Native events and text input
+
+Run `npm run dev`, then open
+[http://localhost:3000/examples/inputs/](http://localhost:3000/examples/inputs/).
+This public-import example demonstrates live text/textarea edits, Ctrl+Enter,
+held-key reset, native form submission and scroll events.
+
+```js
+import { createApp, createActionSchema, form, input, button, span } from './src/index.js';
+const schema = createActionSchema()(({ action }) => ({
+  edit: action(value => typeof value === 'string', (draft, value) => { draft.name = value; }),
+  save: action(draft => { draft.saved = draft.name; }),
+}));
+const app = createApp({ initialState: { name: '', saved: '' }, schema,
+  view: ({ bind, actions }) => form({ on: {
+    submit: event => { event.preventDefault(); actions.save(); },
+  } }, input({ 'aria-label': 'Name', value: bind.name,
+    onText: value => actions.edit(value.value),
+    onKey: (value, event) => {
+      if (value.type === 'keydown' && value.ctrlKey && value.key === 'Enter' &&
+          !value.repeat && !value.isComposing) {
+        event.preventDefault(); actions.save();
+      }
+    },
+  }), button({ type: 'submit' }, 'Save'), span(bind.saved)),
+});
+app.mount();
+```
+
+Event maps accept `{ handler, capture, passive, once }` registrations as well as
+functions. Bubbling handlers delegate where suitable; scroll/capture use native
+listeners owned by the scope. A handler's currentTarget names its own element.
+Scroll measurements enter actions as serializable data:
+
+```js
+// Inside a view whose actions.scroll accepts a finite number:
+div({ style: { overflow: 'auto', height: '100px' }, on: {
+  scroll: { passive: true, handler: event => actions.scroll(event.currentTarget.scrollTop) },
+} }, div({ style: { height: '400px' } }, 'Scroll this area'));
+```
+
+Values come from native editing, including paste and composition. Rendering defers
+bound text writes during composition and preserves/clamps active selection afterward.
+Keyboard snapshots track repeats/held keys and reset on focus loss. The framework
+cleans all listeners with their scope. See [public input guide](DOCUMENTATION.md#native-events-keyboard-and-text-editing)
+for complete options, data, cancellation, errors and browser qualification limits.
+Recording/replay is still unimplemented.
+
 ## Repository Structure
 
 ```text
 mini-framework/
 ├── AGENTS.md                  # Project rules, constraints, and work order
-├── Framework_PRD.md           # Product Requirements Document (PRD v2.5)
+├── Framework_PRD.md           # Product Requirements Document (PRD v2.11)
 ├── DEVELOPMENT_PLAN.md        # Implementation backlog and task tracking
 ├── README.md                  # Framework documentation & quickstart
+├── DOCUMENTATION.md           # Current public API guide and runnable examples
 ├── package.json               # ES modules, zero runtime dependencies; dev type checker
 ├── package-lock.json          # Pinned development-tool installation
 ├── src/
@@ -359,9 +413,12 @@ mini-framework/
 │   ├── view-syntax/           # Element functions vs tagged templates
 │   └── action-schema/         # Action definitions & serialization
 ├── examples/
-│   └── basic/                 # Root-run browser example importing /src/index.js
-│       ├── index.html
-│       └── main.js
+│   ├── basic/                 # Root-run lifecycle example
+│   ├── dom/                   # Declarative form and conditional bindings
+│   ├── features/              # Reactive feature walkthrough
+│   ├── keyed/                 # Keyed collection and click actions
+│   ├── core/                  # Verified Phase A integration
+│   └── inputs/                # Native events, keyboard and text editing
 ├── tests/                     # Unit, integration, and smoke test suites
 │   └── smoke.test.js
 ├── scripts/                   # Zero-dependency development and test scripts
@@ -380,9 +437,9 @@ mini-framework/
 ## Planned API Contracts & Examples
 
 The following are future design sketches, not current runnable public examples.
-Use the lifecycle example above for implemented A.1 usage. Task 0.7 selected
-element functions with explicit binding tokens for Phase A; these exports and
-inline-action config are not yet implemented. Optional templates remain deferred:
+Use the public examples above for implemented core/event/input usage. Task 0.7
+selected element functions with explicit binding tokens, implemented in Phase A.
+The template exports and inline-action config shown below are not implemented. Optional templates remain deferred:
 eager state expressions capture whole views rather than exact individual binding
 dependencies. Runnable syntax examples use the separate spike entry. Routing
 remains Phase B work; inline-action/seed options below are planned sketches only.

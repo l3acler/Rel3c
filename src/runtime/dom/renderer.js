@@ -4,6 +4,8 @@ import { isViewNode } from './nodes.js';
 import { text, prepareProperty, applyProperty, hasBindings, propertyName, validateName } from './properties.js';
 
 import { createRenderQueue } from './queue.js';
+import { keyboardInput, textInput, isTextControl } from './inputs.js';
+const eventProps = new Set(['on', 'onClick', 'onKey', 'onText']);
 
 export function createRenderer(document, tracking, owner, makeContext, render, report, events) {
   const pending = createRenderQueue(document.defaultView, render, report);
@@ -56,6 +58,7 @@ export function createRenderer(document, tracking, owner, makeContext, render, r
     // Initial reads already established dependencies; never evaluate twice.
     apply(normalized, initial);
     initial = false;
+    return job;
   }
   function build(value, parent, current, depth = 0, arrays = new Set()) {
     if (depth > 128) fail('DOM_LIMIT', 'Views exceed 128 nesting levels.');
@@ -232,32 +235,54 @@ export function createRenderer(document, tracking, owner, makeContext, render, r
     }
     const node = append(document.createElement(value.tag), parent, current);
     const keys = Object.keys(value.props), names = new Set();
+    const active = () => !disposed && !current.disposed;
+    let editor = null;
     // Establish input type/multiple before children and value properties, even
     // when authored props use a different order. Reject alias collisions.
     for (const key of keys) {
       const name = propertyName(key).toLowerCase();
-      if (key !== 'onClick') validateName(name);
+      if (!eventProps.has(key)) validateName(name);
       if (names.has(name)) fail('DOM_ATTRIBUTE_INVALID', `Duplicate attribute/alias ${name}.`);
       names.add(name);
     }
     const apply = key => {
       if (key === 'onClick') {
-        current.cleanups.push(events.register(node, value.props[key], () => !disposed && !current.disposed));
+        current.cleanups.push(events.register(node, 'click', value.props[key], active, { legacy: true }));
         return;
       }
-      let previousStyle;
+      if (key === 'on') {
+        for (const [type, options] of Object.entries(value.props.on)) if (options != null)
+          current.cleanups.push(events.register(node, type, options.handler, active, options));
+        return;
+      }
+      if (key === 'onKey') {
+        current.cleanups.push(keyboardInput(node, value.props[key], active, events));
+        return;
+      }
+      if (key === 'onText') {
+        return;
+      }
+      let previousStyle, job;
       const applyPrepared = (prepared, initial) => {
         if (prepared.kind === 'style' && !initial && previousStyle === prepared.value) return;
+        if (!initial && prepared.kind === 'property' && prepared.name === 'value' &&
+            editor?.defer(() => pending.add(job))) return;
         applyProperty(node, prepared, initial);
+        if (prepared.kind === 'property' && prepared.name === 'value') editor?.wrote(prepared.value);
         if (prepared.kind === 'style') previousStyle = prepared.value;
       };
       const input = value.props[key];
-      if (hasBindings(input)) watch(current, state => prepareProperty(node, key, input, state, owner),
+      if (hasBindings(input)) job = watch(current, state => prepareProperty(node, key, input, state, owner),
         applyPrepared);
-      else applyProperty(node, prepareProperty(node, key, input, undefined, owner), true);
+      else applyPrepared(prepareProperty(node, key, input, undefined, owner), true);
     };
     const before = keys.filter(key => !['value', 'checked', 'selected'].includes(propertyName(key).toLowerCase()));
     for (const key of before) apply(key);
+    if (value.props.onText != null || (isTextControl(node) && keys.some(key =>
+        propertyName(key).toLowerCase() === 'value' && hasBindings(value.props[key])))) {
+      editor = textInput(node, value.props.onText, active, events);
+      current.cleanups.push(editor.dispose);
+    }
     for (const child of value.children) build(child, node, current, depth + 1);
     for (const key of keys.filter(key => !before.includes(key))) apply(key);
   }

@@ -6,7 +6,7 @@
 
 **Source:** [Framework_PRD.md](Framework_PRD.md), version 2.10, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** Phase A complete; Phase B next, starting with B.1 native event handling.
+**Current milestone:** Phase A complete; Phase B in progress. B.1–B.3 implemented and Chrome-verified; OS/native clipboard/mobile/cross-browser input qualification remains open. B.4 priority scheduling is next.
 
 ## 1. Purpose and scope
 
@@ -141,9 +141,9 @@ Deliver tested public core exports and a root-runnable example. Pass rollback, a
 
 ### Tasks
 
-- [ ] **B.1 — Complete native event handling.** Dependencies: Phase A. Implement public registration/options, bubbling delegation where appropriate, and capture/direct handling for events such as scroll. Define event propagation, cancellation, target/current-target semantics, and scope cleanup. Acceptance: click, scroll, keyboard, and submit work through public APIs; links/forms retain native behavior unless explicitly handled; disposed views receive no events.
-- [ ] **B.2 — Normalize keyboard inputs.** Dependencies: B.1. Represent key-down/up, held keys, repeat, modifiers, and focus-loss reset as serializable semantic inputs. Keep native event objects outside action payloads. Acceptance: fixtures cover repeat, shortcuts, key release, and blur without stuck held-key state; keyboard interaction remains accessible.
-- [ ] **B.3 — Preserve native text editing.** Dependencies: B.1. Handle input, paste, composition updates/end, accepted values, and selection/focus preservation. Specify when semantic changes dispatch, including useful updates during composition rather than always waiting for compositionend. Acceptance: input/textarea fixtures cover IME, paste, ordinary editing, selection, and blur; reactive rendering does not overwrite active composition. Record real-browser/manual checks where synthetic events are insufficient.
+- [x] **B.1 — Complete native event handling.** Dependencies: Phase A. Implement public registration/options, bubbling delegation where appropriate, and capture/direct handling for events such as scroll. Define event propagation, cancellation, target/current-target semantics, and scope cleanup. Acceptance: click, scroll, keyboard, and submit work through public APIs; links/forms retain native behavior unless explicitly handled; disposed views receive no events.
+- [x] **B.2 — Normalize keyboard inputs.** Dependencies: B.1. Represent key-down/up, held keys, repeat, modifiers, and focus-loss reset as serializable semantic inputs. Keep native event objects outside action payloads. Acceptance: fixtures cover repeat, shortcuts, key release, and blur without stuck held-key state; keyboard interaction remains accessible.
+- [x] **B.3 — Preserve native text editing.** Dependencies: B.1. Handle input, paste, composition updates/end, accepted values, and selection/focus preservation. Specify when semantic changes dispatch, including useful updates during composition rather than always waiting for compositionend. Acceptance: input/textarea fixtures cover IME, paste, ordinary editing, selection, and blur; reactive rendering does not overwrite active composition. Record real-browser/manual checks where synthetic events are insufficient.
 - [ ] **B.4 — Complete priority scheduling.** Dependencies: A.7. Define immediate, frame, normal, and idle ordering, reentrancy, error handling, and a bounded fairness policy. Acceptance: mixed-lane tests confirm order and normal-work progress under sustained input; idle work cannot control correctness; disposal removes pending work.
 - [ ] **B.5 — Design routing and navigation contracts.** Dependencies: A.3, B.1. Decide default History/hash mode, path matching, params/query encoding, base paths, direct-load setup, not-found behavior, and navigation errors. Specify action-requested navigation as a framework-owned post-commit operation so failed actions do not change URL. Acceptance: an ADR defines URL/reactive-state synchronization and modified-click/external-link native behavior before implementation.
 - [ ] **B.6 — Implement routing with persistent app ownership.** Dependencies: B.5, A.9. Mount/dispose route views while retaining the application store; process framework links, action navigation, direct load, and browser back/forward. Synchronize URL and reactive route state without feedback loops. Acceptance: two routes update the same state; navigation changes the expected URL/view/state; direct loads and back/forward work; removed routes release handlers and subscriptions.
@@ -152,6 +152,12 @@ Deliver tested public core exports and a root-runnable example. Pass rollback, a
 - [ ] **B.9 — Publish declarations and diagnostics.** Dependencies: 0.8, B.1–B.8. Provide action/payload inference, read-only state, element/event/router types, and clear errors for unsupported values, unknown actions, mutation violations, computed cycles, and list keys. Acceptance: positive/negative TypeScript fixtures pass while plain JavaScript examples remain usable; runtime validation independently catches invalid external data.
 - [ ] **B.10 — Write root documentation and public examples.** Dependencies: B.1–B.9. Replace the placeholder README with the exact root command/URL, folder map, feature status, dependency disclosure, and explanations of the execution model. Add copyable examples for a `div`, nested children/text, ID/class/other attributes, click/scroll/key handling, forms, shared route state, and navigation requested by an action. Acceptance: every example runs through public imports without DOM patches or application-managed listeners; API/lifecycle/storage/browser limitations are documented.
 - [ ] **B.11 — Run the clean-checkout auditor walkthrough.** Dependencies: B.10. Recreate the documented startup using a clean temporary checkout/copy that includes the candidate changes. Build a small routed form/list interface from README instructions, and inspect dependencies/source for independent implementation. Acceptance: setup requires no internal edits or moving files; all general frontend tests and supported-browser checks pass; exact commands/results are recorded.
+
+**B.1–B.3 verification boundary:** Implemented and verified with Node/Chrome fixtures,
+trusted keyboard/Unicode editing and Chrome composition-engine automation. B.3
+OS IME, real clipboard paste and cross-browser/mobile qualification remain release
+gates; the checked task denotes implemented behavior, not broad input qualification.
+See [batch evidence](docs/reports/task-B.1-B.3-inputs.md).
 
 ### Exit gate and artifacts
 
@@ -711,7 +717,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** A.10 complete and uncommitted; Phase A exit gate passes. B.1 is next. See the [core report](docs/reports/task-A.10-core-slice.md). A.8/A.9 were committed at user request; their [report](docs/reports/task-A.8-A.9-keyed-events.md) and [ADR 0010](docs/adr/0010-keyed-scopes-clicks.md) remain historical evidence.
+**Current batch:** B.1–B.3 implemented and verified with the input qualification limits above; committed at user request. B.4 is next. Phase A exit gate remains verified. See the [core report](docs/reports/task-A.10-core-slice.md). A.8/A.9 were committed at user request; their [report](docs/reports/task-A.8-A.9-keyed-events.md) and [ADR 0010](docs/adr/0010-keyed-scopes-clicks.md) remain historical evidence.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -771,3 +777,18 @@ changes/reports are preserved; nothing staged or committed. Next is B.1; general
 events/cancellation, input synchronization/IME, routing, priorities, deterministic
 services and replay remain unimplemented. Chrome qualification and ownership
 counters do not establish cross-browser, heap or performance guarantees.
+
+### B.1–B.3 native events and inputs — implemented (5 October 2026)
+
+Native event maps/options and cancellation preserve A.9 click compatibility.
+Semantic keyboard snapshots include held keys, repeat, modifiers and focus-loss
+resets; semantic text snapshots use actual editing values with composition-aware
+binding writes and focused selection preservation. Public declarations and the
+new root-served inputs example are updated alongside the guide and API reference.
+See [ADR 0011](docs/adr/0011-native-events-inputs.md) and
+[verification](docs/reports/task-B.1-B.3-inputs.md).
+
+Node tests, positive/negative type checks, Chrome browser checks and root smoke
+checks cover this batch. OS IME, real clipboard paste, mobile and broad browser
+qualification remain open. No routing/priorities/persistence/replay or separate
+demonstration app is implemented by this batch. Committed at user request; not pushed.

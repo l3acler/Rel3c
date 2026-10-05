@@ -7,7 +7,7 @@ import { createTracking } from "./reactivity/tracking.js";
 import { createBindings, derive as binding } from "./dom/bindings.js";
 import { when, keyed } from "./dom/nodes.js";
 import { registerDiagnostics } from "./diagnostics.js";
-import { createClickEvents } from "./dom/events.js";
+import { createEvents } from "./dom/events.js";
 import { createRenderer } from "./dom/renderer.js";
 
 const targets = new WeakMap();
@@ -144,7 +144,7 @@ export function createApplication(config, frameworkVersion) {
     try {
       live();
       if (status !== "mounted" || handlingEvent || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
-        fail("EVENT_REENTRANT", "Cannot invoke click handlers during mounting, actions, rendering, reactive reads/notifications or another event/error handler.");
+        fail("EVENT_REENTRANT", "Cannot invoke event handlers during mounting, actions, rendering, reactive reads/notifications or another event/error handler.");
       handlingEvent = true;
       try { return run(); } finally { handlingEvent = false; }
     } catch (error) { report(error, "event"); }
@@ -284,7 +284,7 @@ export function createApplication(config, frameworkVersion) {
       const context = makeContext(cleanup => register(attemptCleanups, cleanup),
         () => mountCleanups === attemptCleanups && ["mounting", "mounted"].includes(status));
       try {
-        events = createClickEvents(target, runEvent);
+        events = createEvents(target, runEvent);
         renderer = createRenderer(target.ownerDocument, tracking, bindingOwner, makeContext, render, error => {
           reported = new WeakSet();
           report(error, "render");
