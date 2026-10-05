@@ -10,11 +10,11 @@ imports from runtime internals, tests, scripts and spikes are unsupported.
 Pin a Git revision when consuming this candidate. Each contract change updates
 the public guide and API reference and states its compatibility impact.
 
-The frontend remains usable without deterministic services. Phase C must preserve
+At the B.9–B.11 gate, the frontend remains usable without deterministic services. Phase C must preserve
 app ownership, atomic synchronous actions, exact bindings, native forms/events
 and routed shared state. Controlled clock/random, ticks and recordable adapters
-need explicit contracts and tests. Today's browser samples, wall time and random
-calls are not deterministic. No seed/tick/replay option is accepted today. Any
+need explicit contracts and tests. Browser samples, wall time and ambient random
+calls are not deterministic. Root-level seed/tick/replay placeholders are not accepted. Any
 required action-signature or ordering change must be documented before
 implementation and tested against frontend fixtures.
 
@@ -46,3 +46,12 @@ runtime validation remains authoritative. There is no runtime execution change.
 See [the guide](../../DOCUMENTATION.md#compatibility-and-browser-qualification),
 [the root walkthrough](../../README.md#build-the-walkthrough-using-public-imports)
 and [Batch 4 evidence](../reports/task-B.9-B.11-auditor.md).
+
+## C.1/C.2 follow-up
+
+[ADR 0016](0016-deterministic-checkpoints-services.md) now defines the independent
+runtime/checkpoint versions and controlled manual clock/seeded draw contract.
+`controls` initialization and new-app checkpoint restoration are implemented;
+existing callbacks may ignore the extra action services argument. Private
+persistence envelopes stay compatible. Fixed ticks, recording/retention and
+replay remain future gates; checkpoint restoration is not replay.

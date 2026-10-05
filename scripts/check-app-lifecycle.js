@@ -225,6 +225,27 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
   if (!persistenceExample) throw Error('Public persistence reload/history example failed');
   tests.results.push({ name: 'B.8 public state-location example restores real local/session/URL fields after reload, resets memory, accepts native text, rolls back and follows back history', passed: true }); tests.passed++;
   await checkAuditorBrowser({ open }, tests);
+  const deterministic = await open('examples/determinism/');
+  await deterministic.waitFor('document.getElementById("sample-count")?.textContent === "0"');
+  await deterministic.evaluate('document.getElementById("sample").focus(); true');
+  for (const type of ['keyDown', 'keyUp']) await deterministic.command('Input.dispatchKeyEvent', {
+    type, key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: type === 'keyDown' ? '\r' : '',
+  });
+  await deterministic.waitFor('document.getElementById("sample-count")?.textContent === "1"');
+  const deterministicExample = await deterministic.evaluate(`(async () => {
+    const { app } = await import('/examples/determinism/main.js');
+    const { resourceCounts } = await import('/src/runtime/diagnostics.js');
+    const before = app.snapshot(); document.getElementById('failed-sample').click();
+    const rollback = app.snapshot() === before;
+    document.getElementById('advance').click(); app.flush();
+    const time = app.state.time === 1000 && app.controls.clock.time === 1000 && app.state.count === 2;
+    document.getElementById('compare-fork').click(); app.flush();
+    const continuation = document.getElementById('continuation-result').textContent === 'Restored continuation matches.'
+      && app.state.count === 3 && app.controls.random.draws === 3;
+    app.dispose(); return rollback && time && continuation && Object.values(resourceCounts(app)).every(n => n === 0);
+  })()`);
+  if (!deterministicExample) throw Error('Public deterministic continuation example failed');
+  tests.results.push({ name: 'C.1/C.2 public example accepts native Enter samples, rolls back draws, advances manual time and compares a restored continuation', passed: true }); tests.passed++;
   const paths = ['src/index.js', 'src/index.d.ts', 'src/runtime/app.js', 'src/runtime/errors.js', 'src/runtime/records.js',
     'src/runtime/state/initial-state.js', 'src/runtime/state/transactions.js', 'src/runtime/state/data.js',
     'src/runtime/state/draft.js', 'src/runtime/state/graph.js', 'src/runtime/reactivity/tracking.js', 'src/runtime/dom/bindings.js', 'src/runtime/dom/nodes.js', 'src/runtime/dom/properties.js', 'src/runtime/dom/renderer.js', 'src/runtime/dom/queue.js', 'src/runtime/dom/events.js', 'src/runtime/diagnostics.js', 'src/runtime/actions/schema.js', 'src/runtime/actions/dispatch.js', 'examples/basic/main.js', 'examples/basic/index.html',
@@ -233,12 +254,16 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
     'tests/core-slice.test.js', 'examples/core/app.js', 'examples/core/main.js', 'examples/core/index.html',
     'src/runtime/dom/inputs.js', 'tests/events-input.test.js', 'tests/browser/events-input.js', 'examples/inputs/main.js', 'examples/inputs/index.html', 'src/runtime/scheduler.js', 'src/runtime/routing/router.js', 'tests/scheduler.test.js', 'tests/router.test.js', 'tests/helpers/fake-browser.js', 'tests/browser/routing-scheduler.js', 'examples/routes/main.js', 'examples/routes/index.html', 'src/runtime/persistence/codec.js', 'src/runtime/persistence/locations.js', 'tests/persistence-codec.test.js', 'tests/persistence.test.js', 'tests/browser/persistence.js', 'examples/persistence/main.js', 'examples/persistence/index.html'];
   paths.push('scripts/check-auditor-browser.js', 'examples/auditor/main.js', 'examples/auditor/index.html', 'tests/public-contract.test.js');
+  paths.push('src/runtime/determinism/controls.js', 'src/runtime/serialization/graph.js',
+    'src/runtime/serialization/checkpoint.js', 'src/runtime/serialization/sha256.js',
+    'tests/deterministic-services.test.js', 'tests/checkpoint.test.js', 'tests/browser/determinism.js',
+    'examples/determinism/main.js', 'examples/determinism/index.html');
   const sourceFiles = await Promise.all(paths.map(async file => ({ file,
     sha256: createHash('sha256').update(await readFile(path.join(root, file))).digest('hex') })));
-  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'B.9–B.11', formatVersion: 1, recordedAt: new Date().toISOString(),
+  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'C.1–C.2', formatVersion: 1, recordedAt: new Date().toISOString(),
     browserVersion, flags, machine: { cpu: os.cpus()[0]?.model, cpuCount: os.cpus().length,
       platform: os.platform(), release: os.release(), arch: os.arch(), node: process.version },
-    sourceFiles, example, tests, nativeInputs, limitations: 'Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. History/hash routing and cooperative priorities covered; memory/session/local/URL hydration and writes covered; no replay. Resource counters are not a heap-leak proof.' };
+    sourceFiles, example, tests, nativeInputs, limitations: 'Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. History/hash routing and cooperative priorities covered; memory/session/local/URL hydration and writes covered; controlled manual time/draws, checkpoints and restored continuation covered; no fixed ticks or replay. Resource counters are not a heap-leak proof.' };
   const directory = path.join(root, 'tests/results'); await mkdir(directory, { recursive: true });
   const file = path.join(directory, 'app-lifecycle-' + Date.now() + '-' + randomUUID().slice(0, 8) + '.json');
   await writeFile(file, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });

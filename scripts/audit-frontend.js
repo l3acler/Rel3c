@@ -123,10 +123,10 @@ try {
   await rm(temporary, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
   const directory = path.join(root, 'tests/results'); await mkdir(directory, { recursive: true });
   const file = path.join(directory, 'auditor-' + Date.now() + '-' + randomUUID().slice(0, 8) + '.json');
-  await writeFile(file, JSON.stringify({ kind: 'clean-candidate-frontend-auditor', task: 'B.9–B.11', formatVersion: 1,
+  await writeFile(file, JSON.stringify({ kind: 'clean-candidate-frontend-auditor', task: 'C.1–C.2', formatVersion: 1,
     recordedAt: new Date().toISOString(), passed, offline, checks, sourceFiles, commands, browser, failure,
     machine: { node: process.version, platform: os.platform(), release: os.release(), arch: os.arch(), cpu: os.cpus()[0]?.model },
-    limitations: 'Temporary candidate copy, not a committed Git checkout. Chrome desktop automation only; OS IME, system clipboard, mobile and cross-browser qualification remain open. No recording/replay, performance or heap-leak claim.' }, null, 2) + '\n', { flag: 'wx' });
+    limitations: 'Temporary candidate copy, not a committed Git checkout. Chrome desktop automation only; OS IME, system clipboard, mobile and cross-browser qualification remain open. Controlled checkpoint/service continuation covered, without fixed ticks, recording/replay, performance or heap-leak claim.' }, null, 2) + '\n', { flag: 'wx' });
   console.log('[auditor] RESULT ' + path.relative(root, file));
   if (passed) console.log('[auditor] CLEAN-CANDIDATE WALKTHROUGH PASSED.');
 }

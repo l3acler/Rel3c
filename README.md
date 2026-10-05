@@ -2,8 +2,8 @@
 
 A JavaScript frontend framework built here, with no third-party runtime dependencies.
 It provides transactional state, precise DOM bindings, native events, keyed lists,
-routing, priorities and selected state persistence. Fixed ticks, controlled
-clock/random, recording, replay and developer tools are planned for Phases C/D.
+routing, priorities and selected state persistence. C.1/C.2 also provide versioned checkpoints and controlled clock/random. Fixed
+ticks, recording, replay and developer tools remain planned for Phases C/D.
 
 The public API is experimental (`0.1.0`). The Phase B frontend walkthrough is
 qualified in desktop Chrome; OS IMEs, system clipboard paste, mobile and other
@@ -183,7 +183,8 @@ For URL-backed fields, see [the persistence example](examples/persistence/README
   A successful action publishes one version, including a no-op; a throwing action
   publishes none. Nested dispatches run FIFO after a successful parent. Side effects
   outside the draft cannot roll back. Async effects run outside actions and dispatch
-  their results; controlled time/random and replay are not implemented yet.
+  their results. Controlled `now()`/`random()` services are available to actions;
+  fixed ticks and replay remain unimplemented.
 - **Events belong to view scopes.** `onClick` needs no event argument; `on.submit`
   supplies cancellation and native event access; `onText` supplies semantic text;
   `onKey` supplies key/held/reset information. Scroll reads happen in the event
@@ -205,6 +206,41 @@ For disposal, argument validation, errors, resource budgets and copyable focused
 examples, read [DOCUMENTATION.md](DOCUMENTATION.md). Runtime validation remains
 necessary for imported data even when TypeScript accepts its declared type.
 
+## Controlled services and checkpoints
+
+C.1/C.2 provide manual logical microseconds and seeded simulation draws to actions.
+This root browser-module example needs no mount or DOM:
+
+```js
+import { createApp, createActionSchema, hashSnapshot } from './src/index.js';
+const schema = createActionSchema({ version: 'sample/1' })(({ action }) => ({
+  sample: action((draft, services) => {
+    draft.value = services.random(); draft.time = services.now();
+  }),
+}));
+const app = createApp({ schema, initialState: { value: 0, time: 0 },
+  controls: { seed: 123 } });
+app.setLogicalTime(1000); // Explicit logical time: 1 ms, not wall time.
+app.actions.sample();
+const fork = createApp({ schema, snapshot: app.snapshot() });
+app.actions.sample(); fork.actions.sample();
+console.log(hashSnapshot(app.snapshot()) === hashSnapshot(fork.snapshot())); // true
+app.dispose(); fork.dispose();
+```
+
+No-payload handlers receive `(draft, services)`; payload handlers receive
+`(draft, payload, services)`. Existing callbacks can ignore the extra argument.
+Failed actions discard their random draws with their state changes. Services
+expire after the action body; explicit clock changes are monotone and change no
+state version. Checkpoints restore a new owned app with the same state version,
+clock and random position, without replacing mounted state or restoring browser
+effects. `app.controls` is frozen/nonreactive; copy service values into state to
+display them. This is not fixed ticks, recording or replay.
+
+Try [http://localhost:3000/examples/determinism/](http://localhost:3000/examples/determinism/)
+after `npm run dev`, or read the [guide](DOCUMENTATION.md#checkpoints-and-controlled-services)
+for schema/runtime versions, supported data, import limits, errors and cleanup.
+
 ## Features and boundaries
 
 | Available through public imports | Qualification / next work |
@@ -216,7 +252,8 @@ necessary for imported data even when TypeScript accepts its declared type.
 | History/hash routing and shared state | One router per Window; History hosts need a scoped fallback |
 | Memory/session/local/URL field locations | Top-level fields, guarded bounded format; no cross-tab merging or migrations |
 | Declarations, error codes and root public examples | Experimental compatibility policy; no stable release claim |
-| Fixed ticks, seeded randomness, recording/replay, history/inspector | Unimplemented Phase C/D |
+| Versioned checkpoints, manual logical clock and transactional seeded draws | C.1/C.2; see the controlled-services example below |
+| Fixed ticks, recording/replay, history/inspector | Unimplemented later Phase C/D |
 
 [Compatibility and versioning](docs/adr/0015-public-frontend-compatibility.md)
 explain how the experimental frontend can evolve into Phase C without treating

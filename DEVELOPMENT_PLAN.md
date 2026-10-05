@@ -1,12 +1,12 @@
 # Framework development plan
 
-**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C/D are planned.
+**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C.1/C.2 are implemented; remaining C/D tasks are planned.
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.13, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.15, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** B.9–B.11 public contracts/documentation and the clean-candidate auditor walkthrough pass. B.1–B.8 are implemented. Desktop Chrome is verified; OS IMEs, system clipboard paste, mobile/other browsers and assistive technology remain open release gates. Next implementation batch: C.1/C.2 serialization/version contracts and controlled clock/random services; experimental compatibility is explicit in ADR 0015.
+**Current milestone:** C.1/C.2 implement versioned state/control checkpoints, SHA-256 comparison, a manual logical clock and transactional seeded randomness. B.1–B.11 frontend candidate remains verified. Native OS/clipboard/mobile/other-browser qualification stays open. Next implementation batch: C.3 fixed ticks and C.4 external-input/effect adapters; recording/replay remain later gates.
 
 ## 1. Purpose and scope
 
@@ -171,8 +171,8 @@ Before calling the general frontend API stable, resolve the applicable decisions
 
 ### Tasks
 
-- [ ] **C.1 — Finalize deterministic serialization and versions.** Dependencies: 0.8, Phase B. Specify snapshot/recording/runtime/action-schema versions, canonical encoding/hash rules, object/alias identity, supported numeric/value cases, and import limits. Include logical clock/PRNG continuation state in restorable checkpoints. Acceptance: round trips preserve supported state meaning; incompatible/invalid inputs fail clearly; a versioned format ADR describes migration/rejection behavior.
-- [ ] **C.2 — Add controlled clock and seeded randomness.** Dependencies: A.3, C.1. Provide runtime services to actions and define seed initialization, logical timestamps, draw ordering, and transaction failure semantics. Acceptance: identical seeds/inputs yield identical draws/times; failed actions leave controlled services in the documented state, with no unrecorded advancement affecting later replay.
+- [x] **C.1 — Finalize deterministic serialization and versions.** Dependencies: 0.8, Phase B. Specify snapshot/recording/runtime/action-schema versions, canonical encoding/hash rules, object/alias identity, supported numeric/value cases, and import limits. Include logical clock/PRNG continuation state in restorable checkpoints. Acceptance: round trips preserve supported state meaning; incompatible/invalid inputs fail clearly; a versioned format ADR describes migration/rejection behavior.
+- [x] **C.2 — Add controlled clock and seeded randomness.** Dependencies: A.3, C.1. Provide runtime services to actions and define seed initialization, logical timestamps, draw ordering, and transaction failure semantics. Acceptance: identical seeds/inputs yield identical draws/times; failed actions leave controlled services in the documented state, with no unrecorded advancement affecting later replay.
 - [ ] **C.3 — Implement fixed simulation ticks.** Dependencies: B.4, C.2. Add configurable tick duration, ordered tick input queues, pause/resume, elapsed-time accumulator, bounded catch-up, and a hidden-tab policy. Specify input assignment and actions dispatched from tick logic. Acceptance: tick IDs never silently skip; overload can lag with bounded per-frame work; fake 30/60/120 Hz and irregular schedules produce identical corresponding tick states.
 - [ ] **C.4 — Implement external-input and effect adapters.** Dependencies: C.1–C.3. Normalize viewport/layout/scroll measurements, storage reads, timers, and network/effect results outside actions. Define serializable success/error/cancellation inputs, ordering, origin metadata, and scope disposal. Acceptance: actions receive recorded values rather than querying ambient APIs; replay works with different live dimensions/network; late results cannot update disposed apps/routes contrary to the documented ownership policy.
 - [ ] **C.5 — Integrate semantic event inputs.** Dependencies: C.4, B.2, B.3, B.6, B.8. Route keyboard/text/navigation/location inputs through the ordered recordable boundary. Specify which native observations become authoritative input and which remain browser-only presentation. Acceptance: key/repeat/held-key, IME/paste, route, and hydration fixtures produce identical committed values from recorded inputs.
@@ -252,7 +252,7 @@ This register tracks recorded architecture choices and later open decisions, not
 | Router mode and direct-load requirements | URL, base-path, native link and back/forward cases | B.5, ADR 0013; implemented B.6 |
 | Location precedence and URL ownership | Conflicting default/storage/query and loop fixtures | B.7, ADR 0014; implemented B.8 |
 | Scheduler fairness and hidden-tab behavior | Sustained input and pause/catch-up tests | B.4 ADR 0012 implemented; ticks/hidden-tab policy C.3 |
-| Format versions, canonical encoding, checkpoint metadata | Alias round trips and compatibility fixtures | Draft before public API freeze; prove in C.1 |
+| Format versions, canonical encoding, checkpoint metadata | ADR 0016; bounded graph/control round trips, canonical/golden/hash oracles and compatibility fixtures | C.1/C.2 implemented; recording implementation C.7–C.9 |
 | Retention budgets, keyframe interval, oversized snapshot behavior | Byte accounting and eviction workloads | Draft before public API freeze; prove in C.8 |
 | Undo/redo grouping and effect policy | Seek, branch, external-effect scenarios | D.1, before history API freeze |
 | Final name, exports, and stable release surface | ADR 0015 defines experimental frontend/Phase C compatibility; public entry verified B.9–B.11 | Stable name/release freeze remains future work |
@@ -717,7 +717,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [x] Implemented frontend capabilities are independent; development dependencies and limitations are disclosed (B.11).
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** B.9–B.11 implemented and verified; see [auditor report](docs/reports/task-B.9-B.11-auditor.md). Batch 3 committed as c278bd0 at user request; Batch 2 committed as 24a0636. Batch 4 remains uncommitted; no push. Next: C.1/C.2. Native OS/mobile/cross-browser input qualification remains open before a stable frontend release.
+**Current batch:** C.1/C.2 implemented and verified; see [checkpoint/services report](docs/reports/task-C.1-C.2-checkpoints-controls.md). Batch 4 committed as 35bd747; Batch 3 as c278bd0; Batch 2 as 24a0636. Batch 5 remains uncommitted; no push. Next: C.3/C.4. The frontend auditor still passes, with native OS/mobile/browser qualification open.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -849,7 +849,34 @@ artifact for exact commands, hashes, environment and boundaries. The test runner
 now discovers files explicitly rather than relying on newer Node's glob support;
 Node 26 is verified, not every version in the Node 18+ range.
 
-Batch 4 remains uncommitted. The frontend candidate auditor gate passes; broad OS
+Batch 4 was subsequently committed as 35bd747 at user request. The frontend candidate auditor gate passes; broad OS
 IME/clipboard/mobile/browser qualification and stable release freeze remain open.
 Recording/replay/controlled services are unimplemented. Next: C.1/C.2 design and
 implementation. No separate demonstration app or publication is included.
+
+
+### C.1/C.2 checkpoints and controlled services — complete (6 October 2026)
+
+Owner: Codex. Baseline: Batch 4 commit 35bd747. ADR 0016 preceded implementation
+and specifies runtime/checkpoint/action versions, graph/hash rules, import budgets,
+manual clock/PRNG continuation, failure semantics and the later recording format.
+Public app snapshot/new-app restore and standalone hash APIs preserve supported
+graph distinctions and state versions. Frozen scoped action services stage seeded
+draws, commit with state, roll back on body/commit failure and expire afterward.
+Manual logical microseconds advance explicitly outside active work. Parent-service
+access during payload admission is blocked. Persistence graph encoding is factored
+into a shared production codec without changing its existing wire format.
+
+Verification: 486 runtime tests (44 checkpoint/hash and 17 controlled-service
+cases), 292 spike and 15 workload tests; strict positive TS/checked JS and 119
+independently rejected negative lines; 118 Chrome checks; clean-candidate auditor,
+root smoke and empty runtime dependencies. Known/BigInt PRNG vectors and independent
+Node/browser hash oracles pass; uninterrupted/restored manual continuation matches
+across failures/FIFO and varied render boundaries. Guide/README/API/PRD v2.15,
+ADR and runnable controlled-services example are updated. See the report/artifact
+for commands, hashes, environment and limits.
+
+Batch 5 remains uncommitted. Fixed ticks, recorded external adapters, interpolation,
+recording/replay, undo/inspector and full native input/browser qualification remain
+open. No new performance/security certification, deployment or separate demo app
+is claimed. Next: C.3/C.4.

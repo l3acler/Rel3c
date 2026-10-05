@@ -121,3 +121,11 @@ the harness explicitly rejects nesting and retains legacy no-op versions.
 Event integration also remains later work: use the registered input mode to adapt
 no-payload actions and extract semantic payloads; do not pass native Event objects
 into serializable dispatch. This harness is not wired into the view-syntax spike.
+
+## C.1/C.2 production follow-up
+
+[ADR 0016](0016-deterministic-checkpoints-services.md) now implements separate
+state/control checkpoint versions, canonical SHA-256 comparison and scoped
+manual clock/seeded draw continuation. Graph wire preserves the supported data
+policy. Recording validation/replay remain later tasks; the private persistence
+format remains distinct and compatible.

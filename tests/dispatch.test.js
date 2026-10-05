@@ -35,7 +35,8 @@ test('exact arity, unknown names and modes reject before guards or bodies', () =
   const app = createApp({ schema: schema(({ action }) => ({
     none: action((draft = {}) => { calls++; }),
     payload: action(value => { calls++; return value === undefined; }, (...args) => {
-      calls++; assert.equal(args.length, 2); assert.equal(args[1], undefined);
+      calls++; assert.equal(args.length, 3); assert.equal(args[1], undefined);
+      assert.equal(typeof args[2].random, 'function'); // C.2's additional services argument.
     }),
   })) });
   for (const run of [() => app.dispatch('none', undefined), () => app.actions.none(1, 2),

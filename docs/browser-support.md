@@ -9,6 +9,7 @@ Chrome version or support parity elsewhere.
 | --- | --- | --- |
 | DOM, forms, keyed identity, focus/selection, cleanup | Real Chrome fixtures and README app | Native HTML subset in DOM reference |
 | Actions, reactivity, priorities | Node and Chrome integration | Cooperative work; no CPU preemption or heap-collection guarantee |
+| C.1/C.2 clock/draw rollback, checkpoints and restored continuation | Node/native browser hash oracles and varied manual render boundaries | Fixed ticks/recording/replay remain unimplemented |
 | History/hash, direct loads, reload, back/forward | Real Chrome and scoped History fallback | One router per Window; hosts configure production fallback |
 | Local/session/URL hydration, failures and reload | Browser storage and injected failure fixtures | No cross-tab merging, migration or unload flush |
 | Enter/Space, shortcuts, held/repeat/release, keyboard scroll | Trusted Chrome automation and unit fixtures | Desktop automation only |

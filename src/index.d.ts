@@ -9,6 +9,18 @@ export class FrameworkError extends Error {
   readonly code: string;
   constructor(code: string, message: string, options?: ErrorOptions);
 }
+export function hashSnapshot(snapshot: string): string;
+export interface ActionServices {
+  /** Logical microseconds; constant throughout an action batch. */
+  readonly now: () => number;
+  /** Transactional simulation draw in [0, 1); expires after the body finishes. */
+  readonly random: () => number;
+}
+export interface ControlOptions { readonly seed?: number; readonly time?: number; }
+export interface ControlSnapshot {
+  readonly clock: { readonly mode: 'manual'; readonly time: number; readonly tick: 0; readonly tickDuration: null };
+  readonly random: { readonly algorithm: 'xorshift32-13-17-5/1'; readonly seed: number; readonly state: number; readonly draws: number };
+}
 
 export type DeepReadonly<T> = T extends (...args: never[]) => unknown ? T
   : T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } : T;
@@ -21,8 +33,8 @@ export interface ActionSpec<S, Args extends [] | [unknown]> {
   readonly input: 'none' | 'payload'; readonly [specification]: { state: S; args: Args };
 }
 export interface ActionBuilder<S> {
-  action<F extends (draft: Draft<S>) => unknown>(run: F & Sync<F>): ActionSpec<S, []>;
-  action<P, F extends (draft: Draft<S>, payload: DeepReadonly<P>) => unknown>(
+  action<F extends (draft: Draft<S>, services: ActionServices) => unknown>(run: F & Sync<F>): ActionSpec<S, []>;
+  action<P, F extends (draft: Draft<S>, payload: DeepReadonly<P>, services: ActionServices) => unknown>(
     validate: (value: unknown) => value is P, run: F & Sync<F>
   ): ActionSpec<S, [payload: DeepReadonly<P>]>;
 }
@@ -36,7 +48,7 @@ export function createActionSchema<S extends object = Record<string, unknown>>(o
 type ArgsOf<T> = T extends ActionSpec<unknown, infer Args> ? Args : never;
 type DispatchArgs<D> = { [K in keyof D & string]: [name: K, ...ArgsOf<D[K]>] }[keyof D & string];
 export type AppStatus = 'created' | 'mounting' | 'mounted' | 'disposing' | 'disposed';
-export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' | 'schedule' | 'navigation' | 'persistence';
+export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' | 'schedule' | 'navigation' | 'persistence' | 'control' | 'snapshot';
 export type ErrorHandler = (error: Error, info: Readonly<{ phase: ErrorPhase }>) => unknown;
 type SyncErrorHook<F extends ErrorHandler> = { readonly onError?: F & Sync<F> };
 type Cleanup<F extends () => unknown> = F & Sync<F>;
@@ -202,6 +214,8 @@ export interface AppConfig<S extends object, D extends Definitions<S> = {}> {
   readonly onError?: ErrorHandler;
   readonly router?: RouterConfig<S, D>;
   readonly persistence?: PersistenceConfig<S>;
+  readonly controls?: ControlOptions;
+  readonly snapshot?: string;
 }
 export type PersistenceField =
   | Readonly<{ location: 'memory'; validate?: never; key?: never }>
@@ -225,6 +239,12 @@ export interface AppInstance<S extends object, D extends Definitions<S> = {}> ex
   flush(): void;
   flushPersistence(): void;
   readonly persistence: PersistenceStatus;
+  /** Export committed state/version and service continuation as canonical JSON. */
+  snapshot(): string;
+  /** Monotone manual time input, in integer logical microseconds. */
+  setLogicalTime(time: number): void;
+  /** Frozen, nonreactive committed control snapshot. */
+  readonly controls: ControlSnapshot;
   /** Without a target, resolves #app at mount time (or uses the configured target). */
   mount(target?: Element): AppInstance<S, D>;
   dispose(): void;

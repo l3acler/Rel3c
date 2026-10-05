@@ -3,7 +3,7 @@
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
 application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.8 add native events, semantic keyboard/text inputs, cooperative priority lanes and History/hash routing with one shared application store, plus guarded memory/session/local/URL state locations. APIs remain experimental and browser qualification is limited.
-B.9–B.11 refine the public declarations and root auditor walkthrough.
+B.9–B.11 refine the public declarations and root auditor walkthrough. C.1/C.2 add versioned checkpoints and controlled manual time/seeded draws.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -26,11 +26,13 @@ Import from `src/index.js`; applications do not need runtime internals.
 | State locations       | Guarded startup hydration, post-commit session/local writes and URL-backed fields             |
 | Error reporting       | Readable framework error codes and a synchronous application error hook                        |
 | TypeScript            | Inferred action names/payloads and read-only state declarations                                |
+| Checkpoints           | Canonical versioned state/control exports, owned restoration and SHA-256 comparison           |
+| Controlled services   | Manual logical microseconds and transaction-scoped seeded simulation draws                    |
 
 Views construct their static tree once per mount; explicit bindings update affected
 text, attributes, classes and styles on render frames after committed actions. Conditional factories
 run when their selected boolean branch changes. Native events, keyboard and text editing
-are implemented alongside routing, priorities and state locations; controlled services, recording and
+are implemented alongside routing, priorities, state locations and controlled services. Fixed ticks, recording and
 replay remain unimplemented. Broad browser/OS IME qualification remains open.
 
 ## Start from the project root
@@ -99,6 +101,7 @@ explicit bindings below for updates.
 | `keyed(itemsBinding, key, view)`                     | Retain item scopes and DOM across list updates                        |
 | `derive(read)` and `when(condition, yes, no?)`     | Explicit derived bindings and scoped conditional children             |
 | `outlet()`                                         | Render the active route in a persistent app shell                      |
+| `hashSnapshot(text)`                                | Validate and hash canonical state/control checkpoint text             |
 | `FrameworkError`                                     | Framework error class with a readable message and`code`             |
 | `VERSION`                                            | Package version string                                                |
 | `FRAMEWORK_INFO`                                     | Frozen metadata describing implemented and planned capabilities       |
@@ -111,7 +114,7 @@ called; `app.mount(element)` uses a custom DOM Element. Passing `target` to
 `createApp` mounts immediately. Invalid explicit targets do not fall back to `#app`.
 A missing target/document rejects clearly, and the app may retry later.
 
-Config supports only `initialState`, `schema`, `view`, `target`, `onError`, `router` and `persistence`.
+Config supports only `initialState`, `schema`, `view`, `target`, `onError`, `router`, `persistence`, `controls` and `snapshot`. Snapshot construction replaces initial state/control initialization; do not combine them.
 Defaults are `{}` state, an empty schema and an empty text view; with a router, the default view is an outlet. Unknown options
 and accessor configuration properties reject. Inline `actions` and `seed`
 configuration are not implemented.
@@ -437,7 +440,7 @@ cleanup and disposal also pass. These are correctness observations, not a perfor
 or heap-collection claim. See [core acceptance evidence](docs/reports/task-A.10-core-slice.md).
 
 The API stays experimental. B.1–B.3 now add native events and keyboard/text
-synchronization. B.4–B.6 add priority work and shared-state routing. B.7/B.8 add guarded state locations. Remaining Phase B work includes declaration/documentation refinement and the auditor acceptance gate; Phase C adds deterministic services and replay.
+synchronization. B.4–B.6 add priority work and shared-state routing. B.7/B.8 add guarded state locations. B.9–B.11 complete the public contracts and auditor walkthrough. C.1/C.2 add checkpoints and controlled services; fixed ticks and replay remain future work.
 
 ## Render frames and explicit flush
 
@@ -772,6 +775,92 @@ unload flushing, live cross-tab merging and recorded/replayed persistence inputs
 remain unimplemented. See [persistence reference](docs/api/persistence.md) and
 [ADR 0014](docs/adr/0014-state-locations-hydration.md).
 
+## Checkpoints and controlled services
+
+C.1/C.2 make time and simulation draws explicit and restore their continuation
+with committed state. This provides a reproducible transition foundation; fixed
+ticks, input logs, recording and replay are still unimplemented.
+
+```js
+import { createApp, createActionSchema, hashSnapshot } from './src/index.js';
+const schema = createActionSchema({ version: 'samples/1' })(({ action }) => ({
+  sample: action((draft, services) => {
+    draft.value = services.random();
+    draft.time = services.now();
+  }),
+  scale: action(value => typeof value === 'number' && Number.isFinite(value),
+    (draft, value, services) => { draft.value = value * services.random(); }),
+  fail: action((draft, services) => {
+    draft.value = services.random(); throw Error('Discard this draw');
+  }),
+}));
+const app = createApp({ schema, initialState: { value: 0, time: 0 },
+  controls: { seed: 123, time: 0 } });
+app.setLogicalTime(1000); // Integer logical microseconds: 1 ms.
+app.actions.sample();
+const checkpoint = app.snapshot();
+try { app.actions.fail(); } catch { /* State and PRNG position remain unchanged. */ }
+console.log(app.snapshot() === checkpoint); // true
+const fork = createApp({ schema, snapshot: checkpoint });
+app.actions.scale(2); fork.actions.scale(2);
+console.log(hashSnapshot(app.snapshot()) === hashSnapshot(fork.snapshot())); // true
+app.dispose(); fork.dispose();
+```
+
+`controls` accepts `seed` (uint32, default 1) and `time` (nonnegative safe integer
+logical microseconds, default 0); negative zero, fractions, null, unknown options
+and ordinary getters reject. The seeded simulation stream has an explicit
+algorithm/version; seed zero uses a defined nonzero word. It is not security
+randomness. `now()` reads logical time, never wall time, and stays constant
+throughout a dispatch batch. `random()` draws in `[0,1)` in call/FIFO order.
+
+Callbacks receive `(draft, services)` or `(draft, ownedPayload, services)`;
+existing callbacks may ignore the added argument, while rest/`arguments` code
+sees it. Dispatch payload arity is unchanged. Services are frozen and scoped to
+the currently executing action body; payload admission cannot use them, and
+captured references expire before commit notifications/children/deferred work.
+An action stages draws: success publishes state and service advancement together,
+while throws, invalid final graphs, Promise returns or version overflow discard
+both. Failures after commit keep successful state and service advancement.
+
+`app.setLogicalTime(time)` advances monotonically at an explicit boundary
+outside actions, guards, mounting, rendering, reactive/error work. Equal time is
+a no-op; invalid/backward time leaves the clock unchanged. It changes no state
+version, binding or numbered tick. `app.controls` is frozen committed metadata
+and nonreactive, so copy time/draws into action state for display. The runnable
+[controlled example](examples/determinism/README.md) uses public views/buttons
+and verifies a restored continuation without replacing mounted state.
+
+`app.snapshot()` exports committed state/version and controls as canonical JSON
+outside active work, without publishing state, touching storage or changing URLs.
+`hashSnapshot(text)` validates and returns lowercase SHA-256 of its canonical
+UTF-8 text. Versions, key/alias topology and clock/PRNG continuation are included;
+DOM/browser queues/effects are not. Hashes compare checkpoints; they do not
+authenticate their source. Both functions are synchronous and accept no options.
+
+Restore with `createApp({snapshot, schema, ...})` into a new owned app. Do not also
+provide `initialState` or `controls`. Runtime/action-schema versions must match;
+restore resumes `stateVersion` exactly and preserves supported graph distinctions.
+Provide the compatible action code/domain schema; a matching label cannot prove
+code equivalence. Views/targets run only after validation. Ordinary mount can
+still hydrate configured persistence fields and publish additional versions;
+restoration is not replay or suppression of live browser effects.
+
+Checkpoint wire limit is 8,388,608 UTF-8 bytes; existing state graph limits still
+apply. Schema labels are at most 128 UTF-16 units for checkpoint use. Invalid,
+incompatible, oversize, noncanonical or conflicting inputs reject with
+`SNAPSHOT_INVALID`, `SNAPSHOT_INCOMPATIBLE`, `SNAPSHOT_LIMIT` or `SNAPSHOT_CONFLICT`.
+Service/time errors use `CONTROL_INVALID`, `CONTROL_LIMIT`, `CONTROL_REENTRANT`
+or `CONTROL_EXPIRED`; exporting during active work uses `SNAPSHOT_REENTRANT`.
+App operations report `create`, `control`, `snapshot` or the action/event phase,
+then rethrow. Standalone hashing has no app hook. Disposal releases app controls;
+caller-retained checkpoint strings remain caller-owned.
+
+See [the full API](docs/api/determinism.md) and
+[ADR 0016](docs/adr/0016-deterministic-checkpoints-services.md) for exact encoding,
+seed initialization, budgets and future recording-format boundaries. There is
+no automatic migration, public persistence-codec decoder or implemented recording.
+
 ## State and named actions
 
 Application code cannot directly change committed state. Register actions and
@@ -807,12 +896,13 @@ wrong argument counts reject before guards or bodies. Modes are explicit rather
 than inferred from function arity, so default/rest parameters remain predictable.
 
 Payloads are copied and deeply frozen before a pure synchronous guard, which
-must return exactly true. Caller data remains mutable. Bodies receive `(draft)`
-or `(draft, ownedPayload)` and are invoked without binding `this`.
+must return exactly true. Caller data remains mutable. Bodies receive `(draft, services)`
+or `(draft, ownedPayload, services)` and are invoked without binding `this`. Existing
+callbacks can ignore the additional services argument; dispatch payload arity is unchanged.
 
 The body reads its own writes through the draft; `app.state` still exposes the
 previous committed version until success. A successful action publishes one
-version, including no-ops; `stateVersion` starts at 1. A throw, invalid final
+version, including no-ops; `stateVersion` starts at 1 or resumes the restored checkpoint version. A throw, invalid final
 graph or Promise/thenable return publishes none. Every completed draft is revoked,
 preventing later reads/writes. Return values are ignored; dispatch and wrappers
 return undefined. These functions can be detached and called without binding.
@@ -826,8 +916,8 @@ data other than array length reject. Do not pass native browser Events as payloa
 
 Keep async effects outside actions and dispatch their results as supported data.
 Action code must not read ambient layout/storage/time/random values for
-reproducibility. Controlled services and external-input recording are not yet
-available. Rollback cannot undo arbitrary external side effects or cancel async
+reproducibility. Use action-scoped `services.now()`/`services.random()` for controlled
+values; external-input recording is not yet available. Rollback cannot undo arbitrary external side effects or cancel async
 callbacks; revocation prevents deferred draft mutation.
 
 ## Exact reactive observers
@@ -1003,7 +1093,7 @@ only its attempted view scope. All hooks are attempted even if one fails;
 disposal still completes and then throws an AggregateError. Hooks must be
 synchronous, and disposed view scopes reject new registrations.
 
-An optional synchronous `onError(error, { phase })` observes creation, mounting,
+An optional synchronous `onError(error, { phase })` observes creation, checkpoint export, manual clock changes, mounting,
 dispatch, native event, rendering, scheduled work, navigation, persistence and disposal failures without swallowing them. For a dispatch batch it
 runs once after draining, when committed state is complete. If the hook also
 throws, its failure aggregates with the original. It cannot dispatch recovery
@@ -1081,7 +1171,8 @@ under `tests/results/`; failures exit nonzero. Use `-- --offline` with a populat
 npm cache. This verifies candidate files, not a nonexistent committed revision.
 No runtime edits or Git changes are needed. For the full reference,
 see [application API](docs/api/application.md). For current validation results,
-see [B.9–B.11 auditor evidence](docs/reports/task-B.9-B.11-auditor.md),
+see [C.1/C.2 checkpoint/service evidence](docs/reports/task-C.1-C.2-checkpoints-controls.md),
+[B.9–B.11 auditor evidence](docs/reports/task-B.9-B.11-auditor.md),
 [B.7/B.8 state-location evidence](docs/reports/task-B.7-B.8-persistence.md),
 [B.4–B.6 routing/scheduling evidence](docs/reports/task-B.4-B.6-routing-scheduling.md),
 [B.1–B.3 input evidence](docs/reports/task-B.1-B.3-inputs.md) and
@@ -1099,9 +1190,11 @@ state compatibility impact. No stable API freeze or complete product is claimed.
 Package, action-schema and persistence versions are separate. Bump the schema
 when action/payload meaning changes and persistence version when stored shape
 changes. Mismatched storage follows guarded fallback; no automatic migration
-exists. Use a new namespace to retain old buckets. The private graph codec is
-not a public recording/snapshot contract. Future recording/checkpoint/runtime
-versions belong to Phase C; see [ADR 0015](docs/adr/0015-public-frontend-compatibility.md).
+exists. Use a new namespace to retain old buckets. The private persistence graph codec is
+not a public recording/snapshot contract. C.1/C.2 implement a separate versioned
+public state/control checkpoint; the recording implementation remains future work.
+See [ADR 0015](docs/adr/0015-public-frontend-compatibility.md) and
+[ADR 0016](docs/adr/0016-deterministic-checkpoints-services.md).
 
 The candidate passes desktop Chrome automation and the clean-root walkthrough.
 The [support matrix](docs/browser-support.md) separates trusted edits and Chrome

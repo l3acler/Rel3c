@@ -88,13 +88,15 @@ function createStorage(root, identities) {
 }
 
 // Internal production engine. Application actions get access only through A.3.
-export function createTransactionStore(initialState = {}) {
+export function createTransactionStore(initialState = {}, initialVersion = 1) {
+  if (!Number.isSafeInteger(initialVersion) || initialVersion < 1)
+    fail('VERSION_LIMIT', 'Initial state version must be a positive safe integer.');
   let state = ownInitialState(initialState);
   initialState = null;
   const identities = createIdentities();
   for (const node of inspectGraph(state).records.keys())
     identities.assign(node);
-  let version = 1,
+  let version = initialVersion,
     active = null,
     disposed = false;
   function live() {

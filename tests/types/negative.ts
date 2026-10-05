@@ -184,3 +184,28 @@ app.actions.rename(new Event('input'));
 app.persistence.errors[0]!.code = 'changed';
 // @ts-expect-error Route parameter maps cannot be mutated.
 app.route!.params.id = 'changed';
+
+// C.1/C.2 controlled services have a synchronous, read-only typed surface.
+// @ts-expect-error Seed accepts numbers, with the uint32 range enforced at runtime.
+createApp({ controls: { seed: '123' } });
+// @ts-expect-error Unknown control options reject.
+createApp({ controls: { tickDuration: 1000 } });
+// @ts-expect-error Snapshots are canonical wire text rather than decoded objects.
+createApp({ snapshot: {} });
+// @ts-expect-error Hashing accepts checkpoint text.
+hashSnapshot(12);
+// @ts-expect-error Snapshot export has no arguments.
+app.snapshot(1);
+// @ts-expect-error Clock advances require a numeric logical time.
+app.setLogicalTime('1000');
+// @ts-expect-error Control snapshots are read-only.
+app.controls.random.state = 1;
+// @ts-expect-error Controls provide committed metadata, not a live random method.
+app.controls.random();
+// @ts-expect-error Services are read-only, including their methods.
+createActionSchema<State>()(({ action }) => ({ bad: action((draft, services) => { services.random = () => 0; }) }));
+// @ts-expect-error Services do not permit action-driven clock advancement.
+createActionSchema<State>()(({ action }) => ({ bad: action((draft, services) => { services.setLogicalTime(1); }) }));
+// @ts-expect-error Async action bodies remain forbidden when using services.
+createActionSchema<State>()(({ action }) => ({ bad: action(async (draft, services) => { draft.count = services.random(); }) }));
+import { hashSnapshot } from 'mini-framework';

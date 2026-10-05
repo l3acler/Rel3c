@@ -20,7 +20,7 @@ function payloadError(error) {
   return error;
 }
 
-export function createDispatcher(store, registry, check, publish = () => {}) {
+export function createDispatcher(store, registry, check, publish = () => {}, controls = null) {
   let running = false,
     preparing = false,
     children = null, executing = false, postCommit = null;
@@ -114,18 +114,22 @@ export function createDispatcher(store, registry, check, publish = () => {}) {
           const { spec, payload } = queue.shift();
           children = [];
           postCommit = [];
-          let result;
+          let result, serviceTransaction;
           try {
             const { run } = spec;
+            serviceTransaction = controls?.begin(() => executing && !preparing);
             result = store.run((draft) => {
               executing = true;
               try {
-                const result = spec.input === "none" ? run(draft) : run(draft, payload);
+                const services = serviceTransaction?.services;
+                const result = spec.input === "none" ? run(draft, services) : run(draft, payload, services);
                 requireSync(result, "ACTION_ASYNC", "Actions must be synchronous; Promise/thenable returns reject.");
-              } finally { executing = false; }
+              } finally { executing = false; serviceTransaction?.revoke(); }
             });
+            serviceTransaction?.commit();
             queue.push(...children);
           } catch (error) {
+            serviceTransaction?.abort();
             failures.push(error);
           }
           // Successful actions retain queued children and operations even if a

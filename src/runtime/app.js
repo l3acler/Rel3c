@@ -12,6 +12,8 @@ import { createRenderer } from "./dom/renderer.js";
 import { createScheduler } from "./scheduler.js";
 import { ownRouterConfig, createRouter } from "./routing/router.js";
 import { ownPersistenceConfig, createPersistence } from "./persistence/locations.js";
+import { createControls } from "./determinism/controls.js";
+import { encodeCheckpoint, decodeCheckpoint } from "./serialization/checkpoint.js";
 
 const targets = new WeakMap();
 const emptySchema = createActionSchema()(() => ({}));
@@ -25,6 +27,8 @@ export function createApplication(config, frameworkVersion) {
     "onError",
     "router",
     "persistence",
+    "controls",
+    "snapshot",
   ]);
   let { view = options.router === undefined ? () => "" : () => outlet(), onError } = options;
   if (
@@ -71,12 +75,19 @@ export function createApplication(config, frameworkVersion) {
   let registry;
   let routerConfig;
   let persistenceConfig;
+  let controls;
   try {
-    store = createTransactionStore(
-      options.initialState === undefined ? {} : options.initialState,
-    );
     registry = ownActionRegistry(
       options.schema === undefined ? emptySchema : options.schema,
+    );
+    if (options.snapshot !== undefined && (options.initialState !== undefined || options.controls !== undefined))
+      fail('SNAPSHOT_CONFLICT', 'Use snapshot or initialState/controls, not both.');
+    const restored = options.snapshot === undefined ? null : decodeCheckpoint(options.snapshot,
+      options.schema?.version ?? emptySchema.version);
+    controls = createControls(options.controls, restored?.controls);
+    store = createTransactionStore(
+      restored?.state ?? (options.initialState === undefined ? {} : options.initialState),
+      restored?.stateVersion ?? 1,
     );
     routerConfig = options.router === undefined ? null : ownRouterConfig(options.router);
     persistenceConfig = options.persistence === undefined ? null :
@@ -168,7 +179,7 @@ export function createApplication(config, frameworkVersion) {
     try { renderer?.schedule(); } catch (error) { errors.push(error); }
     if (errors.length === 1) throw errors[0];
     if (errors.length) throw new AggregateError(errors, "Notifications/scheduling failed after commit.");
-  });
+  }, controls);
   function render(run) {
     const previous = rendering;
     rendering = true;
@@ -205,6 +216,19 @@ export function createApplication(config, frameworkVersion) {
         fail("PERSIST_REENTRANT", "Cannot flush persistence during active runtime work.");
       persistence?.flush();
     } catch (error) { report(error, "persistence"); }
+  }
+  function checkpointOperation(run, phase) {
+    if (!reporting && !dispatcher?.isActive() && !handlingEvent) reported = new WeakSet();
+    try {
+      live();
+      if (status === 'mounting' || inputBusy || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
+        fail(phase === 'snapshot' ? 'SNAPSHOT_REENTRANT' : 'CONTROL_REENTRANT',
+          'Checkpoint/control operations require a boundary outside active runtime work.');
+      return run();
+    } catch (error) {
+      if (handlingEvent || dispatcher?.isActive()) throw error;
+      report(error, phase);
+    }
   }
   function makeContext(addCleanup, isActive) {
     const scheduled = new Set();
@@ -352,6 +376,9 @@ export function createApplication(config, frameworkVersion) {
     dispatch,
     flush,
     flushPersistence,
+    snapshot() { return checkpointOperation(() => encodeCheckpoint(store.getState(), store.getVersion(), schemaVersion, controls.snapshot), 'snapshot'); },
+    setLogicalTime(time) { return checkpointOperation(() => controls.setTime(time), 'control'); },
+    get controls() { live(); return controls.snapshot; },
     get persistence() {
       live();
       return persistence?.status ?? Object.freeze({ active: false, pending: false, errors: Object.freeze([]) });
@@ -494,6 +521,7 @@ export function createApplication(config, frameworkVersion) {
       target = null;
       defaultTarget = null;
       store.dispose();
+      controls.dispose();
       store = null;
       dispatcher = null;
       registry.clear();

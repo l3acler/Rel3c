@@ -114,7 +114,7 @@ async function runSmoke() {
     console.log('[smoke]    src/index.js served successfully');
 
     for (const module of ['app.js', 'errors.js', 'records.js', 'actions/schema.js', 'actions/dispatch.js', 'state/initial-state.js',
-      'state/transactions.js', 'state/data.js', 'state/draft.js', 'state/graph.js', 'reactivity/tracking.js', 'dom/bindings.js', 'dom/nodes.js', 'dom/properties.js', 'dom/renderer.js', 'dom/queue.js', 'dom/events.js', 'dom/inputs.js', 'diagnostics.js', 'scheduler.js', 'routing/router.js', 'persistence/codec.js', 'persistence/locations.js']) {
+      'state/transactions.js', 'state/data.js', 'state/draft.js', 'state/graph.js', 'reactivity/tracking.js', 'dom/bindings.js', 'dom/nodes.js', 'dom/properties.js', 'dom/renderer.js', 'dom/queue.js', 'dom/events.js', 'dom/inputs.js', 'diagnostics.js', 'scheduler.js', 'routing/router.js', 'persistence/codec.js', 'persistence/locations.js', 'determinism/controls.js', 'serialization/graph.js', 'serialization/checkpoint.js', 'serialization/sha256.js']) {
       const response = await fetchUrl(`${base}/src/runtime/${module}`);
       assert.equal(response.statusCode, 200, 'Runtime module must be served: ' + module);
       assert.ok(response.headers['content-type']?.includes('application/javascript'));
@@ -123,7 +123,7 @@ async function runSmoke() {
     assert.ok(mainJsRes.body.includes('app.mount()'), 'Example must use default public mounting');
     assert.ok(!mainJsRes.body.includes('innerHTML') && !mainJsRes.body.includes('addEventListener'),
       'Example consumes public lifecycle without manual DOM/event behavior');
-    for (const file of ['examples/auditor/', 'examples/auditor/main.js', 'examples/dom/', 'examples/dom/main.js', 'examples/features/', 'examples/features/main.js', 'examples/features/styles.css', 'examples/keyed/', 'examples/keyed/main.js', 'examples/inputs/', 'examples/inputs/main.js', 'examples/routes/', 'examples/persistence/', 'examples/persistence/main.js', 'examples/routes/main.js', 'examples/routes/people/Ada?tab=details']) {
+    for (const file of ['examples/determinism/', 'examples/determinism/main.js', 'examples/auditor/', 'examples/auditor/main.js', 'examples/dom/', 'examples/dom/main.js', 'examples/features/', 'examples/features/main.js', 'examples/features/styles.css', 'examples/keyed/', 'examples/keyed/main.js', 'examples/inputs/', 'examples/inputs/main.js', 'examples/routes/', 'examples/persistence/', 'examples/persistence/main.js', 'examples/routes/main.js', 'examples/routes/people/Ada?tab=details']) {
       const response = await fetchUrl(`${base}/${file}`);
       assert.equal(response.statusCode, 200, 'Public DOM example must be served');
       assert.ok(!response.body.includes('addEventListener') && !response.body.includes('innerHTML'));

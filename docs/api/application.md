@@ -66,7 +66,7 @@ invalid objects reject even when `#app` exists; they do not trigger fallback.
 ## Config and instance
 
 Config keys: `initialState` (default `{}`), `schema` (default empty), `view`
-(default empty text, or outlet with routing), optional Element `target`, optional `onError` optional `router` and optional `persistence`. Unknown
+(default empty text, or outlet with routing), optional Element `target`, optional `onError`, `router`, `persistence`, `controls` and `snapshot`. Unknown
 keys/accessors/symbol keys reject. The placeholder's `actions`/`seed` options
 are not implemented; do not treat planned PRD sketches as current examples.
 
@@ -130,15 +130,17 @@ Guards must be pure and synchronous, return exactly `true`, and cannot dispatch
 or change lifecycle. False/truthy non-booleans and throwing guards reject. A
 throwing guard becomes `PAYLOAD_INVALID` with its original `cause`.
 
-Bodies receive `(draft)` or `(draft, ownedPayload)` with no bound `this`. Only the
+Bodies receive `(draft, services)` or `(draft, ownedPayload, services)` with no bound `this`.
+C.2 adds the frozen action-scoped service argument; existing callbacks can ignore
+it. Dispatch still accepts zero/one payload and does not infer mode from arity. Only the
 draft exposes in-progress writes; app/context state reads still see the previous
 complete version. Bodies must be synchronous. A throw, Promise/thenable return
 or invalid final state rolls back and revokes the draft; success commits once
 and revokes it too. Action return values are ignored, and both dispatch forms
 return `undefined`. Keep async effects outside actions and dispatch their results
 as supported payloads. Do not read ambient layout/storage/time/random values
-inside actions. Controlled services, input adapters and recording are Phase C;
-replay is not available yet. Arbitrary external side effects cannot be undone.
+inside actions. C.1/C.2 add [controlled services/checkpoints](determinism.md);
+input adapters, recording and replay remain later Phase C work. Arbitrary external side effects cannot be undone.
 
 ## Nested dispatch and failures
 
@@ -290,3 +292,16 @@ work; read-only persistence exposes nonreactive active/pending/error summaries.
 onError phases include persistence. Invalid input fallback queues asynchronous
 reporting; failures preserve committed memory. Dispose cancels rather than
 flushing writes. Session/local fields are sampled on mount, never on route changes.
+
+## Checkpoints and controlled services (C.1/C.2)
+
+`controls: {seed?,time?}` initializes seeded simulation draws and a manual logical
+clock in integer microseconds. Action callbacks receive synchronous scoped
+`now()`/`random()` methods; failed actions discard their draws.
+`app.setLogicalTime(time)` advances time outside active runtime work without
+a state version/DOM notification. `app.controls` is frozen, nonreactive committed
+metadata. `app.snapshot()` exports canonical state/version/control JSON;
+`createApp({snapshot,schema,...})` restores a new app without `initialState` or
+`controls`. `hashSnapshot(text)` validates and compares checkpoints with SHA-256.
+See [the full contract](determinism.md) for versions, limits, expiration, errors,
+ordinary mount hydration and the boundary between restoration and future replay.

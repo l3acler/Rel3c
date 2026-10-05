@@ -144,3 +144,20 @@ type ErrorHookState = Expect<Equal<typeof withErrorHook.state.ready, boolean>>;
 const withSchemaHook = createApp({ schema, initialState, onError: (error, info) => info.phase });
 type ErrorHookActions = Expect<Equal<Parameters<typeof withSchemaHook.actions.rename>, [payload: DeepReadonly<{ name: string }> ]>>;
 withSchemaHook.actions.rename({ name: 'Checked' });
+
+// C.1/C.2: services add no dispatch payload and preserve schema inference on restore.
+import { hashSnapshot, type ActionServices, type ControlSnapshot } from 'mini-framework';
+const controlledSchema = createActionSchema<{ n: number; time: number }>()(({ action }) => ({
+  draw: action((draft, services) => { const api: ActionServices = services; draft.n = api.random(); draft.time = api.now(); }),
+  scale: action((value: unknown): value is number => typeof value === 'number',
+    (draft, payload, services) => { draft.n = payload * services.random(); }),
+}));
+const controlled = createApp({ initialState: { n: 0, time: 0 }, schema: controlledSchema, controls: { seed: 123, time: 5000 } });
+controlled.actions.draw(); controlled.actions.scale(3); controlled.setLogicalTime(6000);
+const checkpoint: string = controlled.snapshot(), hash: string = hashSnapshot(checkpoint);
+const fork = createApp({ snapshot: checkpoint, schema: controlledSchema });
+const control: ControlSnapshot = fork.controls;
+type RestoredInference = Expect<Equal<typeof fork.state.n, number>>;
+type ServiceDispatchArgs = Expect<Equal<Parameters<typeof fork.actions.draw>, []>>;
+type ServicePayloadArgs = Expect<Equal<Parameters<typeof fork.actions.scale>, [payload: number]>>;
+void hash; void control;

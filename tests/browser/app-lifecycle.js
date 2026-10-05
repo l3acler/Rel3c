@@ -6,6 +6,7 @@ import { runCoreSliceTests } from './core-slice.js';
 import { runInputTests } from './events-input.js';
 import { runRoutingSchedulerTests } from './routing-scheduler.js';
 import { runPersistenceTests } from './persistence.js';
+import { runDeterminismTests } from './determinism.js';
 import { runClickTests } from './click.js';
 import { runKeyedTests } from './keyed.js';
 import { runDOMTests } from './dom.js';
@@ -52,7 +53,7 @@ window.runAppLifecycleTests = async () => {
     throws(() => a.mount(), 'APP_DISPOSED');
   });
   await test('public browser-native module exports current lifecycle metadata', () => {
-    assert(FRAMEWORK_INFO.phase.startsWith('B.9')); assert(Object.isFrozen(FRAMEWORK_INFO));
+    assert(FRAMEWORK_INFO.phase.startsWith('C.1')); assert(Object.isFrozen(FRAMEWORK_INFO));
     assert(typeof createActionSchema === 'function' && typeof FrameworkError === 'function');
   });
   await test('lazy create, explicit mount, terminal/idempotent dispose', () => {
@@ -305,5 +306,6 @@ window.runAppLifecycleTests = async () => {
   await runInputTests(test, assert, host);
   await runRoutingSchedulerTests(test, assert, throws, host);
   await runPersistenceTests(test, assert, throws, host);
+  await runDeterminismTests({ test, host, assert, throws });
   return { passed: results.length, results, coreSlice };
 };

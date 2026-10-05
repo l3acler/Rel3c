@@ -15,6 +15,7 @@ export { element, div, span, p, button, form, label, input, textarea, select, op
   section, a, ul, li, when, keyed, outlet } from "./runtime/dom/nodes.js";
 export { derive } from "./runtime/dom/bindings.js";
 export { FrameworkError } from "./runtime/errors.js";
+export { hashSnapshot } from "./runtime/serialization/checkpoint.js";
 
 export const VERSION = "0.1.0";
 
@@ -24,7 +25,7 @@ export const VERSION = "0.1.0";
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "B.9–B.11 - Public Frontend Contracts and Auditor Walkthrough",
+  phase: "C.1–C.2 - Versioned Checkpoints and Controlled Services",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
     "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
@@ -41,6 +42,7 @@ export const FRAMEWORK_INFO = Object.freeze({
     "EVENT-2: Semantic keyboard/text inputs and composition-safe bindings (implemented B.2/B.3; OS/mobile/cross-browser qualification and replay remain open)",
     "Phase A: Public click/action/binding/list/cleanup acceptance verified (A.10)",
     "Public declarations, root documentation and routed form/list walkthrough (B.9–B.11; browser qualification remains limited)",
+    "C.1/C.2: Versioned checkpoints, SHA-256 comparison, manual logical clock and transactional seeded randomness",
     "TIME-1: Deterministic simulation ticks (planned Phase C)",
     "RECORD-1: Action recording & replay (planned Phase C)",
   ]),
