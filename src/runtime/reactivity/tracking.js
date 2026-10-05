@@ -7,7 +7,7 @@ export function createTracking(store) {
   let nodes = indexGraph(store.getState(), { get: store.getObjectId });
   const facades = new Map(), subscriptions = new Map(), resources = new Set();
   const evaluationStack = [], pendingCallbacks = new Set();
-  let active = null, notifying = false, disposed = false, closing = false, nextLabel = 1, suppressTracking = 0;
+  let active = null, notifying = false, disposed = false, closing = false, nextLabel = 1, suppressTracking = 0, batchDepth = 0;
   const token = (id, kind, key = null) => JSON.stringify([id, kind, key]);
   function live() {
     if (disposed) fail("SCOPE_DISPOSED", "Reactive application scope is disposed.");
@@ -143,7 +143,7 @@ export function createTracking(store) {
   }
   function createResource(kind, read, notify) {
     live();
-    if (active || notifying) fail("REACTIVITY_REENTRANT", "Cannot register reactive resources during reads or notifications.");
+    if (active || notifying || batchDepth) fail("REACTIVITY_REENTRANT", "Cannot register reactive resources during reads or notifications.");
     if (typeof read !== "function" || (kind === "observer" && typeof notify !== "function"))
       fail("REACTIVITY_INVALID", `${kind} requires a read function and optional invalidation function.`);
     const resource = { kind, label: `${kind}#${nextLabel++}`, read, notify, deps: new Set(),
@@ -245,7 +245,7 @@ export function createTracking(store) {
         if (resource.notify) pendingCallbacks.add(resource);
       }
     }
-    if (notifying) return;
+    if (notifying || batchDepth) return;
     const errors = [];
     notifying = true;
     try {
@@ -264,6 +264,17 @@ export function createTracking(store) {
   }
   return Object.freeze({
     state, observe, computed, publish, cell, updateCells,
+    batch(run) {
+      live(); batchDepth++;
+      let result, failure;
+      try { result = run(); } catch (error) { failure = error; }
+      finally { batchDepth--; }
+      if (!batchDepth) try { invalidate([]); } catch (error) {
+        failure = failure ? new AggregateError([failure, error], "Input publication/notification failed.") : error;
+      }
+      if (failure) throw failure;
+      return result;
+    },
     counts() {
       return { observers: [...resources].filter(resource => resource.kind === "observer").length,
         computed: [...resources].filter(resource => resource.kind === "computed").length,
@@ -271,7 +282,7 @@ export function createTracking(store) {
         subscriptions: [...subscriptions.values()].reduce((sum, set) => sum + set.size, 0) +
           [...resources].reduce((sum, resource) => sum + resource.sources.size, 0) };
     },
-    isBusy: () => active !== null || notifying,
+    isBusy: () => active !== null || notifying || batchDepth > 0,
     dispose() {
       if (disposed) return;
       closing = true;

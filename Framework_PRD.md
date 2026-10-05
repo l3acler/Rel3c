@@ -1,8 +1,8 @@
 
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
-**Status:** Product definition; Phase 0 and Phase A complete. A.1–A.10 lifecycle, transactions, exact reactivity, declarative DOM, keyed lists and scoped clicks implemented and core acceptance verified. B.1–B.3 native events and semantic keyboard/text inputs implemented with Chrome evidence; OS/mobile/cross-browser input qualification remains open. B.4–B.6 priority scheduling and shared-state History/hash routing are implemented. Remaining B–D tasks are planned.
-**Version:** 2.12
+**Status:** Product definition; Phase 0 and Phase A complete. A.1–A.10 lifecycle, transactions, exact reactivity, declarative DOM, keyed lists and scoped clicks implemented and core acceptance verified. B.1–B.3 native events and semantic keyboard/text inputs implemented with Chrome evidence; OS/mobile/cross-browser input qualification remains open. B.4–B.6 priority scheduling and shared-state History/hash routing are implemented. B.7/B.8 state locations and guarded hydration are implemented. Remaining B–D tasks are planned.
+**Version:** 2.13
 **Date:** 5 October 2026
 **Working name:** Undecided
 
@@ -176,7 +176,7 @@ The required contract is atomic publication, exact dependency invalidation, stab
 
 ### State-location extension
 
-Shared/synchronized state was considered as another location, but distributed ownership and conflict resolution require their own design. It is a future research extension, outside the planned single-runtime replay guarantee. Storage writes run after successful commits; a storage failure is reported and does not undo committed in-memory state.
+Shared/synchronized state was considered as another location, but distributed ownership and conflict resolution require their own design. It is a future research extension, outside the planned single-runtime replay guarantee. Storage writes run after successful commits; a storage failure is reported and does not undo committed in-memory state. B.7/B.8 implement explicit top-level field locations, schema/namespace guards, startup input hydration, normal coalesced writes and URL-state synchronization. [ADR 0014](docs/adr/0014-state-locations-hydration.md) defines single-source precedence, format/limits and error/lifecycle behavior; see the [public guide](DOCUMENTATION.md#state-locations-and-hydration) and [evidence](docs/reports/task-B.7-B.8-persistence.md).
 
 ## 5. Determinism and side effects
 

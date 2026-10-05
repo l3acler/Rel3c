@@ -4,9 +4,9 @@
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.12, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.13, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** Phase A complete; Phase B in progress. B.1–B.3 implemented and Chrome-verified; OS/native clipboard/mobile/cross-browser input qualification remains open. B.4–B.6 priorities/routing are implemented and Chrome-verified. B.7/B.8 state locations are next.
+**Current milestone:** Phase A complete; Phase B in progress. B.1–B.3 implemented and Chrome-verified; OS/native clipboard/mobile/cross-browser input qualification remains open. B.4–B.6 priorities/routing are implemented and Chrome-verified. B.7/B.8 state locations are implemented. B.9–B.11 public-contract refinement and auditor verification are next.
 
 ## 1. Purpose and scope
 
@@ -147,8 +147,8 @@ Deliver tested public core exports and a root-runnable example. Pass rollback, a
 - [x] **B.4 — Complete priority scheduling.** Dependencies: A.7. Define immediate, frame, normal, and idle ordering, reentrancy, error handling, and a bounded fairness policy. Acceptance: mixed-lane tests confirm order and normal-work progress under sustained input; idle work cannot control correctness; disposal removes pending work.
 - [x] **B.5 — Design routing and navigation contracts.** Dependencies: A.3, B.1. Decide default History/hash mode, path matching, params/query encoding, base paths, direct-load setup, not-found behavior, and navigation errors. Specify action-requested navigation as a framework-owned post-commit operation so failed actions do not change URL. Acceptance: an ADR defines URL/reactive-state synchronization and modified-click/external-link native behavior before implementation.
 - [x] **B.6 — Implement routing with persistent app ownership.** Dependencies: B.5, A.9. Mount/dispose route views while retaining the application store; process framework links, action navigation, direct load, and browser back/forward. Synchronize URL and reactive route state without feedback loops. Acceptance: two routes update the same state; navigation changes the expected URL/view/state; direct loads and back/forward work; removed routes release handlers and subscriptions.
-- [ ] **B.7 — Specify state locations and hydration precedence.** Dependencies: A.2, B.5. Define explicit memory/session/local/URL field configuration, supported serialization, defaults, precedence, invalid-data handling, namespace/schema versions, and synchronization directions. Coordinate route query and URL-backed state ownership. Acceptance: an ADR resolves conflicting persisted/URL/default values and prevents routing/persistence loops.
-- [ ] **B.8 — Implement state-location adapters.** Dependencies: B.6, B.7, B.4. Hydrate configured fields through a defined initialization/input boundary; queue storage writes after successful commits. Handle quota/access/parse failures without undoing committed memory. Acceptance: reload retains only configured fields; memory-only state resets; failed actions write nothing; storage errors are reported; URL-backed state follows back/forward without loops.
+- [x] **B.7 — Specify state locations and hydration precedence.** Dependencies: A.2, B.5. Define explicit memory/session/local/URL field configuration, supported serialization, defaults, precedence, invalid-data handling, namespace/schema versions, and synchronization directions. Coordinate route query and URL-backed state ownership. Acceptance: an ADR resolves conflicting persisted/URL/default values and prevents routing/persistence loops.
+- [x] **B.8 — Implement state-location adapters.** Dependencies: B.6, B.7, B.4. Hydrate configured fields through a defined initialization/input boundary; queue storage writes after successful commits. Handle quota/access/parse failures without undoing committed memory. Acceptance: reload retains only configured fields; memory-only state resets; failed actions write nothing; storage errors are reported; URL-backed state follows back/forward without loops.
 - [ ] **B.9 — Publish declarations and diagnostics.** Dependencies: 0.8, B.1–B.8. Provide action/payload inference, read-only state, element/event/router types, and clear errors for unsupported values, unknown actions, mutation violations, computed cycles, and list keys. Acceptance: positive/negative TypeScript fixtures pass while plain JavaScript examples remain usable; runtime validation independently catches invalid external data.
 - [ ] **B.10 — Write root documentation and public examples.** Dependencies: B.1–B.9. Replace the placeholder README with the exact root command/URL, folder map, feature status, dependency disclosure, and explanations of the execution model. Add copyable examples for a `div`, nested children/text, ID/class/other attributes, click/scroll/key handling, forms, shared route state, and navigation requested by an action. Acceptance: every example runs through public imports without DOM patches or application-managed listeners; API/lifecycle/storage/browser limitations are documented.
 - [ ] **B.11 — Run the clean-checkout auditor walkthrough.** Dependencies: B.10. Recreate the documented startup using a clean temporary checkout/copy that includes the candidate changes. Build a small routed form/list interface from README instructions, and inspect dependencies/source for independent implementation. Acceptance: setup requires no internal edits or moving files; all general frontend tests and supported-browser checks pass; exact commands/results are recorded.
@@ -250,7 +250,7 @@ This register tracks recorded architecture choices and later open decisions, not
 | Dispatch schema, nested order, failure and no-op behavior | Type fixtures and explicit transition cases | A.3, ADR 0007; implemented experimental contract |
 | Supported browsers and input methods | API support review and native input tests | Initial matrix in 0.9; verified before B release |
 | Router mode and direct-load requirements | URL, base-path, native link and back/forward cases | B.5, ADR 0013; implemented B.6 |
-| Location precedence and URL ownership | Conflicting default/storage/query and loop fixtures | B.7 |
+| Location precedence and URL ownership | Conflicting default/storage/query and loop fixtures | B.7, ADR 0014; implemented B.8 |
 | Scheduler fairness and hidden-tab behavior | Sustained input and pause/catch-up tests | B.4 ADR 0012 implemented; ticks/hidden-tab policy C.3 |
 | Format versions, canonical encoding, checkpoint metadata | Alias round trips and compatibility fixtures | Draft before public API freeze; prove in C.1 |
 | Retention budgets, keyframe interval, oversized snapshot behavior | Byte accounting and eviction workloads | Draft before public API freeze; prove in C.8 |
@@ -717,7 +717,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** B.4–B.6 implemented and verified; see [routing/scheduling report](docs/reports/task-B.4-B.6-routing-scheduling.md). B.7/B.8 state locations are next. B.1–B.3 were committed at user request; B.4–B.6 committed at user request. Phase A exit gate remains verified. See the [core report](docs/reports/task-A.10-core-slice.md). A.8/A.9 were committed at user request; their [report](docs/reports/task-A.8-A.9-keyed-events.md) and [ADR 0010](docs/adr/0010-keyed-scopes-clicks.md) remain historical evidence.
+**Current batch:** B.7/B.8 implemented and verified; B.4–B.6 committed; see [routing/scheduling report](docs/reports/task-B.4-B.6-routing-scheduling.md). B.7/B.8 state locations are implemented; see [persistence report](docs/reports/task-B.7-B.8-persistence.md). B.9–B.11 are next. B.1–B.3 were committed at user request; B.4–B.6 committed at user request. Phase A exit gate remains verified. See the [core report](docs/reports/task-A.10-core-slice.md). A.8/A.9 were committed at user request; their [report](docs/reports/task-A.8-A.9-keyed-events.md) and [ADR 0010](docs/adr/0010-keyed-scopes-clicks.md) remain historical evidence.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -810,3 +810,21 @@ root startup smoke pass. Source fingerprints and limitations are in the report. 
 PRD v2.12 and metadata now describe this behavior. No performance or heap-collection
 claim, persistence, deterministic services, recording/replay or separate demo app
 is included. Next batch is B.7/B.8 state-location design/adapters. B.4–B.6 committed at user request; not pushed.
+
+### B.7/B.8 state locations and hydration — complete (5 October 2026)
+
+Owner: Codex. Baseline: Batch 2 commit 24a0636. ADR 0014 precedes the implementation
+and defines one source per field, namespace/schema envelopes, guarded fallback,
+URL ownership, internal input commits, batching, limits and error cleanup. Runtime
+now restores selected local/session/URL fields before the first view, coalesces
+normal writes after commits, preserves supported graph distinctions and follows
+URL back/forward without feedback. Memory-only values reset on reload. Public
+status/flush APIs, declarations, guide, README, references, PRD v2.13 and a
+root-served public persistence example are current. Verification: 418 runtime,
+292 spike and 15 workload tests; 101 negative type lines and checked JS; 106 Chrome
+checks and root smoke pass. See [evidence](docs/reports/task-B.7-B.8-persistence.md).
+
+No live distributed/cross-tab merging, automatic migrations/unload flushing,
+recording/replay or separate demo app is included. Phase B remains incomplete.
+Next is B.9–B.11 contract/documentation refinement and clean-checkout auditor
+verification. Batch 3 remains uncommitted; Batch 2 was committed at user request.

@@ -11,6 +11,7 @@ import { createEvents } from "./dom/events.js";
 import { createRenderer } from "./dom/renderer.js";
 import { createScheduler } from "./scheduler.js";
 import { ownRouterConfig, createRouter } from "./routing/router.js";
+import { ownPersistenceConfig, createPersistence } from "./persistence/locations.js";
 
 const targets = new WeakMap();
 const emptySchema = createActionSchema()(() => ({}));
@@ -23,6 +24,7 @@ export function createApplication(config, frameworkVersion) {
     "view",
     "onError",
     "router",
+    "persistence",
   ]);
   let { view = options.router === undefined ? () => "" : () => outlet(), onError } = options;
   if (
@@ -34,6 +36,7 @@ export function createApplication(config, frameworkVersion) {
   let reported = new WeakSet();
   let reporting = false;
   let dispatcher;
+  let inputBusy = false;
   function report(error, phase) {
     // Defer callback invocation until the outer dispatch drains committed work.
     if (dispatcher?.isActive()) throw error;
@@ -67,6 +70,7 @@ export function createApplication(config, frameworkVersion) {
   let store;
   let registry;
   let routerConfig;
+  let persistenceConfig;
   try {
     store = createTransactionStore(
       options.initialState === undefined ? {} : options.initialState,
@@ -75,6 +79,8 @@ export function createApplication(config, frameworkVersion) {
       options.schema === undefined ? emptySchema : options.schema,
     );
     routerConfig = options.router === undefined ? null : ownRouterConfig(options.router);
+    persistenceConfig = options.persistence === undefined ? null :
+      ownPersistenceConfig(options.persistence, store.getState(), options.schema?.version ?? emptySchema.version, !!routerConfig);
   } catch (error) {
     report(error, "create");
   }
@@ -94,11 +100,26 @@ export function createApplication(config, frameworkVersion) {
   const tracking = createTracking(store);
   const bindingOwner = Object.freeze({});
   const bind = createBindings(bindingOwner, live);
-  const router = routerConfig ? createRouter(routerConfig, tracking, () => renderer?.schedule(), runLocationInput) : null;
+  const router = routerConfig ? createRouter(routerConfig, tracking, () => renderer?.schedule(), runLocationInput,
+    route => persistence?.location(route)) : null;
   routerConfig = null;
   const scheduler = createScheduler(run => run(), error => {
-    reported = new WeakSet(); report(error, "schedule");
+    reported = new WeakSet(); report(error, error.code?.startsWith("PERSIST_") ? "persistence" : "schedule");
   });
+  const persistence = persistenceConfig ? createPersistence(persistenceConfig, store, router, scheduler,
+    publishInput, withInput) : null;
+  persistenceConfig = null;
+  function withInput(run) {
+    const previous = inputBusy; inputBusy = true;
+    try { return run(); } finally { inputBusy = previous; }
+  }
+  function publishInput(result) {
+    const errors = [];
+    try { tracking.publish(result); } catch (error) { errors.push(error); }
+    try { renderer?.schedule(); } catch (error) { errors.push(error); }
+    if (errors.length === 1) throw errors[0];
+    if (errors.length) throw new AggregateError(errors, "External input notifications failed after commit.");
+  }
   function live() {
     if (status === "disposed" || status === "disposing")
       fail(
@@ -108,6 +129,7 @@ export function createApplication(config, frameworkVersion) {
   }
   function register(list, cleanup) {
     live();
+    if (inputBusy) fail("PERSIST_REENTRANT", "Cannot register lifecycle work from a persistence guard.");
     if (typeof cleanup !== "function")
       fail(
         "CLEANUP_INVALID",
@@ -132,14 +154,17 @@ export function createApplication(config, frameworkVersion) {
   }
   dispatcher = createDispatcher(store, registry, () => {
     live();
-    if (status === "mounting" || reporting || rendering || tracking.isBusy())
+    if (status === "mounting" || inputBusy || reporting || rendering || tracking.isBusy())
       fail(
         "ACTION_REENTRANT",
         "Cannot dispatch during view mounting, reactive reads/notifications or error reporting.",
       );
   }, result => {
     const errors = [];
-    try { tracking.publish(result); } catch (error) { errors.push(error); }
+    try { tracking.batch(() => {
+      tracking.publish(result);
+      persistence?.committed();
+    }); } catch (error) { errors.push(error); }
     try { renderer?.schedule(); } catch (error) { errors.push(error); }
     if (errors.length === 1) throw errors[0];
     if (errors.length) throw new AggregateError(errors, "Notifications/scheduling failed after commit.");
@@ -153,7 +178,7 @@ export function createApplication(config, frameworkVersion) {
     if (!handlingEvent && !reporting && !dispatcher?.isActive()) reported = new WeakSet();
     try {
       live();
-      if (status !== "mounted" || handlingEvent || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
+      if (status !== "mounted" || inputBusy || handlingEvent || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
         fail("EVENT_REENTRANT", "Cannot invoke event handlers during mounting, actions, rendering, reactive reads/notifications or another event/error handler.");
       handlingEvent = true;
       try { return run(); } finally { handlingEvent = false; }
@@ -163,7 +188,7 @@ export function createApplication(config, frameworkVersion) {
     if (!rendering && !reporting && !dispatcher?.isActive() && !tracking.isBusy()) reported = new WeakSet();
     try {
       live();
-      if (status === "mounting" || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
+      if (status === "mounting" || inputBusy || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
         fail("FLUSH_REENTRANT", "Cannot flush during mounting, dispatch, rendering, reactive reads/notifications or error reporting.");
       render(() => renderer?.flush());
     } catch (error) { report(error, "render"); }
@@ -171,6 +196,15 @@ export function createApplication(config, frameworkVersion) {
   function derive(read) {
     live();
     return binding(read, bindingOwner);
+  }
+  function flushPersistence() {
+    if (!reporting && !dispatcher?.isActive() && !handlingEvent) reported = new WeakSet();
+    try {
+      live();
+      if (status === "mounting" || inputBusy || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
+        fail("PERSIST_REENTRANT", "Cannot flush persistence during active runtime work.");
+      persistence?.flush();
+    } catch (error) { report(error, "persistence"); }
   }
   function makeContext(addCleanup, isActive) {
     const scheduled = new Set();
@@ -203,6 +237,7 @@ export function createApplication(config, frameworkVersion) {
       },
       onDispose(cleanup) {
         scopeLive();
+        if (inputBusy) fail("PERSIST_REENTRANT", "Cannot register view cleanup from a persistence guard.");
         if (typeof cleanup !== "function") fail("CLEANUP_INVALID", "onDispose requires a synchronous cleanup function.");
         addCleanup(cleanup);
       },
@@ -229,10 +264,12 @@ export function createApplication(config, frameworkVersion) {
   }
   function observe(read, notify) {
     live();
+    if (inputBusy) fail("REACTIVITY_REENTRANT", "Cannot register observers from a persistence guard.");
     return tracking.observe(read, notify);
   }
   function computed(read) {
     live();
+    if (inputBusy) fail("REACTIVITY_REENTRANT", "Cannot register computed values from a persistence guard.");
     return tracking.computed(read);
   }
   function dispatch(...args) {
@@ -253,7 +290,7 @@ export function createApplication(config, frameworkVersion) {
     if (!handlingEvent && !reporting && !dispatcher?.isActive()) reported = new WeakSet();
     try {
       live();
-      if (dispatcher.isActive() || (rendering && lane === "immediate") || reporting || tracking.isBusy() ||
+      if (inputBusy || dispatcher.isActive() || (rendering && lane === "immediate") || reporting || tracking.isBusy() ||
           (lane === "immediate" && status === "mounting"))
         fail("SCHEDULE_REENTRANT", "Cannot schedule during actions, rendering, reactive/error work or immediate view construction.");
       return scheduler.schedule(lane, callback, active);
@@ -267,7 +304,7 @@ export function createApplication(config, frameworkVersion) {
     try {
       live();
       if (!router) fail("ROUTER_MISSING", "Configure a router before navigating.");
-      if (status !== "mounted" || rendering || reporting || tracking.isBusy() ||
+      if (status !== "mounted" || inputBusy || rendering || reporting || tracking.isBusy() ||
           (dispatcher.isActive() && !dispatcher.isExecuting()))
         fail("NAVIGATION_REENTRANT", "Navigation requires a mounted app outside reactive/render/error work or payload admission.");
       const request = router.prepare(to, options);
@@ -282,7 +319,7 @@ export function createApplication(config, frameworkVersion) {
     if (status !== "mounted") return;
     reported = new WeakSet();
     try {
-      if (rendering || reporting || dispatcher.isActive() || tracking.isBusy())
+      if (inputBusy || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
         fail("NAVIGATION_REENTRANT", "Cannot process native navigation during active runtime work.");
       run();
     } catch (error) { report(error, "navigation"); }
@@ -314,6 +351,11 @@ export function createApplication(config, frameworkVersion) {
     actions,
     dispatch,
     flush,
+    flushPersistence,
+    get persistence() {
+      live();
+      return persistence?.status ?? Object.freeze({ active: false, pending: false, errors: Object.freeze([]) });
+    },
     schedule,
     navigate, link, outlet,
     get route() { live(); return router?.route ?? null; },
@@ -342,7 +384,7 @@ export function createApplication(config, frameworkVersion) {
     mount(mountTarget = defaultTarget) {
       try {
         live();
-        if (dispatcher.isActive() || rendering || tracking.isBusy())
+        if (inputBusy || dispatcher.isActive() || rendering || tracking.isBusy())
           fail(
             "LIFECYCLE_REENTRANT",
             "Cannot mount during action dispatch or payload validation.",
@@ -373,7 +415,10 @@ export function createApplication(config, frameworkVersion) {
       const context = makeContext(cleanup => register(attemptCleanups, cleanup),
         () => mountCleanups === attemptCleanups && ["mounting", "mounted"].includes(status));
       try {
-        router?.start(target.ownerDocument.defaultView);
+        tracking.batch(() => {
+          router?.start(target.ownerDocument.defaultView);
+          persistence?.start(target.ownerDocument.defaultView);
+        });
         events = createEvents(target, runEvent);
         renderer = createRenderer(target.ownerDocument, tracking, bindingOwner, makeContext, render, error => {
           reported = new WeakSet();
@@ -391,6 +436,7 @@ export function createApplication(config, frameworkVersion) {
         // Invalidate the failed view scope before running its cleanup hooks.
         mountCleanups = [];
         const cleanupErrors = [];
+        try { persistence?.stop(); } catch (error) { cleanupErrors.push(error); }
         try { router?.stop(); } catch (error) { cleanupErrors.push(error); }
         try { events?.dispose(); } catch (error) { cleanupErrors.push(error); }
         events = null;
@@ -422,7 +468,7 @@ export function createApplication(config, frameworkVersion) {
     },
     dispose() {
       if (status === "disposed" || status === "disposing") return;
-      if (status === "mounting" || dispatcher.isActive() || rendering || tracking.isBusy())
+      if (status === "mounting" || inputBusy || dispatcher.isActive() || rendering || tracking.isBusy())
         report(
           new FrameworkError(
             "LIFECYCLE_REENTRANT",
@@ -435,6 +481,7 @@ export function createApplication(config, frameworkVersion) {
       // and accidentally notify other resources in this closing application.
       const errors = [];
       try { scheduler.dispose(); } catch (error) { errors.push(error); }
+      try { persistence?.dispose(); } catch (error) { errors.push(error); }
       tracking.dispose();
       try { router?.dispose(); } catch (error) { errors.push(error); }
       try { events?.dispose(); } catch (error) { errors.push(error); }
@@ -470,6 +517,7 @@ export function createApplication(config, frameworkVersion) {
   });
   registerDiagnostics(app, () => ({ ...tracking.counts(),
     ...scheduler.counts(),
+    ...(persistence?.counts() ?? { persistenceTasks: 0 }),
     ...(router?.counts() ?? { routeListeners: 0 }),
     ...(renderer?.counts() ?? { scopes: 0, bindings: 0, ownedNodes: 0, queuedBindings: 0, frames: 0 }),
     ...(events?.counts() ?? { handlers: 0, listeners: 0 }) }));

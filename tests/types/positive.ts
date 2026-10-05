@@ -121,3 +121,14 @@ const cancel: () => void = routed.schedule('idle', () => {}); cancel();
 routed.schedule('frame', () => {}); routed.schedule('immediate', routed.actions.increment);
 routed.navigate('/people/7?tab=a', { replace: true });
 const current: RouteSnapshot | null = routed.route; void current;
+
+// B.7/B.8 field names and validator inputs stay typed.
+const persisted = createApp({ initialState: { count: 0, filter: '' }, router: { mode: 'hash', routes: [] },
+  persistence: { namespace: 'type-test', version: '1', fields: {
+    count: { location: 'local', validate: value => typeof value === 'number' },
+    filter: { location: 'url', key: 'q', validate: value => typeof value === 'string' },
+  } } });
+persisted.flushPersistence();
+const pending: boolean = persisted.persistence.pending;
+const issues: readonly import('mini-framework').PersistenceIssue[] = persisted.persistence.errors;
+void pending; void issues;

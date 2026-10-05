@@ -4,7 +4,7 @@
  * Public Entry Point
  *
  * A.1–A.9 implement lifecycle, COW actions, exact reactivity and frame-batched DOM.
- * B.1–B.6 add native/semantic events, priorities and shared-state routing.
+ * B.1–B.8 add events, priorities, shared-state routing and state locations.
  * A.10 verifies the integrated Phase A core through public imports.
  */
 
@@ -23,7 +23,7 @@ export const VERSION = "0.1.0";
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "B.4–B.6 - Priorities and Shared-State Routing",
+  phase: "B.7–B.8 - State Locations and Hydration",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
     "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
@@ -34,7 +34,8 @@ export const FRAMEWORK_INFO = Object.freeze({
     "STATE-1: Property-level observers, dynamic dependency tracking and shared state across routes (implemented A.4/B.6)",
     "ACTION-1: Synchronous transactional named actions (implemented A.3; reactive observers implemented A.4)",
     "ROUTE-1: History/hash routing, reactive location, native links and shared state (implemented B.5/B.6)",
-    "EVENT-3: Immediate/frame/normal/idle work with bounded cooperative turns (implemented B.4)",
+    "SCHED-2: Immediate/frame/normal/idle work with bounded cooperative turns (implemented B.4)",
+    "PERSIST-1: Explicit memory/session/local/URL fields, guarded hydration and post-commit writes (implemented B.7/B.8)",
     "EVENT-1: Scoped native events, options and compatible zero-argument clicks (implemented B.1)",
     "EVENT-2: Semantic keyboard/text inputs and composition-safe bindings (implemented B.2/B.3; OS/mobile/cross-browser qualification and replay remain open)",
     "Phase A: Public click/action/binding/list/cleanup acceptance verified (A.10)",

@@ -12,7 +12,7 @@ action changes neither state nor URL. Normal work queues a notice in a timer tas
 Direct entry/reload at
 http://localhost:3000/examples/routes/people/Ada?tab=details works through the
 root server's explicit History fallback. HTML uses an absolute module path.
-Reload creates a fresh memory store; persistence remains unimplemented.
+Reload creates a fresh memory store; this example uses memory-only state. Use /examples/persistence/ for configured restoration.
 
 The optional shell stays mounted around one outlet. Routes dispose subscriptions,
 events and context-scheduled tasks on replacement. Modifier clicks and keyboard

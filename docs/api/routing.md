@@ -31,7 +31,9 @@ frozen arrays preserving duplicate values; serialized search/hash; native url
 (pathname/search/hash); matched/outsideBase booleans. Params/query use null-prototype
 records. Reads inside derive/observe/computed track the whole location snapshot;
 capturing a plain snapshot does not create live text. User-state dependencies
-remain exact and independent. Navigation does not advance stateVersion.
+remain exact and independent. Location-only navigation does not advance stateVersion. Configured URL-backed
+fields hydrate through a separate input commit; batched notifications see matching
+route/state. See [persistence](persistence.md).
 
 Absolute app paths prepend History base; relative/query/fragment references resolve
 against the route current at admission. Full URLs must remain same-origin, within
@@ -76,7 +78,8 @@ phase navigation. Action failures propagate through dispatch, or event when call
 by a native handler. Outlet errors use render; initial errors use mount. Hooks
 report and rethrow rather than swallowing errors.
 
-Nested outlets, loaders, async guards, automatic focus/scroll policies, URL-backed
-state fields, storage and recorded/replayed navigation are unimplemented. State
-survives route changes; reload creates a fresh app from defaults. Browser
+Nested outlets, loaders, async guards and automatic focus/scroll policies remain
+unimplemented. URL-backed state fields and storage are implemented in B.7/B.8;
+recorded/replayed navigation remains unimplemented. State
+survives route changes; reload creates a fresh app with configured field hydration and memory defaults. Browser
 qualification remains Chrome-only. Decision: [ADR 0013](../adr/0013-routing-navigation.md).

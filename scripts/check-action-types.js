@@ -10,7 +10,7 @@ const directory = path.join(root, 'spikes/action-schema/types');
 const publicDirectory = path.join(root, 'tests/types');
 const files = [...['positive.ts', 'negative.ts', 'javascript.js'].map(file => path.join(directory, file)),
   ...['positive.ts', 'negative.ts'].map(file => path.join(publicDirectory, file)),
-  ...['examples/basic/main.js', 'examples/core/app.js', 'examples/core/main.js', 'examples/inputs/main.js', 'examples/routes/main.js'].map(file => path.join(root, file))];
+  ...['examples/basic/main.js', 'examples/core/app.js', 'examples/core/main.js', 'examples/inputs/main.js', 'examples/routes/main.js', 'examples/persistence/main.js'].map(file => path.join(root, file))];
 const negatives = new Map([directory, publicDirectory].map(dir => {
   const file = path.join(dir, 'negative.ts'); return [file, fs.readFileSync(file, 'utf8')];
 }));

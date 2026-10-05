@@ -50,7 +50,7 @@ export function ownRouterConfig(raw) {
   return Object.freeze({ mode, base, routes: Object.freeze(routes), notFound: config.notFound ?? (() => 'Not found') });
 }
 
-export function createRouter(config, tracking, schedule, receive) {
+export function createRouter(config, tracking, schedule, receive, onLocation = () => {}) {
   const cell = tracking.cell(null);
   let view = null, origin = null, documentURL = null, disposed = false, listener = null, generation = 0;
   const withinBase = path => config.base === '/' || path === config.base || path.startsWith(config.base + '/');
@@ -84,9 +84,12 @@ export function createRouter(config, tracking, schedule, receive) {
       url: url.pathname + url.search + url.hash, matched: match >= 0, outsideBase });
     return { route, match, key: JSON.stringify([match, path, outsideBase]) };
   }
-  function publish(next) {
+  function publish(next, hydrate = true) {
     if (cell.value?.route.url === next.route.url) return;
-    try { tracking.updateCells([[cell, Object.freeze(next)]]); }
+    try { tracking.batch(() => {
+      tracking.updateCells([[cell, Object.freeze(next)]]);
+      if (hydrate) onLocation(next.route);
+    }); }
     finally { schedule(); }
   }
   function mounted() { if (!view || disposed) fail('ROUTER_NOT_MOUNTED', 'Navigation requires a mounted router.'); }
@@ -158,12 +161,24 @@ export function createRouter(config, tracking, schedule, receive) {
       if (options.replace !== undefined && typeof options.replace !== 'boolean') fail('ROUTE_OPTIONS_INVALID', 'replace requires a boolean.');
       return Object.freeze({ ...resolve(to), replace: options.replace === true });
     },
-    commit(request) {
+    commit(request, hydrate = true) {
       mounted();
       if (cell.value.route.url === request.url) return;
       try { view.history[request.replace ? 'replaceState' : 'pushState'](view.history.state, '', request.url); }
       catch (cause) { throw new FrameworkError('ROUTE_HISTORY_FAILED', 'Native history write failed; route state remains unchanged.', { cause }); }
-      publish(request.next);
+      publish(request.next, hydrate);
+    },
+    prepareQuery(updates) {
+      mounted();
+      const current = new URL(cell.value.route.url, origin);
+      const routeURL = config.mode === 'hash' ? new URL(current.hash.slice(1) || '/', origin) : current;
+      for (const [key, value] of updates) {
+        if (value === null) routeURL.searchParams.delete(key);
+        else routeURL.searchParams.set(key, value);
+      }
+      if (config.mode === 'hash') current.hash = routeURL.pathname + routeURL.search + routeURL.hash;
+      if (current.pathname + current.search + current.hash === cell.value.route.url) return null;
+      return Object.freeze({ ...resolve(current.href), replace: true });
     },
     href(to) {
       mounted();

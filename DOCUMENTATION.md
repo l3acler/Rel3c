@@ -2,7 +2,7 @@
 
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
-application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.6 add native events, semantic keyboard/text inputs, cooperative priority lanes and History/hash routing with one shared application store. APIs remain experimental and browser qualification is limited.
+application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.8 add native events, semantic keyboard/text inputs, cooperative priority lanes and History/hash routing with one shared application store, plus guarded memory/session/local/URL state locations. APIs remain experimental and browser qualification is limited.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -22,13 +22,14 @@ Import from `src/index.js`; applications do not need runtime internals.
 | Render frames         | Deduplicated latest-value writes, cancelled disposed work and explicit`app.flush()`          |
 | Priority work         | Immediate/frame/normal/idle lanes with cancellation and bounded FIFO turns                      |
 | Routing               | History/hash URLs, params/query, native links, scoped outlets and shared state across routes    |
+| State locations       | Guarded startup hydration, post-commit session/local writes and URL-backed fields             |
 | Error reporting       | Readable framework error codes and a synchronous application error hook                        |
 | TypeScript            | Inferred action names/payloads and read-only state declarations                                |
 
 Views construct their static tree once per mount; explicit bindings update affected
 text, attributes, classes and styles on render frames after committed actions. Conditional factories
 run when their selected boolean branch changes. Native events, keyboard and text editing
-are implemented alongside routing and priorities; persistence, controlled services, recording and
+are implemented alongside routing, priorities and state locations; controlled services, recording and
 replay remain unimplemented. Broad browser/OS IME qualification remains open.
 
 ## Start from the project root
@@ -109,7 +110,7 @@ called; `app.mount(element)` uses a custom DOM Element. Passing `target` to
 `createApp` mounts immediately. Invalid explicit targets do not fall back to `#app`.
 A missing target/document rejects clearly, and the app may retry later.
 
-Config supports only `initialState`, `schema`, `view`, `target`, `onError` and `router`.
+Config supports only `initialState`, `schema`, `view`, `target`, `onError`, `router` and `persistence`.
 Defaults are `{}` state, an empty schema and an empty text view; with a router, the default view is an outlet. Unknown options
 and accessor configuration properties reject. Inline `actions` and `seed`
 configuration are not implemented.
@@ -435,8 +436,7 @@ cleanup and disposal also pass. These are correctness observations, not a perfor
 or heap-collection claim. See [core acceptance evidence](docs/reports/task-A.10-core-slice.md).
 
 The API stays experimental. B.1–B.3 now add native events and keyboard/text
-synchronization. B.4–B.6 add priority work and shared-state routing. Remaining Phase B work includes state
-locations and the auditor acceptance gate; Phase C adds deterministic services and replay.
+synchronization. B.4–B.6 add priority work and shared-state routing. B.7/B.8 add guarded state locations. Remaining Phase B work includes declaration/documentation refinement and the auditor acceptance gate; Phase C adds deterministic services and replay.
 
 ## Render frames and explicit flush
 
@@ -557,7 +557,7 @@ The runnable History-mode example is
 It includes two routes, a shared counter, semantic text editing, form submission
 that navigates after commit, rollback and normal scheduled work. Its server fallback
 also supports direct entry and reload at `/examples/routes/people/Ada?tab=details`.
-Reload creates a new store from defaults; route sharing does not imply persistence.
+This routes example uses memory-only state, so reload creates a new store from defaults. Configure state locations below to restore selected fields.
 
 Configure `router: { mode?, base?, routes, notFound? }`. Default mode is `history`
 and base is `/`. History hosts must serve the same HTML/module page at deep URLs;
@@ -584,7 +584,7 @@ expose matching. Route is null before mount or without a router. Route-view cont
 has a route at construction. Read route inside `derive`, `observe` or `computed`
 to react; capturing a snapshot in static text does not update it. Route dependencies
 track the entire location snapshot, independently of exact user-state properties.
-Location changes do not increment `stateVersion` or mutate user state.
+Location alone does not increment `stateVersion` or mutate user state. Configured URL-backed fields hydrate through a separate state input when their values change.
 
 `app.navigate(to, { replace?: boolean })` accepts absolute application paths,
 relative/query/fragment references, or full same-origin URLs within the router's
@@ -621,7 +621,7 @@ DOM for retry with `app.flush()` while URL/route stay committed. Cleanup errors
 report the completed replacement. One active outlet is supported
 (`ROUTE_OUTLET_DUPLICATE`); an outlet without configuration rejects `ROUTER_MISSING`.
 Nested/multiple outlets, loaders, async navigation guards, automatic focus/scroll
-policies, persistence and recorded navigation/replay are not implemented.
+policies and recorded navigation/replay are not implemented. State-location configuration is described below.
 
 `context.link(to, props?, ...children)` or `app.link` creates a native anchor with
 owned href/click handling. Use it during mounted view construction; an unmounted
@@ -633,6 +633,143 @@ Other attributes/events are supported; href/onClick/on.click overrides reject
 `ROUTE_LINK_INVALID`. Ordinary `a` descriptors remain native links. No app-owned
 listeners or DOM patching are needed. See [routing reference](docs/api/routing.md)
 and decisions [0012](docs/adr/0012-priority-scheduling.md)/[0013](docs/adr/0013-routing-navigation.md).
+
+## State locations and hydration
+
+Configure selected top-level fields with `persistence: { namespace, version?, fields }`.
+Every unconfigured field stays in memory. One field has one location; persist a
+nested object/array by configuring its top-level owner. Validators accept owned,
+deeply frozen values and must synchronously return exactly true.
+
+```js
+import { createApp, createActionSchema, div, button, input } from './src/index.js';
+const schema = createActionSchema()(({ action }) => ({
+  increment: action(draft => { draft.count++; draft.temp++; }),
+  search: action(value => typeof value === 'string', (draft, value) => { draft.search = value; }),
+}));
+const app = createApp({
+  initialState: { count: 0, draft: '', search: '', temp: 0 }, schema,
+  persistence: { namespace: 'my-app', version: '1', fields: {
+    count: { location: 'local', validate: value => typeof value === 'number' && Number.isFinite(value) },
+    draft: { location: 'session', validate: value => typeof value === 'string' },
+    search: { location: 'url', key: 'q', validate: value => typeof value === 'string' },
+    temp: { location: 'memory' },
+  } },
+  router: { mode: 'hash', routes: [{ path: '/', view: ({ bind, actions }) => div(
+    bind.count, ' memory: ', bind.temp,
+    button({ type: 'button', onClick: actions.increment }, 'Increment'),
+    input({ value: bind.search, onText: value => actions.search(value.value) })) }] },
+  onError: (error, { phase }) => console.error(phase, error),
+});
+app.mount(); // Restore selected external values before the first view.
+app.actions.increment(); // Commit now; coalesce storage writes into a normal task.
+app.flushPersistence(); // Write/report pending persistence work synchronously.
+```
+
+Open [http://localhost:3000/examples/persistence/](http://localhost:3000/examples/persistence/)
+for local count, session note, URL filter, memory count, rollback and navigation.
+Reload retains configured fields and resets the memory count. Use local fields for
+preferences/data shared by the browser's storage area, session for a tab's draft,
+and URL for shareable history-entry state. The framework does not synchronize
+live local/session state between apps/tabs or listen to storage events.
+
+Namespaces must start with a letter and contain 1–64 letters, digits, dots,
+underscores or hyphens. Version is a nonempty string of at most 128 characters,
+defaulting to the action-schema version. `fields` is a plain/null-prototype record
+of at most 64 existing root fields. Persistence requires a plain/null-prototype
+object state root, although ordinary framework apps still support array roots.
+Locations are `memory`, `session`, `local`, `url`. Nonmemory fields require
+`validate(value): boolean`; optional `key` is URL-only (1–64 characters without
+controls). URL keys must be unique and URL fields require a router. Unknown options,
+missing fields, accessors, duplicate keys, unsupported locations and invalid default
+values reject at creation. Memory entries have no validator/key. Types reject
+unknown fields, async guards and inappropriate options; runtime guards still
+establish value/schema compatibility.
+
+There are no storage reads at creation. Mount samples browser values outside
+application actions, validates them and applies accepted changes in one internal
+input transaction before constructing the view. For session/local fields, a valid
+stored field overrides current memory; missing/invalid values retain current
+memory, including actions run before mounting. For URL fields, a valid value wins;
+missing/invalid values use captured initial defaults. Each field has one external
+source, so a local field ignores URL/session values and a URL field ignores local
+storage. There is no automatic migration or cross-location fallback. Wrong
+namespace/version, malformed/oversized wire and false/throwing/async guards fall
+back and queue error reporting. If accepted projections collectively exceed the
+state graph/scratch limits, the entire input rolls back and retains previous memory.
+Mount does not repair or write external data merely because it was invalid.
+
+Hydration commits one state version when its projection differs canonically and
+none when unchanged. These are framework input commits, separate from named
+application actions; no hydration action appears in `actionNames`. A failed view
+mount does not undo already committed hydration, but cancels its pending tasks and
+permits retry. Native location and URL field publication are batched so observers
+see synchronized route/state. State-to-URL action publication is also batched.
+Object fields in a changed location projection are assigned together to preserve
+aliases, so hydration can replace their identities; memory-only properties retain
+ordinary exact dependency tracking.
+
+Session/local each own one key, `mini-framework:<namespace>:<area>`, storing only
+that area's selected fields with namespace/version metadata. The production graph
+format `mini-framework-persistence-graph` version 1 preserves supported finite
+values, undefined, negative zero, array holes/custom properties, null prototypes
+and acyclic aliases. Aliases within one area survive hydration; different locations
+are separate graphs and do not preserve cross-location aliases. This is not the
+future checkpoint/replay format. Each encoded bucket or URL value is limited to
+262,144 UTF-8 bytes, 10,000 nodes, 100,000 entries/array slots and 128 levels;
+projection/envelope overhead counts. Unsupported/cyclic values reject. Version
+mismatch retains defaults/current memory until a later successful action writes
+the new version. Other namespaces remain untouched.
+
+URL fields own namespaced query keys `mf:<namespace>:<key>`, carrying one encoded
+field envelope. History mode uses native query; hash mode uses the route query
+inside `#`. Ordinary route/query entries and fragments are preserved. Duplicate
+owned query entries are invalid. The resolved URL remains subject to the router's
+8,192-character limit. The framework builds these values from state; applications
+can use the public route's `search` to retain its current query when navigating.
+
+A successful mounted action writes URL fields with `replaceState`, adding no
+history entry, and queues one normal storage task. Several commits coalesce into
+a latest-state write; unchanged serialized storage avoids repeat setters. Default
+URL values remove their owned keys. State-to-URL writes do not feed back into
+hydration. A throwing action writes/schedules nothing. Session/local are read at
+mount only; changing routes does not reread them.
+
+A navigation's query becomes authoritative for URL fields: entering a route without
+an owned key resets that field to its initial default. Action-requested navigation
+still runs after its successful commit and before queued children; resulting URL
+hydration can add a separate state version. Back/forward restores URL state without
+rewriting history. Quota/access/encoding/history failures preserve committed memory,
+attempt other eligible areas and report errors; earlier successful effects remain.
+Fields mutated by actions are validated for persistence afterward, so an invalid
+committed field can remain in memory while its write fails.
+
+`app.flushPersistence()` takes no arguments, returns undefined, cancels its normal
+task and synchronously drains pending writes/reports. It is a no-op without pending
+work and before mount; `app.flush()` remains a separate visual/frame boundary.
+Flush rejects during actions, input/guard processing, mounting, rendering, reactive
+reads/notifications and error hooks (`PERSIST_REENTRANT`), and after disposal.
+Guards must be pure; detected action/navigation/scheduling/lifecycle/reactive work
+from guards rejects. `app.persistence` is a frozen, nonreactive snapshot with
+`active`, `pending` and `errors` (latest 16 frozen code/source/field/message summaries).
+Pending reports also retain at most 16 errors, reporting how many older errors were
+omitted. Status reads do not create reactive subscriptions.
+
+Recoverable hydration problems allow mounting with fallback values and queue a
+normal error report. `onError(error, { phase: 'persistence' })` observes the report
+or write failure after healthy work; explicit flush throws and automatic tasks
+throw to the browser. A hook does not swallow failures. `PERSIST_FAILED` aggregates
+underlying format/version/read/value/URL/input/write errors, whose summaries remain
+available through `app.persistence.errors`. Without a hook, task errors still surface.
+Mixed scheduler failures may aggregate under phase `schedule`. Disposal cancels
+pending tasks/reports, releases browser/config references and leaves stored data
+intact. It does not flush automatically: call `flushPersistence()` before explicit
+disposal when its pending write must complete.
+
+Nested field paths, multi-location precedence chains, migration APIs, automatic
+unload flushing, live cross-tab merging and recorded/replayed persistence inputs
+remain unimplemented. See [persistence reference](docs/api/persistence.md) and
+[ADR 0014](docs/adr/0014-state-locations-hydration.md).
 
 ## State and named actions
 
@@ -866,7 +1003,7 @@ disposal still completes and then throws an AggregateError. Hooks must be
 synchronous, and disposed view scopes reject new registrations.
 
 An optional synchronous `onError(error, { phase })` observes creation, mounting,
-dispatch, native event, rendering, scheduled work, navigation and disposal failures without swallowing them. For a dispatch batch it
+dispatch, native event, rendering, scheduled work, navigation, persistence and disposal failures without swallowing them. For a dispatch batch it
 runs once after draining, when committed state is complete. If the hook also
 throws, its failure aggregates with the original. It cannot dispatch recovery
 work; the caller can catch the outer error and dispatch afterward. Unknown
@@ -916,7 +1053,8 @@ npm run test:types
 Browser checks require installed Chrome. Type checks require the development-only
 TypeScript installation; startup and Node tests do not. For the full reference,
 see [application API](docs/api/application.md). For current validation results,
-see [B.4–B.6 routing/scheduling evidence](docs/reports/task-B.4-B.6-routing-scheduling.md),
+see [B.7/B.8 state-location evidence](docs/reports/task-B.7-B.8-persistence.md),
+[B.4–B.6 routing/scheduling evidence](docs/reports/task-B.4-B.6-routing-scheduling.md),
 [B.1–B.3 input evidence](docs/reports/task-B.1-B.3-inputs.md) and
 [A.10 core evidence](docs/reports/task-A.10-core-slice.md). The
 [README](README.md) provides repository structure, feature status and the remaining

@@ -3,6 +3,13 @@ export function fakeBrowser(url = 'https://example.test/app/') {
   const document = fakeDocument(), view = document.defaultView;
   const entries = [{ url: new URL(url), state: { host: true } }]; let index = 0;
   const timers = new Map(), idle = new Map(); let next = 1;
+  const storage = () => {
+    const data = new Map(), writes = [];
+    return { data, writes, getItem: key => data.get(key) ?? null,
+      setItem(key, value) { writes.push([key, value]); data.set(key, String(value)); },
+      removeItem: key => data.delete(key) };
+  };
+  view.sessionStorage = storage(); view.localStorage = storage();
   const location = {};
   for (const key of ['href', 'pathname', 'search', 'hash', 'origin']) Object.defineProperty(location, key, { get: () => entries[index].url[key] });
   view.location = location;

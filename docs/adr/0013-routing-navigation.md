@@ -70,3 +70,11 @@ remains a separate release gate.
 
 Standards: [HTML History](https://html.spec.whatwg.org/multipage/nav-history-apis.html#the-history-interface)
 and [DOM events](https://dom.spec.whatwg.org/#interface-event).
+
+## B.7/B.8 follow-up
+
+Configured URL fields use owned namespaced query entries and input transactions.
+Location/input notifications are batched; state-to-URL replace does not feed back.
+Location alone still changes no user-state version; URL field input can add one.
+Default routes without persistence retain this ADR's original behavior. See
+[ADR 0014](0014-state-locations-hydration.md).

@@ -1,4 +1,4 @@
-/** Experimental public runtime including native inputs, priorities and routing (B.1–B.6). */
+/** Experimental public runtime including inputs, routing, priorities and state locations (B.1–B.8). */
 export const VERSION: string;
 export interface FrameworkInfo {
   readonly name: string; readonly version: string; readonly phase: string;
@@ -36,7 +36,7 @@ export function createActionSchema<S extends object = Record<string, unknown>>(o
 type ArgsOf<T> = T extends ActionSpec<unknown, infer Args> ? Args : never;
 type DispatchArgs<D> = { [K in keyof D & string]: [name: K, ...ArgsOf<D[K]>] }[keyof D & string];
 export type AppStatus = 'created' | 'mounting' | 'mounted' | 'disposing' | 'disposed';
-export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' | 'schedule' | 'navigation';
+export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' | 'schedule' | 'navigation' | 'persistence';
 type Cleanup<F extends () => unknown> = F & Sync<F>;
 export interface Observer<T> {
   /** Rerun the read and replace its dependency set. */
@@ -199,6 +199,21 @@ export interface AppConfig<S extends object, D extends Definitions<S> = {}> {
   readonly view?: (context: ViewContext<S, D>) => Child | void;
   readonly onError?: (error: Error, info: Readonly<{ phase: ErrorPhase }>) => void;
   readonly router?: RouterConfig<S, D>;
+  readonly persistence?: PersistenceConfig<S>;
+}
+export type PersistenceField =
+  | Readonly<{ location: 'memory'; validate?: never; key?: never }>
+  | Readonly<{ location: 'session' | 'local'; validate: (value: unknown) => boolean; key?: never }>
+  | Readonly<{ location: 'url'; validate: (value: unknown) => boolean; key?: string }>;
+export interface PersistenceConfig<S> {
+  readonly namespace: string; readonly version?: string;
+  readonly fields: { readonly [K in keyof S]?: PersistenceField };
+}
+export interface PersistenceIssue {
+  readonly code: string; readonly source: string; readonly field: string | null; readonly message: string;
+}
+export interface PersistenceStatus {
+  readonly active: boolean; readonly pending: boolean; readonly errors: readonly PersistenceIssue[];
 }
 export interface AppInstance<S extends object, D extends Definitions<S> = {}> extends ViewContext<S, D> {
   readonly version: string; readonly stateVersion: number; readonly schemaVersion: string;
@@ -206,6 +221,8 @@ export interface AppInstance<S extends object, D extends Definitions<S> = {}> ex
   readonly status: AppStatus; readonly mounted: boolean;
   /** Cancel the pending frame and apply latest dirty bindings synchronously. */
   flush(): void;
+  flushPersistence(): void;
+  readonly persistence: PersistenceStatus;
   /** Without a target, resolves #app at mount time (or uses the configured target). */
   mount(target?: Element): AppInstance<S, D>;
   dispose(): void;

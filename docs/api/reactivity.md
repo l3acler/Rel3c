@@ -115,7 +115,10 @@ conditional child scopes own their observers/computed values. See [DOM API](dom.
 Keyed item scopes, native/input handlers and routed views use this cleanup graph.
 Route reads track an independent location snapshot; ordinary state stays exact.
 Context-scheduled work cancels on unmount; see [routing](routing.md) and
-[scheduling](scheduling.md). Recording/replay remain unimplemented. State/type/transaction
+[scheduling](scheduling.md). Persistence inputs batch state/location invalidation so callbacks see synchronized
+values. Object projection hydration may replace configured identities to preserve
+within-area aliases; memory properties stay exact. See [persistence](persistence.md).
+Recording/replay remain unimplemented. State/type/transaction
 limits are unchanged. The coordinator indexes the current graph on commits and
 stores live subscriptions; this is correctness evidence, not a measured performance
 improvement or heap leak proof.

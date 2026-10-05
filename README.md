@@ -22,7 +22,7 @@ framework addition or change.
 
 ## Overview & Purpose
 
-`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and Phase A (A.1–A.10) are complete: lifecycle, transactions, named dispatch, exact dependencies, computed values, declarative DOM, keyed lists and scoped clicks. B.1–B.6 add native/semantic events, cooperative priority work and shared-state History/hash routing. Remaining Phase B tasks are planned; deterministic services and replay remain Phase C tasks.
+`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and Phase A (A.1–A.10) are complete: lifecycle, transactions, named dispatch, exact dependencies, computed values, declarative DOM, keyed lists and scoped clicks. B.1–B.8 add native/semantic events, cooperative priorities, shared-state History/hash routing and guarded state locations. Remaining Phase B tasks are planned; deterministic services and replay remain Phase C tasks.
 
 The runtime implements named transactions and frame-batched reactive rendering.
 Deterministic simulation services remain planned:
@@ -84,12 +84,13 @@ Deterministic simulation services remain planned:
 - **Phase B — General frontend (In progress; experimental API)**:
   - **B.1–B.3**: Native event maps/options, semantic keys/held/reset, native text snapshots and composition-safe bindings. See [input contracts](DOCUMENTATION.md#native-events-keyboard-and-text-editing) and [evidence](docs/reports/task-B.1-B.3-inputs.md). OS IMEs, clipboard paste and broad browser qualification remain open.
   - **B.4–B.6**: Bounded priority lanes and History/hash routing with native links, post-commit navigation and one shared store. See [routing and scheduling](docs/reports/task-B.4-B.6-routing-scheduling.md).
-  - **Next: B.7/B.8** state-location contracts and adapters; Phase B acceptance is pending.
+  - **B.7/B.8**: Memory/session/local/URL field configuration, validated hydration, coalesced post-commit writes and URL history synchronization. See [persistence guide](DOCUMENTATION.md#state-locations-and-hydration).
+  - **Next: B.9–B.11** declaration/documentation refinement and the clean-checkout auditor gate; Phase B acceptance is pending.
 
-Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Declarative elements, bindings, native events and semantic keyboard/text inputs are implemented. Routing and priorities are implemented; persistence, controlled services, recording and replay remain future work.
+Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Declarative elements, bindings, native events and semantic keyboard/text inputs are implemented. Routing and priorities are implemented; state locations are implemented; controlled services, recording and replay remain future work.
 
 > [!NOTE]
-> Phase A's core gate passes. B.1–B.6 implement events/editing, routing and priorities with Chrome evidence; broad browser/OS input qualification remains open. Phase B is incomplete; deterministic runtime and tooling remain planned.
+> Phase A's core gate passes. B.1–B.8 implement events/editing, routing, priorities and state locations with Chrome evidence; broad browser/OS input qualification remains open. Phase B is incomplete; deterministic runtime and tooling remain planned.
 
 ---
 
@@ -442,12 +443,50 @@ cannot dispatch. See [public routing guide](DOCUMENTATION.md#routing-and-shared-
 [routing](docs/api/routing.md)/[scheduling](docs/api/scheduling.md) references for
 arguments, native link behavior, errors, cleanup and bounds.
 
+### Restore selected state on reload
+
+Run `npm run dev` and visit
+[http://localhost:3000/examples/persistence/](http://localhost:3000/examples/persistence/).
+Its local count, session note and URL filter restore after reload; the memory count
+resets. Each history entry restores its own URL filter, while routes keep the
+app's local/session fields. Configuration is explicit:
+
+```js
+const app = createApp({
+  initialState: { count: 0, draft: '', filter: '', temp: 0 }, schema,
+  router, // Required for URL fields; ordinary router config from above.
+  persistence: { namespace: 'my-app', version: '1', fields: {
+    count: { location: 'local', validate: value => typeof value === 'number' && Number.isFinite(value) },
+    draft: { location: 'session', validate: value => typeof value === 'string' },
+    filter: { location: 'url', key: 'q', validate: value => typeof value === 'string' },
+    temp: { location: 'memory' },
+  } },
+});
+app.mount();
+app.flushPersistence(); // Optional explicit storage boundary; separate from visual flush.
+```
+
+This is a configuration fragment; the [public guide](DOCUMENTATION.md#state-locations-and-hydration)
+contains the complete public-import example. Valid external fields hydrate before
+views run; invalid/mismatched data falls back and queues an error report. Successful
+actions coalesce normal storage writes, while throwing actions write nothing.
+URL changes replace owned query keys; back/forward hydrates without feedback writes.
+Entering a route without an owned URL key resets that field to its initial default.
+Storage failures retain committed state and reach onError phase persistence.
+
+`app.persistence` exposes bounded status/error summaries. Disposal cancels pending
+writes; flush explicitly before disposal when needed. The graph codec preserves
+supported aliases/holes/undefined/negative zero within each area. See
+[persistence reference](docs/api/persistence.md) for versions, validation, namespace
+ownership, byte/graph limits, cleanup and compatibility. Live cross-tab merging,
+automatic migrations and unload flushing are not implemented.
+
 ## Repository Structure
 
 ```text
 mini-framework/
 ├── AGENTS.md                  # Project rules, constraints, and work order
-├── Framework_PRD.md           # Product Requirements Document (PRD v2.12)
+├── Framework_PRD.md           # Product Requirements Document (PRD v2.13)
 ├── DEVELOPMENT_PLAN.md        # Implementation backlog and task tracking
 ├── README.md                  # Framework documentation & quickstart
 ├── DOCUMENTATION.md           # Current public API guide and runnable examples

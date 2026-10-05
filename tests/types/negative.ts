@@ -153,3 +153,18 @@ app.link('/', { onClick() {} }, 'Home');
 createApp({ router: { mode: 'memory', routes: [] } });
 // @ts-expect-error Route factories must be synchronous.
 createApp({ router: { routes: [{ path: '/', view: async () => div() }] } });
+
+// @ts-expect-error Locations must be declared.
+createApp({ initialState: { n: 0 }, persistence: { namespace: 'test', fields: { n: { location: 'database', validate: () => true } } } });
+// @ts-expect-error Unknown state fields reject.
+createApp({ initialState: { n: 0 }, persistence: { namespace: 'test', fields: { missing: { location: 'memory' } } } });
+// @ts-expect-error External fields require a validator.
+createApp({ initialState: { n: 0 }, persistence: { namespace: 'test', fields: { n: { location: 'local' } } } });
+// @ts-expect-error Persistence validators must be synchronous.
+createApp({ initialState: { n: 0 }, persistence: { namespace: 'test', fields: { n: { location: 'local', validate: async () => true } } } });
+// @ts-expect-error Keys are URL-only.
+createApp({ initialState: { n: 0 }, persistence: { namespace: 'test', fields: { n: { location: 'local', key: 'n', validate: () => true } } } });
+// @ts-expect-error Status diagnostics are read-only.
+app.persistence.errors.push({ code: 'x', source: 'local', field: null, message: 'x' });
+// @ts-expect-error Flush accepts no arguments.
+app.flushPersistence('local');

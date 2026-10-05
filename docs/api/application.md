@@ -5,7 +5,7 @@ synchronous declarative mounting, cleanup and disposal. A.2/A.3 add production C
 transactions, payload ownership/guards and bounded FIFO named dispatch.
 A.4/A.5 add exact observers and lazy computed values.
 Declarative elements, exact bindings and frame batching are implemented in A.6/A.7; see [DOM API](dom.md).
-A.8/A.9 add keyed collections and scoped click callbacks. B.1–B.3 add [native events and semantic keyboard/text inputs](events.md); B.4–B.6 add [priority work](scheduling.md) and [shared-state routing](routing.md); persistence and replay remain unimplemented. This document describes what actually runs today.
+A.8/A.9 add keyed collections and scoped click callbacks. B.1–B.3 add [native events and semantic keyboard/text inputs](events.md); B.4–B.6 add [priority work](scheduling.md) and [shared-state routing](routing.md); B.7/B.8 add [state locations and hydration](persistence.md); replay remains unimplemented. This document describes what actually runs today.
 
 A.10 verifies these APIs together in the [public core example](../../examples/core/README.md)
 and [core acceptance report](../reports/task-A.10-core-slice.md). No new runtime API
@@ -58,7 +58,7 @@ invalid objects reject even when `#app` exists; they do not trigger fallback.
 ## Config and instance
 
 Config keys: `initialState` (default `{}`), `schema` (default empty), `view`
-(default empty text, or outlet with routing), optional Element `target`, optional `onError` and optional `router`. Unknown
+(default empty text, or outlet with routing), optional Element `target`, optional `onError` optional `router` and optional `persistence`. Unknown
 keys/accessors/symbol keys reject. The placeholder's `actions`/`seed` options
 are not implemented; do not treat planned PRD sketches as current examples.
 
@@ -257,8 +257,8 @@ a router, route is null and navigation/links/outlets reject `ROUTER_MISSING`.
 
 Every route shares the original store/schema/actions. Successful action navigation
 runs after state notifications and before queued children; rollback discards its URL
-requests. Navigation updates the separate location snapshot without advancing the
-user-state version. Route views replace on path changes and retain native nodes on
+requests. Location-only navigation does not advance the user-state version. Configured URL
+fields publish a separate input version when their values change. Route views replace on path changes and retain native nodes on
 query/hash-only changes. Disposal stops reactive notifications before releasing
 routing listeners, scheduled work and views, so disposal does not publish location
 changes to application observers.
@@ -267,3 +267,18 @@ See the [public guide](../../DOCUMENTATION.md#routing-and-shared-application-sta
 [routing reference](routing.md) and [scheduling reference](scheduling.md) for copyable
 examples, ownership, queue/error ordering, options and limits. Error phases now also
 include `navigation` and `schedule`; frame work still uses `render`. APIs remain experimental.
+
+## State locations (B.7/B.8)
+
+Optional persistence config owns top-level memory/session/local/URL fields and
+guards; external data is sampled at mount before views run. Successful actions
+queue coalesced storage writes and replace URL state. Adapter inputs commit
+through the same state engine and batch route/state notifications without an
+application action name. See [persistence reference](persistence.md) and the
+[public guide](../../DOCUMENTATION.md#state-locations-and-hydration).
+
+Instance additions: flushPersistence() synchronously drains pending persistence
+work; read-only persistence exposes nonreactive active/pending/error summaries.
+onError phases include persistence. Invalid input fallback queues asynchronous
+reporting; failures preserve committed memory. Dispose cancels rather than
+flushing writes. Session/local fields are sampled on mount, never on route changes.
