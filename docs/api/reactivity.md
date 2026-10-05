@@ -112,8 +112,10 @@ Read/dirty/value access after resource disposal rejects `SCOPE_DISPOSED`.
 Declarative DOM bindings use these subscriptions to update exact targets on render
 frames; `app.flush()` drains pending visual work. Root views still construct once;
 conditional child scopes own their observers/computed values. See [DOM API](dom.md).
-Keyed item scopes and click callbacks use this cleanup graph. General events,
-routing, recording and replay remain unimplemented. State/type/transaction
+Keyed item scopes, native/input handlers and routed views use this cleanup graph.
+Route reads track an independent location snapshot; ordinary state stays exact.
+Context-scheduled work cancels on unmount; see [routing](routing.md) and
+[scheduling](scheduling.md). Recording/replay remain unimplemented. State/type/transaction
 limits are unchanged. The coordinator indexes the current graph on commits and
 stores live subscriptions; this is correctness evidence, not a measured performance
 improvement or heap leak proof.

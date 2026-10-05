@@ -130,3 +130,26 @@ input({ onText: async () => {} });
 input({ onKey: value => { value.held.push({ key: 'x', code: 'KeyX', location: 0 }); } });
 // @ts-expect-error Semantic input snapshots are read-only.
 input({ onText: value => { value.value = 'overwrite'; } });
+
+// @ts-expect-error Unknown lanes reject.
+app.schedule('urgent', () => {});
+// @ts-expect-error Scheduled callbacks must be synchronous.
+app.schedule('normal', async () => {});
+// @ts-expect-error Navigation requires a URL string.
+app.navigate({ path: '/' });
+// @ts-expect-error Replace must be boolean.
+app.navigate('/', { replace: 'yes' });
+// @ts-expect-error Route snapshots are read-only.
+app.route!.path = '/';
+// @ts-expect-error Query values are read-only arrays.
+app.route!.query.tab!.push('changed');
+// @ts-expect-error Framework links own href.
+app.link('/', { href: '/override' }, 'Home');
+// @ts-expect-error Framework links own click.
+app.link('/', { on: { click() {} } }, 'Home');
+// @ts-expect-error Framework links own legacy click.
+app.link('/', { onClick() {} }, 'Home');
+// @ts-expect-error Router modes are constrained.
+createApp({ router: { mode: 'memory', routes: [] } });
+// @ts-expect-error Route factories must be synchronous.
+createApp({ router: { routes: [{ path: '/', view: async () => div() }] } });

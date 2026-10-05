@@ -23,7 +23,7 @@ function payloadError(error) {
 export function createDispatcher(store, registry, check, publish = () => {}) {
   let running = false,
     preparing = false,
-    children = null;
+    children = null, executing = false, postCommit = null;
   let admitted = 0,
     usage = null;
 
@@ -85,6 +85,12 @@ export function createDispatcher(store, registry, check, publish = () => {}) {
 
   return Object.freeze({
     isActive: () => running,
+    isExecuting: () => executing,
+    afterCommit(operation) {
+      if (!executing || preparing) fail('NAVIGATION_REENTRANT', 'Navigation requests require an executing action.');
+      if (postCommit.length >= ACTION_LIMIT) fail('ROUTE_QUEUE_LIMIT', 'An action supports at most 1,024 navigation requests.');
+      postCommit.push(operation);
+    },
     dispatch(name, ...args) {
       check();
       if (preparing)
@@ -107,26 +113,28 @@ export function createDispatcher(store, registry, check, publish = () => {}) {
         while (queue.length) {
           const { spec, payload } = queue.shift();
           children = [];
+          postCommit = [];
+          let result;
           try {
             const { run } = spec;
-            const result = store.run((draft) => {
-              const result =
-                spec.input === "none" ? run(draft) : run(draft, payload);
-              requireSync(
-                result,
-                "ACTION_ASYNC",
-                "Actions must be synchronous; Promise/thenable returns reject.",
-              );
+            result = store.run((draft) => {
+              executing = true;
+              try {
+                const result = spec.input === "none" ? run(draft) : run(draft, payload);
+                requireSync(result, "ACTION_ASYNC", "Actions must be synchronous; Promise/thenable returns reject.");
+              } finally { executing = false; }
             });
             queue.push(...children);
-            // Notification failures cannot roll back this commit or discard
-            // the successful parent's admitted children.
-            publish(result);
           } catch (error) {
             failures.push(error);
-          } finally {
-            children = null;
           }
+          // Successful actions retain queued children and operations even if a
+          // notification or native History write fails after publication.
+          if (result) {
+            try { publish(result); } catch (error) { failures.push(error); }
+            for (const operation of postCommit) try { operation(); } catch (error) { failures.push(error); }
+          }
+          children = postCommit = null;
         }
         if (failures.length === 1) throw failures[0];
         if (failures.length > 1)
@@ -137,6 +145,7 @@ export function createDispatcher(store, registry, check, publish = () => {}) {
       } finally {
         queue.length = 0;
         children = null;
+        postCommit = null; executing = false;
         usage = null;
         admitted = 0;
         running = false;

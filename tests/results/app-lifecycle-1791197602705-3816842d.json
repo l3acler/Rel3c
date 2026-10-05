@@ -1,0 +1,875 @@
+{
+  "kind": "app-lifecycle-transactions-and-reactivity",
+  "task": "B.4–B.6",
+  "formatVersion": 1,
+  "recordedAt": "2026-10-05T10:53:22.705Z",
+  "browserVersion": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/154.0.8037.93",
+    "revision": "@f89f3a4363808e117c592adedcf9947882ac3b79",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "jsVersion": "15.4.80.19"
+  },
+  "flags": [
+    "--headless=new",
+    "--remote-debugging-pipe",
+    "--no-first-run",
+    "--no-default-browser-check",
+    "--disable-extensions"
+  ],
+  "machine": {
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "platform": "darwin",
+    "release": "24.6.0",
+    "arch": "arm64",
+    "node": "v26.3.0"
+  },
+  "sourceFiles": [
+    {
+      "file": "src/index.js",
+      "sha256": "682e8c1b98fc2e2988e2f9af3fd52217c72685039f118d48324eed08bfd7df76"
+    },
+    {
+      "file": "src/index.d.ts",
+      "sha256": "334a8ebb241307093022fa030b1736b61d60ec3841b196e8425f40dd6965007a"
+    },
+    {
+      "file": "src/runtime/app.js",
+      "sha256": "fdaecdb129a4e18a6a1797c137f7e0aade37bc44788a88cf5b15c84f75a13ddc"
+    },
+    {
+      "file": "src/runtime/errors.js",
+      "sha256": "28a0d3509157c62f5c731d2d5b49611a2ee678fdd31ab931e5a9b1bc71681da0"
+    },
+    {
+      "file": "src/runtime/records.js",
+      "sha256": "2ab1fdc349a55e10b2042626e01c9209dc52dfbfdcfc7b776d6d757e6b3434a8"
+    },
+    {
+      "file": "src/runtime/state/initial-state.js",
+      "sha256": "691661ed37ad32a78c7bf66fdb26df8b427383ab5cb3ac6b0ad8529d0a84b724"
+    },
+    {
+      "file": "src/runtime/state/transactions.js",
+      "sha256": "93b342b6456a6e0be766a6ebb7c14557d9d345a21642de11aee2c3bd7479328d"
+    },
+    {
+      "file": "src/runtime/state/data.js",
+      "sha256": "0d3cc0f69f05e93c2ce60546ac41c29dccd7f971d534325b141d2276bcb6661a"
+    },
+    {
+      "file": "src/runtime/state/draft.js",
+      "sha256": "4132704ac792c9a2a775a74cfe7cb6f83a45ae4b0c2fcd5534b917d006da6497"
+    },
+    {
+      "file": "src/runtime/state/graph.js",
+      "sha256": "921f9e7a201a258bf8aa42b38d303c7f20b15f5e934298feb66cd9dabb7223b3"
+    },
+    {
+      "file": "src/runtime/reactivity/tracking.js",
+      "sha256": "194318c9167e776cd064cfe9a1c89faba5b9a82efd3cb77cfda3504b90765f6d"
+    },
+    {
+      "file": "src/runtime/dom/bindings.js",
+      "sha256": "f04e8106ca9ef63c9d8cdc4f999f4fa5d4ec89869b32bcb0026f03d6d971e001"
+    },
+    {
+      "file": "src/runtime/dom/nodes.js",
+      "sha256": "81bb492df58e24eb052e5a234e13f5ed2ff5c365f2259852597748d25b5790b5"
+    },
+    {
+      "file": "src/runtime/dom/properties.js",
+      "sha256": "de9b4d9c10dc4a6a76ad0a29a59a234f133c34ae79766f812205f07be34749d2"
+    },
+    {
+      "file": "src/runtime/dom/renderer.js",
+      "sha256": "e6fe7621241d5f8d92df40eec90b06008c48c6ce9072439cb412fe599cd235c3"
+    },
+    {
+      "file": "src/runtime/dom/queue.js",
+      "sha256": "6ea121d5ebf1dfcd5ec4677928b5bffb11c04b8d75db7c8572b774910ce8bc03"
+    },
+    {
+      "file": "src/runtime/dom/events.js",
+      "sha256": "c9549f20a235b75b539c2f1f1fc208902751d6865a12c4087968f18b95348584"
+    },
+    {
+      "file": "src/runtime/diagnostics.js",
+      "sha256": "3fb7e589e1c6215faf9e560bddcbcfcd5951b8c1d3e0e6d48f9c2cb5af8f25ca"
+    },
+    {
+      "file": "src/runtime/actions/schema.js",
+      "sha256": "be68fea174ad25646b8611ca5a88bce7e9703631511b86179f087a1b1301bfe1"
+    },
+    {
+      "file": "src/runtime/actions/dispatch.js",
+      "sha256": "8c7b0ab244e63fdc756b472401573e2ffc7b2e2ebb40817b05166fe31b5d0690"
+    },
+    {
+      "file": "examples/basic/main.js",
+      "sha256": "76bea3a38dc7a71c6c4a12c5fbaf3b212f9b9221453392084250a67948feaebb"
+    },
+    {
+      "file": "examples/basic/index.html",
+      "sha256": "c43f013a8dcac07678145d84d43788e9ff826f33f0bea4152983c79f5df88e89"
+    },
+    {
+      "file": "tests/browser/app-lifecycle.js",
+      "sha256": "d328b12dfd939ce0d97178fc7f168676bf439ba82e78a9878ec2a22cdd47745d"
+    },
+    {
+      "file": "tests/browser/reactivity.js",
+      "sha256": "85902f83111136f54b79bc8a0d6a3d7136edafae14d676584e271a852913e4f9"
+    },
+    {
+      "file": "tests/browser/click.js",
+      "sha256": "c0c48b6cf7536af97c8f8c74bc716ba595bf9ce3d30a907714ca220f7422bdc7"
+    },
+    {
+      "file": "tests/browser/keyed.js",
+      "sha256": "99521f6f97253f5166643aa9afa7a42c194b63f7340602fcdbceeb580ec902ba"
+    },
+    {
+      "file": "tests/browser/dom.js",
+      "sha256": "4bd72a20696aa4dcf893615216bed1fb6880784054830cb0ee28917699c28b7b"
+    },
+    {
+      "file": "tests/browser/render-queue.js",
+      "sha256": "245cf8b28b3e0cf8c90b89cc11a71e40d258a961791d02e35b9676eb72d4c61e"
+    },
+    {
+      "file": "examples/dom/main.js",
+      "sha256": "6ae696c95fc16a74839eab534d8f911a44440e4371a86a9c9aa04a2189b5c792"
+    },
+    {
+      "file": "examples/dom/index.html",
+      "sha256": "97d27795323744a97d74d5c6baff245b26a3f1ab4c85405672e507cb55caa337"
+    },
+    {
+      "file": "examples/keyed/main.js",
+      "sha256": "b03b4625893209ec8cb8d97dd090c2c0fedef0bcbc3c6b247945c84b735f2d16"
+    },
+    {
+      "file": "examples/keyed/index.html",
+      "sha256": "37dc3cddbaaae5f9f226dd567a9ac0fbbb1291c67ee8fa001b1e4626f43017f2"
+    },
+    {
+      "file": "tests/browser/app-lifecycle.html",
+      "sha256": "f905e1428e9a7b84e4ccb494725ede5a507acdf5b7e24b507e0cc4e9017d4e16"
+    },
+    {
+      "file": "scripts/check-app-lifecycle.js",
+      "sha256": "eb3a7d73c097ce26ea2f55336d7132d236b96405845d37c7eef6a7d78fd19610"
+    },
+    {
+      "file": "scripts/local-browser.js",
+      "sha256": "303794d10b6e9c4b97f570863854e6078452b9c2478a4ff5795091ab7cdca1d7"
+    },
+    {
+      "file": "scripts/dev-server.js",
+      "sha256": "117485a85f01986d3649755821537693d27711a63dd4af7a5cbcd1ba1035939e"
+    },
+    {
+      "file": "tests/browser/core-slice.js",
+      "sha256": "8a870b08e23efdcd39b4ef6314abe46be2ef5c13c125c970bcd914c73e422162"
+    },
+    {
+      "file": "tests/helpers/core-probe.js",
+      "sha256": "99be18d0a016e938483530325e066c736b95cb77a28922f4ca4d0aff25530077"
+    },
+    {
+      "file": "tests/core-slice.test.js",
+      "sha256": "7404a66a1a240299289f8b1292ed4f83a0625d8bc7a0fa20f1fd0f900619620f"
+    },
+    {
+      "file": "examples/core/app.js",
+      "sha256": "0b52f3bca3052972d30974cb34b7c0bae8a12ead3a6cab93a234cbe1224faf4a"
+    },
+    {
+      "file": "examples/core/main.js",
+      "sha256": "b6818a4ce8cb7e966cdaf53d1782fadffcb2a18370264b297473e53288e7928e"
+    },
+    {
+      "file": "examples/core/index.html",
+      "sha256": "3f294dc790652b8f41d6cbb71ddd1f8f2dfacd0bbcf81c80177bb96d8f9cb2bd"
+    },
+    {
+      "file": "src/runtime/dom/inputs.js",
+      "sha256": "fa05f8ffab02f44844e2ab8cd024eb133c845daa613ae5dfc558ba4c3aa0feaf"
+    },
+    {
+      "file": "tests/events-input.test.js",
+      "sha256": "26bae8f9390f304c9f04bba12980b070ddfaa57dfc709d86389ed1fb4f36f833"
+    },
+    {
+      "file": "tests/browser/events-input.js",
+      "sha256": "b5a35108771922aec2ebc002e6015413fb85ddc12d73f56105adc9ff224c76c2"
+    },
+    {
+      "file": "examples/inputs/main.js",
+      "sha256": "3e56e3af2a34699a43ad4d50cc30eba3f8ea5fbf91ff54b0e758391455dd37dc"
+    },
+    {
+      "file": "examples/inputs/index.html",
+      "sha256": "6104476ea2eb928665c45c3a4791311c2a5cb6b051be9c0052a39bf19cf30f86"
+    },
+    {
+      "file": "src/runtime/scheduler.js",
+      "sha256": "fea5fd4a57d188b039d3fa996dd48f9ca7f1d24932297b45d741832023100778"
+    },
+    {
+      "file": "src/runtime/routing/router.js",
+      "sha256": "c35918751652159b0ad3ed66d0916c1c8089634aefa4321018a5a0346d72f96b"
+    },
+    {
+      "file": "tests/scheduler.test.js",
+      "sha256": "c3fde7656df78775a9489b744cd764eecfe53fa0eac6d1576aa1582b486c4f1d"
+    },
+    {
+      "file": "tests/router.test.js",
+      "sha256": "a618e7287e52d948f9d4b78812102daaa2cebff2834aa722a8b8c2ea0b4072c1"
+    },
+    {
+      "file": "tests/helpers/fake-browser.js",
+      "sha256": "72cba4ba3a4496a2e65ea5f752643cba959fe8425eaae79fc958ff8a73b62da6"
+    },
+    {
+      "file": "tests/browser/routing-scheduler.js",
+      "sha256": "4e4a3fa210a52dfd8fa2b0feb1713cd48a706869ac0ab69d3cff3395a284ac5d"
+    },
+    {
+      "file": "examples/routes/main.js",
+      "sha256": "2eeceb5f3b135fc22b6d7d7fd4442fcb284535064fe9c7479000f88e4929ea10"
+    },
+    {
+      "file": "examples/routes/index.html",
+      "sha256": "dcab12aa68a1ef6cb97c26dd2e264d9ff34772510a5ed45f757b3918a9cbd218"
+    }
+  ],
+  "example": {
+    "mounted": true,
+    "disposed": "disposed",
+    "removedOwnedText": true,
+    "report": {
+      "message": "Public application lifecycle is running.",
+      "initializedThroughAction": true,
+      "framework": "mini-framework",
+      "version": "0.1.0",
+      "milestone": "B.4–B.6 - Priorities and Shared-State Routing",
+      "publicEntry": "/src/index.js",
+      "capabilities": [
+        "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
+        "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
+        "Named actions, owned validated payloads and bounded FIFO dispatch (implemented A.3)",
+        "STATE-3: Lazy computed caching, chained dependencies and cycle detection (implemented A.5)",
+        "DOM-1: Elements, native form properties, conditional and keyed scopes (implemented A.6/A.8)",
+        "DOM-2: Exact frame-batched DOM bindings and explicit flush (implemented A.6/A.7)",
+        "STATE-1: Property-level observers, dynamic dependency tracking and shared state across routes (implemented A.4/B.6)",
+        "ACTION-1: Synchronous transactional named actions (implemented A.3; reactive observers implemented A.4)",
+        "ROUTE-1: History/hash routing, reactive location, native links and shared state (implemented B.5/B.6)",
+        "EVENT-3: Immediate/frame/normal/idle work with bounded cooperative turns (implemented B.4)",
+        "EVENT-1: Scoped native events, options and compatible zero-argument clicks (implemented B.1)",
+        "EVENT-2: Semantic keyboard/text inputs and composition-safe bindings (implemented B.2/B.3; OS/mobile/cross-browser qualification and replay remain open)",
+        "Phase A: Public click/action/binding/list/cleanup acceptance verified (A.10)",
+        "TIME-1: Deterministic simulation ticks (planned Phase C)",
+        "RECORD-1: Action recording & replay (planned Phase C)"
+      ]
+    }
+  },
+  "tests": {
+    "passed": 102,
+    "results": [
+      {
+        "name": "default mount resolves #app only at mount time and preserves host children",
+        "passed": true
+      },
+      {
+        "name": "missing default target fails before view invocation and retries when #app appears",
+        "passed": true
+      },
+      {
+        "name": "explicit invalid/custom targets never silently use available #app",
+        "passed": true
+      },
+      {
+        "name": "default mount preserves exclusive ownership and lifecycle errors without a target",
+        "passed": true
+      },
+      {
+        "name": "public browser-native module exports current lifecycle metadata",
+        "passed": true
+      },
+      {
+        "name": "lazy create, explicit mount, terminal/idempotent dispose",
+        "passed": true
+      },
+      {
+        "name": "configured target mounts automatically with immutable context",
+        "passed": true
+      },
+      {
+        "name": "owned initial state is deep read-only without freezing caller data",
+        "passed": true
+      },
+      {
+        "name": "aliases, holes and null prototypes preserve meaning in native JS",
+        "passed": true
+      },
+      {
+        "name": "dynamic text cannot inject HTML",
+        "passed": true
+      },
+      {
+        "name": "host children, native focus and selection survive mount/dispose",
+        "passed": true
+      },
+      {
+        "name": "target claim is exclusive and released after disposal",
+        "passed": true
+      },
+      {
+        "name": "invalid DOM-like targets/documents/shadow roots reject",
+        "passed": true
+      },
+      {
+        "name": "same app cannot double-mount or move to another target",
+        "passed": true
+      },
+      {
+        "name": "failed view unwinds its scope and permits retry on the same target",
+        "passed": true
+      },
+      {
+        "name": "cleanup is reverse-order and repeated disposal does not rerun it",
+        "passed": true
+      },
+      {
+        "name": "cleanup errors do not block later cleanup/DOM removal/claim release",
+        "passed": true
+      },
+      {
+        "name": "owned node removal follows a moved node but does not remove unrelated nodes",
+        "passed": true
+      },
+      {
+        "name": "registered action wrappers execute synchronous commits and names are owned",
+        "passed": true
+      },
+      {
+        "name": "schema shared by apps does not share stores or disposal",
+        "passed": true
+      },
+      {
+        "name": "public action rollback preserves committed snapshots, text, native focus and selection",
+        "passed": true
+      },
+      {
+        "name": "public payload admission copies aliases and sparse arrays without invoking unsupported getters",
+        "passed": true
+      },
+      {
+        "name": "public FIFO dispatch commits parent before children and runs grandchildren after siblings",
+        "passed": true
+      },
+      {
+        "name": "failed public children discard descendants, continue siblings and report after draining",
+        "passed": true
+      },
+      {
+        "name": "public illegal async actions reject atomically and revoke post-await mutation",
+        "passed": true
+      },
+      {
+        "name": "public self-dispatch has a batch bound and recovers for a later call",
+        "passed": true
+      },
+      {
+        "name": "view mutation fails before publishing text",
+        "passed": true
+      },
+      {
+        "name": "Promise-returning views reject with cleanup and no unhandled native rejection",
+        "passed": true
+      },
+      {
+        "name": "DOM state and unsupported Array prototypes reject",
+        "passed": true
+      },
+      {
+        "name": "iframe DOM targets work while foreign-realm state is not normalized",
+        "passed": true
+      },
+      {
+        "name": "detached DOM targets can mount and dispose without a connected page",
+        "passed": true
+      },
+      {
+        "name": "A.2 transactions publish atomically and throwing bodies roll back",
+        "passed": true
+      },
+      {
+        "name": "A.2 aliases, moved item identity and untouched branches survive native array operations",
+        "passed": true
+      },
+      {
+        "name": "A.2 committed metadata is exact and freezes supported data",
+        "passed": true
+      },
+      {
+        "name": "A.2 successful no-op advances a version and native revocation also blocks reflection",
+        "passed": true
+      },
+      {
+        "name": "A.2 array and depth growth limits reject without partial publication",
+        "passed": true
+      },
+      {
+        "name": "A.2 illegal native async work is rejected and its late draft mutation is observed",
+        "passed": true
+      },
+      {
+        "name": "100 cycles return owned nodes, cleanup counts and target claims to baseline",
+        "passed": true
+      },
+      {
+        "name": "A.4 browser: aliases and independent nested fields invalidate exactly",
+        "passed": true
+      },
+      {
+        "name": "A.4 browser: presence/key reads and sparse array reflection follow native behavior",
+        "passed": true
+      },
+      {
+        "name": "A.4 browser: dynamic branch reads replace stale dependencies",
+        "passed": true
+      },
+      {
+        "name": "A.4 browser: captured items retain identity across reorder and reject after detach",
+        "passed": true
+      },
+      {
+        "name": "A.5 browser: lazy caches and diamonds recompute once when observed",
+        "passed": true
+      },
+      {
+        "name": "A.5 browser: cached object facades preserve downstream COW reads",
+        "passed": true
+      },
+      {
+        "name": "A.5 browser: indirect cycles report the chain and can recover",
+        "passed": true
+      },
+      {
+        "name": "A.4/A.5 browser: rollback and no-op actions do not dirty dependencies or alter focus/text",
+        "passed": true
+      },
+      {
+        "name": "A.4/A.5 browser: failed mount and terminal app disposal release reactive scopes",
+        "passed": true
+      },
+      {
+        "name": "A.4/A.5 browser: async computations reject without native unhandled rejections",
+        "passed": true
+      },
+      {
+        "name": "A.9 native clicks invoke direct action wrappers once and write only dependent text",
+        "passed": true
+      },
+      {
+        "name": "A.9 bubbling handlers preserve native link/form defaults and disabled controls",
+        "passed": true
+      },
+      {
+        "name": "A.9 stale removed/disposing handlers cannot run and native keyed handlers follow current items",
+        "passed": true
+      },
+      {
+        "name": "A.9 native action failure reports once, rolls back and does not change bound DOM",
+        "passed": true
+      },
+      {
+        "name": "A.9 repeated native app/conditional cycles return all resource counts to baseline",
+        "passed": true
+      },
+      {
+        "name": "A.9 failed native mounts leave no handlers/listeners and can retry",
+        "passed": true
+      },
+      {
+        "name": "A.8 keyed permutations preserve focused inputs, selection and node identity without blur",
+        "passed": true
+      },
+      {
+        "name": "A.8 native same-key replacement keeps DOM and retargets bindings/positions",
+        "passed": true
+      },
+      {
+        "name": "A.8 non-key edits leave key reads and unrelated native text writes untouched",
+        "passed": true
+      },
+      {
+        "name": "A.8 removed scopes skip queued reads and clean native DOM/resources",
+        "passed": true
+      },
+      {
+        "name": "A.8 duplicate key render failures preserve prior native list and recover",
+        "passed": true
+      },
+      {
+        "name": "A.6 public form/conditional bindings preserve native focus, labels, defaults and unrelated node identity",
+        "passed": true
+      },
+      {
+        "name": "A.6 native attributes, class/style maps and text escape safely through public exports",
+        "passed": true
+      },
+      {
+        "name": "A.6 conditional branch disposal removes resources and rejects stale scoped registration",
+        "passed": true
+      },
+      {
+        "name": "A.6 DOM computations forbid state mutation/dispatch and clean failed native mounts",
+        "passed": true
+      },
+      {
+        "name": "A.6 native inline handlers, active URLs, unsafe tags and file-value assignments reject",
+        "passed": true
+      },
+      {
+        "name": "A.7 native frame burst writes latest text once and preserves unrelated control focus/selection",
+        "passed": true
+      },
+      {
+        "name": "A.7 native explicit flush cancels its scheduled duplicate write",
+        "passed": true
+      },
+      {
+        "name": "A.7 native CSS normalization and equal form values avoid redundant setters",
+        "passed": true
+      },
+      {
+        "name": "A.7 native disposal and conditional removal cancel queued descendant reads/writes",
+        "passed": true
+      },
+      {
+        "name": "A.7 native failed render leaves committed state intact and allows explicit recovery",
+        "passed": true
+      },
+      {
+        "name": "A.10 native click commits one version, evaluates one binding and mutates exactly its text",
+        "passed": true
+      },
+      {
+        "name": "A.10 native throwing action publishes no version, evaluations, setters or mutations",
+        "passed": true
+      },
+      {
+        "name": "A.10 native nested/item updates skip independent bindings and list structure",
+        "passed": true
+      },
+      {
+        "name": "A.10 native keyed reorder preserves focus/selection and add/remove restores resources",
+        "passed": true
+      },
+      {
+        "name": "A.10 native conditional removal cancels descendant reads and handler ownership",
+        "passed": true
+      },
+      {
+        "name": "A.10 native click burst writes latest once and disposal cancels queued work",
+        "passed": true
+      },
+      {
+        "name": "B.1 native capture, delegated targets, once and propagation cancellation",
+        "passed": true
+      },
+      {
+        "name": "B.1 nonbubbling scroll is scoped; native submit is canceled only on request",
+        "passed": true
+      },
+      {
+        "name": "B.2 native KeyboardEvent normalization handles held keys, repeat, releases, focus and window blur",
+        "passed": true
+      },
+      {
+        "name": "B.3 native InputEvent snapshots preserve paste values, selection, deletion and textarea semantics",
+        "passed": true
+      },
+      {
+        "name": "B.3 composition defers writes across real render frames and reconciles latest committed acceptance",
+        "passed": true
+      },
+      {
+        "name": "B.3 active selection survives differing bound values and composition protects controls without callbacks",
+        "passed": true
+      },
+      {
+        "name": "B.3 static initial values do not dispatch spurious text changes and canceled composition reconciles once",
+        "passed": true
+      },
+      {
+        "name": "B.1–B.3 removed scopes disable direct input/scroll listeners, root delegates and global resets",
+        "passed": true
+      },
+      {
+        "name": "B.4 native task queue runs FIFO, lets timers progress and writes visuals before frame callbacks",
+        "passed": true
+      },
+      {
+        "name": "B.4 actual idle host runs a callback after normal work while cancellation removes its sibling",
+        "passed": true
+      },
+      {
+        "name": "B.4 disposed apps cancel actual timers, idle and animation-frame callbacks",
+        "passed": true
+      },
+      {
+        "name": "B.6 native History back/forward retains shared state and the persistent shell",
+        "passed": true
+      },
+      {
+        "name": "B.6 query changes retain native input/focus/selection; route changes release scoped work and handlers",
+        "passed": true
+      },
+      {
+        "name": "B.6 action rollback keeps actual browser URL/history and committed state unchanged",
+        "passed": true
+      },
+      {
+        "name": "B.6 native link default cancellation/modifiers and route ownership preserve browser semantics",
+        "passed": true
+      },
+      {
+        "name": "B.6 actual hash traversal deduplicates popstate/hashchange and preserves document query",
+        "passed": true
+      },
+      {
+        "name": "root public-import example uses default mount and public disposal without DOM patching",
+        "passed": true
+      },
+      {
+        "name": "public declarative example renders native form, bound greeting and conditional disposal",
+        "passed": true
+      },
+      {
+        "name": "native Enter/Space activation dispatches public click actions",
+        "passed": true
+      },
+      {
+        "name": "public keyed/click example preserves identity, edits and selection; actions and disposal work",
+        "passed": true
+      },
+      {
+        "name": "public core example mounts from the root and runs counter, nested, conditional, keyed and disposal behavior",
+        "passed": true
+      },
+      {
+        "name": "B.2 trusted keyboard edits, repeat and release update public semantic inputs",
+        "passed": true
+      },
+      {
+        "name": "B.3 trusted replacement editing preserves Arabic/emoji and the native selection after rendering",
+        "passed": true
+      },
+      {
+        "name": "B.3 Chrome composition engine protects active text from external commits and accepts the latest native value",
+        "passed": true
+      },
+      {
+        "name": "B.1–B.3 public form, Ctrl+Enter shortcut, keyboard scrolling and disposal work without app-managed listeners",
+        "passed": true
+      },
+      {
+        "name": "B.4–B.6 public routes example supports trusted Enter links, shared state, query focus, back/forward, post-commit forms, rollback and scheduled work",
+        "passed": true
+      },
+      {
+        "name": "B.6 root server supports direct route URLs and reload while fresh memory state resets",
+        "passed": true
+      }
+    ],
+    "coreSlice": {
+      "counter": {
+        "beforeVersion": 1,
+        "afterVersion": 2,
+        "reads": {
+          "root.count": 1
+        },
+        "writes": {
+          "text:core-count": 1
+        },
+        "mutationTypes": [
+          "characterData"
+        ],
+        "unrelatedNodeRetained": true
+      },
+      "rollback": {
+        "version": 1,
+        "afterVersion": 1,
+        "snapshotRetained": true,
+        "nodesRetained": true,
+        "reads": {},
+        "writes": {},
+        "mutations": 0,
+        "errorReports": 1
+      },
+      "exactFields": {
+        "nested": {
+          "reads": {
+            "root.profileName": 1
+          },
+          "writes": {
+            "text:core-name": 1
+          }
+        },
+        "item": {
+          "reads": {
+            "root.row1.itemName": 1,
+            "root.row1.editValue": 1
+          },
+          "writes": {
+            "text:core-item-1": 1,
+            "value:core-input-1": 1
+          }
+        }
+      },
+      "keyed": {
+        "reorderReads": {
+          "root.items": 1,
+          "root.key": 2,
+          "root.row1.position": 1,
+          "root.row2.position": 1
+        },
+        "retainedNodes": true,
+        "retainedFocusAndSelection": true,
+        "blurEvents": 0,
+        "resourcesRestored": true,
+        "staleHandlerInert": true
+      },
+      "conditional": {
+        "removedBindingEvaluations": 0,
+        "removedTextWrites": 0,
+        "staleHandlerInert": true,
+        "freshScopeReadsLatestState": true
+      },
+      "burst": {
+        "commits": 3,
+        "reads": {
+          "root.count": 1
+        },
+        "writes": {
+          "text:core-count": 1
+        }
+      },
+      "disposal": {
+        "laterBindingReads": 0,
+        "laterBindingWrites": 0,
+        "resources": {
+          "observers": 0,
+          "computed": 0,
+          "cells": 0,
+          "subscriptions": 0,
+          "scheduledWork": 0,
+          "normalTasks": 0,
+          "idleTasks": 0,
+          "frameTasks": 0,
+          "routeListeners": 0,
+          "scopes": 0,
+          "bindings": 0,
+          "ownedNodes": 0,
+          "queuedBindings": 0,
+          "frames": 0,
+          "handlers": 0,
+          "listeners": 0
+        }
+      }
+    }
+  },
+  "nativeInputs": {
+    "name": "日本",
+    "saves": 2,
+    "scrollTop": 64,
+    "events": [
+      {
+        "type": "input",
+        "trusted": true,
+        "inputType": "insertText",
+        "isComposing": false,
+        "value": "a"
+      },
+      {
+        "type": "input",
+        "trusted": true,
+        "inputType": "insertText",
+        "isComposing": false,
+        "value": "aa"
+      },
+      {
+        "type": "input",
+        "trusted": true,
+        "inputType": "insertText",
+        "isComposing": false,
+        "value": "مرحبا 😀"
+      },
+      {
+        "type": "compositionstart",
+        "trusted": true,
+        "inputType": null,
+        "isComposing": null,
+        "value": "مرحبا 😀"
+      },
+      {
+        "type": "compositionupdate",
+        "trusted": true,
+        "inputType": null,
+        "isComposing": null,
+        "value": "مرحبا 😀"
+      },
+      {
+        "type": "input",
+        "trusted": true,
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "value": "に"
+      },
+      {
+        "type": "compositionupdate",
+        "trusted": true,
+        "inputType": null,
+        "isComposing": null,
+        "value": "に"
+      },
+      {
+        "type": "input",
+        "trusted": true,
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "value": "日本"
+      },
+      {
+        "type": "compositionupdate",
+        "trusted": true,
+        "inputType": null,
+        "isComposing": null,
+        "value": "日本"
+      },
+      {
+        "type": "input",
+        "trusted": true,
+        "inputType": "insertCompositionText",
+        "isComposing": true,
+        "value": "日本"
+      },
+      {
+        "type": "compositionend",
+        "trusted": false,
+        "inputType": null,
+        "isComposing": null,
+        "value": "日本"
+      }
+    ],
+    "disposed": true
+  },
+  "limitations": "Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. History/hash routing and cooperative priorities covered; no persistence/replay. Resource counters are not a heap-leak proof."
+}

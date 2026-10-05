@@ -7,9 +7,10 @@ import { createRenderQueue } from './queue.js';
 import { keyboardInput, textInput, isTextControl } from './inputs.js';
 const eventProps = new Set(['on', 'onClick', 'onKey', 'onText']);
 
-export function createRenderer(document, tracking, owner, makeContext, render, report, events) {
-  const pending = createRenderQueue(document.defaultView, render, report);
+export function createRenderer(document, tracking, owner, makeContext, render, report, events, scheduler, router) {
+  const pending = createRenderQueue(document.defaultView, render, report, scheduler);
   let disposed = false;
+  let hasOutlet = false;
   const scopes = new Set(), bindings = new Set();
   function scope(parent = null) {
     const result = { parent, depth: parent ? parent.depth + 1 : 0,
@@ -90,6 +91,32 @@ export function createRenderer(document, tracking, owner, makeContext, render, r
       return;
     }
     if (!isViewNode(value)) fail('VIEW_RESULT_INVALID', 'Views require text, finite numbers, null/booleans, child arrays, bindings or framework descriptors.');
+    if (value.kind === 'outlet') {
+      if (!router) fail('ROUTER_MISSING', 'An outlet requires a configured router.');
+      if (hasOutlet) fail('ROUTE_OUTLET_DUPLICATE', 'Only one active route outlet is supported.');
+      hasOutlet = true; current.cleanups.push(() => { hasOutlet = false; });
+      append(document.createComment('outlet'), parent, current);
+      const end = append(document.createComment('/outlet'), parent, current);
+      let selected = null, previousKey;
+      watch(current, () => router.selection, next => {
+        if (selected && previousKey === next.key) return;
+        const candidate = scope(current), container = document.createDocumentFragment();
+        try {
+          const routeView = router.view(next), output = routeView(candidate.context);
+          requireSync(output, 'VIEW_RESULT_INVALID', 'Route views must synchronously return declarative children.');
+          build(output, container, candidate, depth + 1);
+          for (const node of [...container.childNodes]) end.parentNode.insertBefore(node, end);
+        } catch (error) {
+          const errors = removeScope(candidate);
+          if (errors.length) throw new AggregateError([error, ...errors], 'Route construction and cleanup failed.');
+          throw error;
+        }
+        const errors = selected ? removeScope(selected) : [];
+        selected = candidate; previousKey = next.key;
+        if (errors.length) throw new AggregateError(errors, 'Route cleanup failed; the new route remains mounted.');
+      }, true);
+      return;
+    }
     if (value.kind === 'when') {
       append(document.createComment('when'), parent, current);
       const end = append(document.createComment('/when'), parent, current);

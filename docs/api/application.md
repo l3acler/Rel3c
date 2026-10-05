@@ -5,7 +5,7 @@ synchronous declarative mounting, cleanup and disposal. A.2/A.3 add production C
 transactions, payload ownership/guards and bounded FIFO named dispatch.
 A.4/A.5 add exact observers and lazy computed values.
 Declarative elements, exact bindings and frame batching are implemented in A.6/A.7; see [DOM API](dom.md).
-A.8/A.9 add keyed collections and scoped click callbacks. B.1–B.3 add [native events and semantic keyboard/text inputs](events.md); routing and replay remain unimplemented. This document describes what actually runs today.
+A.8/A.9 add keyed collections and scoped click callbacks. B.1–B.3 add [native events and semantic keyboard/text inputs](events.md); B.4–B.6 add [priority work](scheduling.md) and [shared-state routing](routing.md); persistence and replay remain unimplemented. This document describes what actually runs today.
 
 A.10 verifies these APIs together in the [public core example](../../examples/core/README.md)
 and [core acceptance report](../reports/task-A.10-core-slice.md). No new runtime API
@@ -58,7 +58,7 @@ invalid objects reject even when `#app` exists; they do not trigger fallback.
 ## Config and instance
 
 Config keys: `initialState` (default `{}`), `schema` (default empty), `view`
-(default empty text), optional Element `target` and optional `onError`. Unknown
+(default empty text, or outlet with routing), optional Element `target`, optional `onError` and optional `router`. Unknown
 keys/accessors/symbol keys reject. The placeholder's `actions`/`seed` options
 are not implemented; do not treat planned PRD sketches as current examples.
 
@@ -82,7 +82,7 @@ bindings and framework descriptors; raw functions/objects and async results reje
 One app claims an exact target; double mount/migration reject. Failed mounting
 cleans its resources and releases the target for retry. Static snapshot text runs
 once; `bind`/`derive` updates exact targets on render frames; `app.flush()` drains them
-synchronously and cancels the frame. State commits remain synchronous. See [DOM API](dom.md).
+synchronously, runs queued frame callbacks and cancels the frame. State commits remain synchronous. See [DOM API](dom.md).
 `context.state` follows the same snapshot/tracking rules as `app.state`.
 Dispatch inside views or render computations rejects `ACTION_REENTRANT`.
 
@@ -202,7 +202,7 @@ const app = createApp({
 });
 ```
 
-`onError` observes create/mount/dispatch/event/render/dispose operation errors and does not
+`onError` observes create/mount/dispatch/event/render/dispose/schedule/navigation operation errors and does not
 swallow them. Config validation before a valid observer exists and property/scope
 access errors throw directly. FrameworkError exposes a code and readable message;
 view failures preserve their original `cause`. Observer failures aggregate with
@@ -247,3 +247,23 @@ See [DOM scheduling API](dom.md#scheduling-and-flush-a7) for retry/disposal beha
 
 See [keyed collections](collections.md) and [click events](events.md) for current
 item contexts, listener ownership, native defaults and event error boundaries.
+
+## Priorities and routing (B.4–B.6)
+
+The app/context surface also provides `schedule(lane, callback)`, `navigate(to, options?)`,
+`link(to, props?, ...children)`, `outlet()` and read-only `route`. Router configuration
+is owned at creation, activated at mount and released on failure/disposal. Without
+a router, route is null and navigation/links/outlets reject `ROUTER_MISSING`.
+
+Every route shares the original store/schema/actions. Successful action navigation
+runs after state notifications and before queued children; rollback discards its URL
+requests. Navigation updates the separate location snapshot without advancing the
+user-state version. Route views replace on path changes and retain native nodes on
+query/hash-only changes. Disposal stops reactive notifications before releasing
+routing listeners, scheduled work and views, so disposal does not publish location
+changes to application observers.
+
+See the [public guide](../../DOCUMENTATION.md#routing-and-shared-application-state),
+[routing reference](routing.md) and [scheduling reference](scheduling.md) for copyable
+examples, ownership, queue/error ordering, options and limits. Error phases now also
+include `navigation` and `schedule`; frame work still uses `render`. APIs remain experimental.

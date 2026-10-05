@@ -1,12 +1,12 @@
 # Framework development plan
 
-**Status:** Phase 0 and Phase A complete; A.1–A.10 verified. Phases B–D remain planned.
+**Status:** Phase 0 and Phase A complete; A.1–A.10 verified. Phase B is in progress; remaining B–D tasks are planned.
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.10, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.12, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** Phase A complete; Phase B in progress. B.1–B.3 implemented and Chrome-verified; OS/native clipboard/mobile/cross-browser input qualification remains open. B.4 priority scheduling is next.
+**Current milestone:** Phase A complete; Phase B in progress. B.1–B.3 implemented and Chrome-verified; OS/native clipboard/mobile/cross-browser input qualification remains open. B.4–B.6 priorities/routing are implemented and Chrome-verified. B.7/B.8 state locations are next.
 
 ## 1. Purpose and scope
 
@@ -144,9 +144,9 @@ Deliver tested public core exports and a root-runnable example. Pass rollback, a
 - [x] **B.1 — Complete native event handling.** Dependencies: Phase A. Implement public registration/options, bubbling delegation where appropriate, and capture/direct handling for events such as scroll. Define event propagation, cancellation, target/current-target semantics, and scope cleanup. Acceptance: click, scroll, keyboard, and submit work through public APIs; links/forms retain native behavior unless explicitly handled; disposed views receive no events.
 - [x] **B.2 — Normalize keyboard inputs.** Dependencies: B.1. Represent key-down/up, held keys, repeat, modifiers, and focus-loss reset as serializable semantic inputs. Keep native event objects outside action payloads. Acceptance: fixtures cover repeat, shortcuts, key release, and blur without stuck held-key state; keyboard interaction remains accessible.
 - [x] **B.3 — Preserve native text editing.** Dependencies: B.1. Handle input, paste, composition updates/end, accepted values, and selection/focus preservation. Specify when semantic changes dispatch, including useful updates during composition rather than always waiting for compositionend. Acceptance: input/textarea fixtures cover IME, paste, ordinary editing, selection, and blur; reactive rendering does not overwrite active composition. Record real-browser/manual checks where synthetic events are insufficient.
-- [ ] **B.4 — Complete priority scheduling.** Dependencies: A.7. Define immediate, frame, normal, and idle ordering, reentrancy, error handling, and a bounded fairness policy. Acceptance: mixed-lane tests confirm order and normal-work progress under sustained input; idle work cannot control correctness; disposal removes pending work.
-- [ ] **B.5 — Design routing and navigation contracts.** Dependencies: A.3, B.1. Decide default History/hash mode, path matching, params/query encoding, base paths, direct-load setup, not-found behavior, and navigation errors. Specify action-requested navigation as a framework-owned post-commit operation so failed actions do not change URL. Acceptance: an ADR defines URL/reactive-state synchronization and modified-click/external-link native behavior before implementation.
-- [ ] **B.6 — Implement routing with persistent app ownership.** Dependencies: B.5, A.9. Mount/dispose route views while retaining the application store; process framework links, action navigation, direct load, and browser back/forward. Synchronize URL and reactive route state without feedback loops. Acceptance: two routes update the same state; navigation changes the expected URL/view/state; direct loads and back/forward work; removed routes release handlers and subscriptions.
+- [x] **B.4 — Complete priority scheduling.** Dependencies: A.7. Define immediate, frame, normal, and idle ordering, reentrancy, error handling, and a bounded fairness policy. Acceptance: mixed-lane tests confirm order and normal-work progress under sustained input; idle work cannot control correctness; disposal removes pending work.
+- [x] **B.5 — Design routing and navigation contracts.** Dependencies: A.3, B.1. Decide default History/hash mode, path matching, params/query encoding, base paths, direct-load setup, not-found behavior, and navigation errors. Specify action-requested navigation as a framework-owned post-commit operation so failed actions do not change URL. Acceptance: an ADR defines URL/reactive-state synchronization and modified-click/external-link native behavior before implementation.
+- [x] **B.6 — Implement routing with persistent app ownership.** Dependencies: B.5, A.9. Mount/dispose route views while retaining the application store; process framework links, action navigation, direct load, and browser back/forward. Synchronize URL and reactive route state without feedback loops. Acceptance: two routes update the same state; navigation changes the expected URL/view/state; direct loads and back/forward work; removed routes release handlers and subscriptions.
 - [ ] **B.7 — Specify state locations and hydration precedence.** Dependencies: A.2, B.5. Define explicit memory/session/local/URL field configuration, supported serialization, defaults, precedence, invalid-data handling, namespace/schema versions, and synchronization directions. Coordinate route query and URL-backed state ownership. Acceptance: an ADR resolves conflicting persisted/URL/default values and prevents routing/persistence loops.
 - [ ] **B.8 — Implement state-location adapters.** Dependencies: B.6, B.7, B.4. Hydrate configured fields through a defined initialization/input boundary; queue storage writes after successful commits. Handle quota/access/parse failures without undoing committed memory. Acceptance: reload retains only configured fields; memory-only state resets; failed actions write nothing; storage errors are reported; URL-backed state follows back/forward without loops.
 - [ ] **B.9 — Publish declarations and diagnostics.** Dependencies: 0.8, B.1–B.8. Provide action/payload inference, read-only state, element/event/router types, and clear errors for unsupported values, unknown actions, mutation violations, computed cycles, and list keys. Acceptance: positive/negative TypeScript fixtures pass while plain JavaScript examples remain usable; runtime validation independently catches invalid external data.
@@ -249,9 +249,9 @@ This register tracks recorded architecture choices and later open decisions, not
 | Public element syntax and optional templates | Usability, parsing/cache, escaping, event ownership | 0.7/0.9 |
 | Dispatch schema, nested order, failure and no-op behavior | Type fixtures and explicit transition cases | A.3, ADR 0007; implemented experimental contract |
 | Supported browsers and input methods | API support review and native input tests | Initial matrix in 0.9; verified before B release |
-| Router mode and direct-load requirements | URL, base-path, native link and back/forward cases | B.5 |
+| Router mode and direct-load requirements | URL, base-path, native link and back/forward cases | B.5, ADR 0013; implemented B.6 |
 | Location precedence and URL ownership | Conflicting default/storage/query and loop fixtures | B.7 |
-| Scheduler fairness and hidden-tab behavior | Sustained input and pause/catch-up tests | B.4/C.3 |
+| Scheduler fairness and hidden-tab behavior | Sustained input and pause/catch-up tests | B.4 ADR 0012 implemented; ticks/hidden-tab policy C.3 |
 | Format versions, canonical encoding, checkpoint metadata | Alias round trips and compatibility fixtures | Draft before public API freeze; prove in C.1 |
 | Retention budgets, keyframe interval, oversized snapshot behavior | Byte accounting and eviction workloads | Draft before public API freeze; prove in C.8 |
 | Undo/redo grouping and effect policy | Seek, branch, external-effect scenarios | D.1, before history API freeze |
@@ -717,7 +717,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** B.1–B.3 implemented and verified with the input qualification limits above; committed at user request. B.4 is next. Phase A exit gate remains verified. See the [core report](docs/reports/task-A.10-core-slice.md). A.8/A.9 were committed at user request; their [report](docs/reports/task-A.8-A.9-keyed-events.md) and [ADR 0010](docs/adr/0010-keyed-scopes-clicks.md) remain historical evidence.
+**Current batch:** B.4–B.6 implemented and verified; see [routing/scheduling report](docs/reports/task-B.4-B.6-routing-scheduling.md). B.7/B.8 state locations are next. B.1–B.3 were committed at user request; B.4–B.6 committed at user request. Phase A exit gate remains verified. See the [core report](docs/reports/task-A.10-core-slice.md). A.8/A.9 were committed at user request; their [report](docs/reports/task-A.8-A.9-keyed-events.md) and [ADR 0010](docs/adr/0010-keyed-scopes-clicks.md) remain historical evidence.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -792,3 +792,21 @@ Node tests, positive/negative type checks, Chrome browser checks and root smoke
 checks cover this batch. OS IME, real clipboard paste, mobile and broad browser
 qualification remain open. No routing/priorities/persistence/replay or separate
 demonstration app is implemented by this batch. Committed at user request; not pushed.
+
+### B.4–B.6 priorities and shared-state routing — complete (5 October 2026)
+
+Owner: Codex. This batch implements immediate/frame/normal/idle scheduling with
+bounded cooperative FIFO turns, scoped cancellation and explicit failure behavior.
+ADRs 0012/0013 specify scheduling and routing before their implementations. History
+(default) and hash mode expose frozen reactive location snapshots, ordered path
+matching, params/query, native links, a scoped outlet and persistent app ownership.
+Action-requested navigation waits for successful commit; rollback changes no URL.
+Native traversal, direct loads and reload work; query changes retain editing focus.
+The root routes example consumes only public imports, with explicit server fallback.
+
+Final verification: 329 runtime, 292 spike and 15 workload tests pass; positive
+TypeScript/checked JavaScript and 94 negative lines pass; 102 Chrome checks and
+root startup smoke pass. Source fingerprints and limitations are in the report. Public guide, README/API references,
+PRD v2.12 and metadata now describe this behavior. No performance or heap-collection
+claim, persistence, deterministic services, recording/replay or separate demo app
+is included. Next batch is B.7/B.8 state-location design/adapters. B.4–B.6 committed at user request; not pushed.

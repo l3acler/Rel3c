@@ -154,19 +154,61 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
   })()`);
   if (!nativeInputs.disposed) throw Error('Native input example disposal failed');
   tests.results.push({ name: 'B.1–B.3 public form, Ctrl+Enter shortcut, keyboard scrolling and disposal work without app-managed listeners', passed: true }); tests.passed++;
+  const routed = await open('examples/routes/');
+  await routed.waitFor('document.getElementById("route-home") !== null');
+  await routed.evaluate('document.getElementById("route-increment").click(); document.getElementById("route-profile-link").focus(); true');
+  for (const type of ['keyDown', 'keyUp']) await routed.command('Input.dispatchKeyEvent', { type, key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13,
+    text: type === 'keyDown' ? '\r' : '', unmodifiedText: type === 'keyDown' ? '\r' : '' });
+  await routed.waitFor('document.getElementById("route-name") !== null');
+  const routeExample = await routed.evaluate(`(async () => {
+    const { app } = await import('/examples/routes/main.js');
+    const { resourceCounts } = await import('/src/runtime/diagnostics.js');
+    const waitFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+    const travel = direction => new Promise(resolve => { window.addEventListener('popstate', resolve, { once: true }); history[direction](); });
+    const field = document.getElementById('route-name'); field.focus(); field.setSelectionRange(1, 3);
+    app.navigate('?tab=details'); await waitFrame();
+    const retained = document.getElementById('route-name') === field && document.activeElement === field && field.selectionStart === 1 && field.selectionEnd === 3;
+    const shared = app.state.count === 1 && document.getElementById('route-count').textContent === '1';
+    await travel('back'); await waitFrame(); const previousQuery = app.route.query.tab[0] === 'profile';
+    await travel('back'); await waitFrame(); const home = !!document.getElementById('route-home') && app.state.count === 1;
+    await travel('forward'); await waitFrame(); const profile = !!document.getElementById('route-profile');
+    const url = location.href, count = app.state.count; document.getElementById('route-rollback').click(); app.flush();
+    const rollback = location.href === url && app.state.count === count;
+    document.getElementById('route-normal').click(); await new Promise(resolve => setTimeout(resolve, 20)); await waitFrame();
+    const scheduled = app.state.notice.startsWith('Normal task ran');
+    app.actions.rename('Grace'); document.getElementById('route-save').click(); await waitFrame();
+    const saved = app.route.path === '/' && app.state.saved === 'Grace' && app.state.name === 'Grace';
+    app.dispose(); const disposed = Object.values(resourceCounts(app)).every(n => n === 0);
+    return retained && shared && previousQuery && home && profile && rollback && scheduled && saved && disposed;
+  })()`);
+  if (!routeExample) throw Error('Public routes example failed');
+  tests.results.push({ name: 'B.4–B.6 public routes example supports trusted Enter links, shared state, query focus, back/forward, post-commit forms, rollback and scheduled work', passed: true }); tests.passed++;
+  const deepRoute = await open('examples/routes/people/Grace?tab=details');
+  await deepRoute.waitFor('document.getElementById("route-person")?.textContent === "Grace"');
+  const directRoute = await deepRoute.evaluate(`(async () => {
+    const { app } = await import('/examples/routes/main.js');
+    const works = app.route.params.id === 'Grace' && document.getElementById('route-tab').textContent === 'details' && app.state.count === 0;
+    app.actions.increment(); return works;
+  })()`);
+  await deepRoute.command('Page.reload');
+  await deepRoute.waitFor('document.getElementById("route-person")?.textContent === "Grace" && document.getElementById("route-count")?.textContent === "0"');
+  const reloadRoute = await deepRoute.evaluate(`(async () => { const { app } = await import('/examples/routes/main.js');
+    const works = app.route.query.tab[0] === 'details' && app.state.count === 0; app.dispose(); return works; })()`);
+  if (!directRoute || !reloadRoute) throw Error('Direct route load/reload failed');
+  tests.results.push({ name: 'B.6 root server supports direct route URLs and reload while fresh memory state resets', passed: true }); tests.passed++;
   const paths = ['src/index.js', 'src/index.d.ts', 'src/runtime/app.js', 'src/runtime/errors.js', 'src/runtime/records.js',
     'src/runtime/state/initial-state.js', 'src/runtime/state/transactions.js', 'src/runtime/state/data.js',
     'src/runtime/state/draft.js', 'src/runtime/state/graph.js', 'src/runtime/reactivity/tracking.js', 'src/runtime/dom/bindings.js', 'src/runtime/dom/nodes.js', 'src/runtime/dom/properties.js', 'src/runtime/dom/renderer.js', 'src/runtime/dom/queue.js', 'src/runtime/dom/events.js', 'src/runtime/diagnostics.js', 'src/runtime/actions/schema.js', 'src/runtime/actions/dispatch.js', 'examples/basic/main.js', 'examples/basic/index.html',
     'tests/browser/app-lifecycle.js', 'tests/browser/reactivity.js', 'tests/browser/click.js', 'tests/browser/keyed.js', 'tests/browser/dom.js', 'tests/browser/render-queue.js', 'examples/dom/main.js', 'examples/dom/index.html', 'examples/keyed/main.js', 'examples/keyed/index.html', 'tests/browser/app-lifecycle.html', 'scripts/check-app-lifecycle.js',
     'scripts/local-browser.js', 'scripts/dev-server.js', 'tests/browser/core-slice.js', 'tests/helpers/core-probe.js',
     'tests/core-slice.test.js', 'examples/core/app.js', 'examples/core/main.js', 'examples/core/index.html',
-    'src/runtime/dom/inputs.js', 'tests/events-input.test.js', 'tests/browser/events-input.js', 'examples/inputs/main.js', 'examples/inputs/index.html'];
+    'src/runtime/dom/inputs.js', 'tests/events-input.test.js', 'tests/browser/events-input.js', 'examples/inputs/main.js', 'examples/inputs/index.html', 'src/runtime/scheduler.js', 'src/runtime/routing/router.js', 'tests/scheduler.test.js', 'tests/router.test.js', 'tests/helpers/fake-browser.js', 'tests/browser/routing-scheduler.js', 'examples/routes/main.js', 'examples/routes/index.html'];
   const sourceFiles = await Promise.all(paths.map(async file => ({ file,
     sha256: createHash('sha256').update(await readFile(path.join(root, file))).digest('hex') })));
-  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'B.1–B.3', formatVersion: 1, recordedAt: new Date().toISOString(),
+  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'B.4–B.6', formatVersion: 1, recordedAt: new Date().toISOString(),
     browserVersion, flags, machine: { cpu: os.cpus()[0]?.model, cpuCount: os.cpus().length,
       platform: os.platform(), release: os.release(), arch: os.arch(), node: process.version },
-    sourceFiles, example, tests, nativeInputs, limitations: 'Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. No routing/priorities/replay. Resource counters are not a heap-leak proof.' };
+    sourceFiles, example, tests, nativeInputs, limitations: 'Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. History/hash routing and cooperative priorities covered; no persistence/replay. Resource counters are not a heap-leak proof.' };
   const directory = path.join(root, 'tests/results'); await mkdir(directory, { recursive: true });
   const file = path.join(directory, 'app-lifecycle-' + Date.now() + '-' + randomUUID().slice(0, 8) + '.json');
   await writeFile(file, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });

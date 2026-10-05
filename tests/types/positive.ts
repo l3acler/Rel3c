@@ -16,7 +16,7 @@ const app = createApp({ schema, initialState,
     onDispose(() => {}); void noPayload; void payload; void named;
     return String(count);
   },
-  onError(error, info) { const phase: 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' = info.phase; void phase; void error; },
+  onError(error, info) { const phase: import('mini-framework').ErrorPhase = info.phase; void phase; void error; },
 });
 const detached: typeof app.mount = app.mount;
 const defaultMounted: typeof app = detached();
@@ -104,3 +104,20 @@ input({ on: { keydown: event => { const key: string = event.nativeEvent.key; eve
   onKey: (value, event) => { const held: readonly import('../../src/index.js').HeldKey[] = value.held; if (value.ctrlKey) event.preventDefault(); },
   onText: value => { const text: string = value.value; const composing: boolean = value.isComposing; },
 });
+
+// B.4–B.6: priority work and routed contexts preserve state/action inference.
+import { outlet, type RouteSnapshot } from 'mini-framework';
+const routed = createApp({ schema, initialState, router: { base: '/app', routes: [
+  { path: '/people/:id', view(context) {
+    const route: RouteSnapshot = context.route;
+    const count: number = context.state.count;
+    context.actions.rename({ name: route.params.id ?? 'Unknown' });
+    context.schedule('normal', context.actions.increment);
+    return div(context.derive(() => context.route.query.tab?.join(',') ?? ''),
+      context.link('/', { id: 'home', on: { focus: event => { const native: FocusEvent = event.nativeEvent; } } }, 'Home'));
+  } },
+], notFound: context => context.link('/', 'Home') }, view: () => outlet() });
+const cancel: () => void = routed.schedule('idle', () => {}); cancel();
+routed.schedule('frame', () => {}); routed.schedule('immediate', routed.actions.increment);
+routed.navigate('/people/7?tab=a', { replace: true });
+const current: RouteSnapshot | null = routed.route; void current;

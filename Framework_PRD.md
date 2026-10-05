@@ -1,8 +1,8 @@
 
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
-**Status:** Product definition; Phase 0 and Phase A complete. A.1–A.10 lifecycle, transactions, exact reactivity, declarative DOM, keyed lists and scoped clicks implemented and core acceptance verified. B.1–B.3 native events and semantic keyboard/text inputs implemented with Chrome evidence; OS/mobile/cross-browser input qualification remains open. Remaining B–D tasks are planned.
-**Version:** 2.11
+**Status:** Product definition; Phase 0 and Phase A complete. A.1–A.10 lifecycle, transactions, exact reactivity, declarative DOM, keyed lists and scoped clicks implemented and core acceptance verified. B.1–B.3 native events and semantic keyboard/text inputs implemented with Chrome evidence; OS/mobile/cross-browser input qualification remains open. B.4–B.6 priority scheduling and shared-state History/hash routing are implemented. Remaining B–D tasks are planned.
+**Version:** 2.12
 **Date:** 5 October 2026
 **Working name:** Undecided
 
@@ -79,7 +79,7 @@ see [collections API](docs/api/collections.md). A.9 adds scoped zero-argument on
 resource cleanup; see [click API](docs/api/events.md). B.1–B.3 implement native event maps/options and semantic keyboard/text adapters;
 [ADR 0011](docs/adr/0011-native-events-inputs.md) specifies cancellation, held-key resets
 and composition-safe binding writes. The public APIs are experimental. Broad native
-input qualification, routing and replay remain later acceptance gates; the candidate snippets below
+input qualification and replay remain later acceptance gates; the candidate snippets below
 are not current runnable API examples.
 
 A.10 verifies the full public-import core example: one click publishes one version
@@ -89,7 +89,7 @@ keyed identity/focus and disposal pass. See [core guide](DOCUMENTATION.md#verifi
 and [acceptance report](docs/reports/task-A.10-core-slice.md). Phase A's exit gate
 passes. B.1–B.3 now implement native events and keyboard/text inputs; see
 [batch evidence](docs/reports/task-B.1-B.3-inputs.md). Broad input qualification,
-routing, remaining frontend facilities, deterministic runtime and tooling remain future work.
+remaining frontend facilities, deterministic runtime and tooling remain future work. B.4–B.6 implement bounded cooperative scheduling and History/hash routing with one shared store, post-commit navigation and reactive location. See [scheduler ADR](docs/adr/0012-priority-scheduling.md), [router ADR](docs/adr/0013-routing-navigation.md) and [batch evidence](docs/reports/task-B.4-B.6-routing-scheduling.md).
 
 These are historical illustrative design sketches, not current runnable API examples.
 Phase 0 selected element functions with explicit binding tokens; Phase A integrated

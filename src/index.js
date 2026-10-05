@@ -4,14 +4,14 @@
  * Public Entry Point
  *
  * A.1–A.9 implement lifecycle, COW actions, exact reactivity and frame-batched DOM.
- * B.1–B.3 add native events and semantic keyboard/text editing; routing follows.
+ * B.1–B.6 add native/semantic events, priorities and shared-state routing.
  * A.10 verifies the integrated Phase A core through public imports.
  */
 
 import { createApplication } from "./runtime/app.js";
 export { createActionSchema } from "./runtime/actions/schema.js";
 export { element, div, span, p, button, form, label, input, textarea, select, option,
-  section, a, ul, li, when, keyed } from "./runtime/dom/nodes.js";
+  section, a, ul, li, when, keyed, outlet } from "./runtime/dom/nodes.js";
 export { derive } from "./runtime/dom/bindings.js";
 export { FrameworkError } from "./runtime/errors.js";
 
@@ -23,7 +23,7 @@ export const VERSION = "0.1.0";
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "B.1–B.3 - Native Events and Inputs",
+  phase: "B.4–B.6 - Priorities and Shared-State Routing",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
     "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
@@ -31,9 +31,10 @@ export const FRAMEWORK_INFO = Object.freeze({
     "STATE-3: Lazy computed caching, chained dependencies and cycle detection (implemented A.5)",
     "DOM-1: Elements, native form properties, conditional and keyed scopes (implemented A.6/A.8)",
     "DOM-2: Exact frame-batched DOM bindings and explicit flush (implemented A.6/A.7)",
-    "STATE-1: Property-level observers and dynamic dependency tracking (implemented A.4; routed sharing follows Phase B)",
+    "STATE-1: Property-level observers, dynamic dependency tracking and shared state across routes (implemented A.4/B.6)",
     "ACTION-1: Synchronous transactional named actions (implemented A.3; reactive observers implemented A.4)",
-    "ROUTE-1: Reactive router (planned Phase B)",
+    "ROUTE-1: History/hash routing, reactive location, native links and shared state (implemented B.5/B.6)",
+    "EVENT-3: Immediate/frame/normal/idle work with bounded cooperative turns (implemented B.4)",
     "EVENT-1: Scoped native events, options and compatible zero-argument clicks (implemented B.1)",
     "EVENT-2: Semantic keyboard/text inputs and composition-safe bindings (implemented B.2/B.3; OS/mobile/cross-browser qualification and replay remain open)",
     "Phase A: Public click/action/binding/list/cleanup acceptance verified (A.10)",

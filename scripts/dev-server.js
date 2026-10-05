@@ -69,9 +69,16 @@ export function createServer(options = {}) {
       try {
         stat = fs.statSync(filePath);
       } catch (err) {
-        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-        res.end(`404 Not Found: ${reqPath}`);
-        return;
+        // Explicit History-mode example fallback; missing assets still return 404.
+        if (safePath.startsWith('/examples/routes/') && !path.extname(safePath)) {
+          filePath = path.join(root, 'examples/routes/index.html');
+          try { stat = fs.statSync(filePath); } catch { /* use the normal 404 below */ }
+        }
+        if (!stat) {
+          res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+          res.end(`404 Not Found: ${reqPath}`);
+          return;
+        }
       }
 
       // If directory, check trailing slash and try index.html

@@ -1,4 +1,4 @@
-/** Experimental public runtime including native events and semantic keyboard/text inputs (B.1–B.3). */
+/** Experimental public runtime including native inputs, priorities and routing (B.1–B.6). */
 export const VERSION: string;
 export interface FrameworkInfo {
   readonly name: string; readonly version: string; readonly phase: string;
@@ -36,7 +36,7 @@ export function createActionSchema<S extends object = Record<string, unknown>>(o
 type ArgsOf<T> = T extends ActionSpec<unknown, infer Args> ? Args : never;
 type DispatchArgs<D> = { [K in keyof D & string]: [name: K, ...ArgsOf<D[K]>] }[keyof D & string];
 export type AppStatus = 'created' | 'mounting' | 'mounted' | 'disposing' | 'disposed';
-export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose';
+export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' | 'schedule' | 'navigation';
 type Cleanup<F extends () => unknown> = F & Sync<F>;
 export interface Observer<T> {
   /** Rerun the read and replace its dependency set. */
@@ -134,6 +134,29 @@ export function when<S extends object = Record<string, unknown>, D extends Defin
   condition: boolean | Binding<boolean>, yes: (context: ViewContext<S, D>) => Child | void,
   no?: (context: ViewContext<S, D>) => Child | void
 ): ViewNode;
+export function outlet(): ViewNode;
+export type WorkLane = 'immediate' | 'frame' | 'normal' | 'idle';
+export interface RouteSnapshot {
+  readonly path: string; readonly params: Readonly<Record<string, string>>;
+  readonly query: Readonly<Record<string, readonly string[]>>;
+  readonly search: string; readonly hash: string; readonly url: string;
+  readonly matched: boolean; readonly outsideBase: boolean;
+}
+export interface NavigationOptions { readonly replace?: boolean; }
+export interface RouteContext<S, D extends Definitions<S>> extends ViewContext<S, D> {
+  readonly route: RouteSnapshot;
+}
+export interface RouterConfig<S, D extends Definitions<S>> {
+  readonly mode?: 'history' | 'hash'; readonly base?: string;
+  readonly routes: readonly { readonly path: string; readonly view: (context: RouteContext<S, D>) => Child | void }[];
+  readonly notFound?: (context: RouteContext<S, D>) => Child | void;
+}
+export type LinkProps = ElementProps & { readonly href?: never; readonly onClick?: never;
+  readonly on?: (NativeEvents & { readonly click?: null }) | null; };
+export interface LinkBuilder {
+  (to: string, ...children: readonly Child[]): ViewNode;
+  <P extends LinkProps>(to: string, props: P & SyncProps<P>, ...children: readonly Child[]): ViewNode;
+}
 export type ListKey = string | number;
 export interface ItemContext<S, D extends Definitions<S>, T, K extends ListKey = ListKey> extends ViewContext<S, D> {
   readonly key: K;
@@ -158,6 +181,11 @@ export interface ViewContext<S, D extends Definitions<S>> {
   readonly actions: { readonly [K in keyof D]: (...args: ArgsOf<D[K]>) => void };
   /** Drains an outer batch synchronously; nested calls only admit queued work. */
   readonly dispatch: (...args: DispatchArgs<D>) => void;
+  readonly route: RouteSnapshot | null;
+  navigate(to: string, options?: NavigationOptions): void;
+  readonly link: LinkBuilder;
+  outlet(): ViewNode;
+  schedule<F extends () => unknown>(lane: WorkLane, callback: F & Sync<F>): () => void;
   observe<F extends (state: DeepReadonly<S>) => unknown, N extends () => unknown = () => void>(
     read: F & Sync<F>, onInvalidate?: N & Sync<N>
   ): Observer<ReturnType<F>>;
@@ -170,6 +198,7 @@ export interface AppConfig<S extends object, D extends Definitions<S> = {}> {
   readonly schema?: ActionSchema<S, D>;
   readonly view?: (context: ViewContext<S, D>) => Child | void;
   readonly onError?: (error: Error, info: Readonly<{ phase: ErrorPhase }>) => void;
+  readonly router?: RouterConfig<S, D>;
 }
 export interface AppInstance<S extends object, D extends Definitions<S> = {}> extends ViewContext<S, D> {
   readonly version: string; readonly stateVersion: number; readonly schemaVersion: string;

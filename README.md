@@ -1,6 +1,6 @@
 # mini-framework
 
-A standalone JavaScript frontend framework built from scratch on a **deterministic reactive runtime** for interactive browser applications.
+A standalone JavaScript frontend framework built from scratch with a reactive runtime; deterministic services and replay are planned. It supports interactive browser applications.
 
 Read [DOCUMENTATION.md](DOCUMENTATION.md) for the public framework guide, runnable
 examples, lifecycle, actions, exact observers, computed values, errors and limits. It is maintained alongside every
@@ -22,7 +22,7 @@ framework addition or change.
 
 ## Overview & Purpose
 
-`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and Phase A (A.1–A.10) are complete: lifecycle, transactions, named dispatch, exact dependencies, computed values, declarative DOM, keyed lists and scoped clicks. B.1–B.3 add native events and semantic keyboard/text inputs. Routing and remaining Phase B tasks are planned; deterministic services and replay remain Phase C tasks.
+`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and Phase A (A.1–A.10) are complete: lifecycle, transactions, named dispatch, exact dependencies, computed values, declarative DOM, keyed lists and scoped clicks. B.1–B.6 add native/semantic events, cooperative priority work and shared-state History/hash routing. Remaining Phase B tasks are planned; deterministic services and replay remain Phase C tasks.
 
 The runtime implements named transactions and frame-batched reactive rendering.
 Deterministic simulation services remain planned:
@@ -83,12 +83,13 @@ Deterministic simulation services remain planned:
 
 - **Phase B — General frontend (In progress; experimental API)**:
   - **B.1–B.3**: Native event maps/options, semantic keys/held/reset, native text snapshots and composition-safe bindings. See [input contracts](DOCUMENTATION.md#native-events-keyboard-and-text-editing) and [evidence](docs/reports/task-B.1-B.3-inputs.md). OS IMEs, clipboard paste and broad browser qualification remain open.
-  - **Next: B.4** priority scheduling, then routing and state locations; Phase B acceptance is pending.
+  - **B.4–B.6**: Bounded priority lanes and History/hash routing with native links, post-commit navigation and one shared store. See [routing and scheduling](docs/reports/task-B.4-B.6-routing-scheduling.md).
+  - **Next: B.7/B.8** state-location contracts and adapters; Phase B acceptance is pending.
 
-Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Declarative elements, bindings, native events and semantic keyboard/text inputs are implemented. Routing, priorities, persistence, controlled services, recording and replay remain future work.
+Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Declarative elements, bindings, native events and semantic keyboard/text inputs are implemented. Routing and priorities are implemented; persistence, controlled services, recording and replay remain future work.
 
 > [!NOTE]
-> Phase A's core gate passes. B.1–B.3 implement events/editing with Chrome evidence; broad browser/OS input qualification remains open. Phase B is incomplete; deterministic runtime and tooling remain planned.
+> Phase A's core gate passes. B.1–B.6 implement events/editing, routing and priorities with Chrome evidence; broad browser/OS input qualification remains open. Phase B is incomplete; deterministic runtime and tooling remain planned.
 
 ---
 
@@ -267,7 +268,7 @@ app.flush(); // Optional synchronous visual boundary; avoids a duplicate frame w
 Bindings track each property read, so unrelated nodes retain identity and focus.
 Native form editing remains local without a synchronization handler. `onText`
 now supplies actual text values to actions; `on` and `onKey` support native and
-semantic keyboard events. Shared route state and navigation remain future APIs; the planned examples below are explicitly unimplemented.
+semantic keyboard events. Shared route state and navigation are implemented below; later template/clock sketches remain explicitly unimplemented.
 
 Register an implemented click action using public imports:
 
@@ -393,12 +394,60 @@ cleans all listeners with their scope. See [public input guide](DOCUMENTATION.md
 for complete options, data, cancellation, errors and browser qualification limits.
 Recording/replay is still unimplemented.
 
+### Shared state, routing and priority work
+
+Run `npm run dev` and open
+[http://localhost:3000/examples/routes/](http://localhost:3000/examples/routes/).
+The two routes share one counter and profile, native links support back/forward,
+and saving the form navigates after the action commits. Direct entry/reload works
+at `/examples/routes/people/Ada?tab=details`; reload starts a new memory store.
+
+For a page with `<main id="app"></main>`, this public-import example uses hash
+routing so a static server needs no deep-URL fallback:
+
+```js
+import { createApp, createActionSchema, div, button, outlet } from './src/index.js';
+const schema = createActionSchema()(({ action }) => ({
+  increment: action(draft => { draft.count++; }),
+  openProfile: action(draft => { draft.count++; app.navigate('/people/Ada'); }),
+}));
+const app = createApp({ initialState: { count: 0 }, schema,
+  router: { mode: 'hash', routes: [
+    { path: '/', view: ({ bind, actions, link }) => div(bind.count,
+      button({ type: 'button', onClick: actions.increment }, 'Increment'),
+      button({ type: 'button', onClick: actions.openProfile }, 'Open profile'),
+      link('/people/Ada', 'Profile')) },
+    { path: '/people/:id', view(context) { return div(
+      context.derive(() => context.route.params.id), ' Count: ', context.bind.count,
+      context.link('/', 'Home')); } },
+  ] }, view: () => outlet(),
+});
+app.mount();
+const cancel = app.schedule('normal', () => app.actions.increment());
+cancel();
+```
+
+Routes retain the existing store/actions. `outlet` replaces only the route scope;
+query/hash changes retain the view and native editing focus. Action navigation is
+queued after successful commit, so throwing actions change neither state nor URL.
+Default History mode requires the host to serve the module page for deep URLs;
+`base` prefixes application paths. `context.route` is an immutable reactive snapshot
+with path/params/query, and route reads belong inside a binding for live updates.
+
+`immediate` work runs now; `frame` work follows visual bindings; `normal` uses bounded
+FIFO timer turns; `idle` uses idle callbacks or a delayed timer and must not control
+correctness. Context work cancels on unmount, app work on disposal. Frame callbacks
+cannot dispatch. See [public routing guide](DOCUMENTATION.md#routing-and-shared-application-state),
+[scheduling guide](DOCUMENTATION.md#priority-work-and-cancellation) and the detailed
+[routing](docs/api/routing.md)/[scheduling](docs/api/scheduling.md) references for
+arguments, native link behavior, errors, cleanup and bounds.
+
 ## Repository Structure
 
 ```text
 mini-framework/
 ├── AGENTS.md                  # Project rules, constraints, and work order
-├── Framework_PRD.md           # Product Requirements Document (PRD v2.11)
+├── Framework_PRD.md           # Product Requirements Document (PRD v2.12)
 ├── DEVELOPMENT_PLAN.md        # Implementation backlog and task tracking
 ├── README.md                  # Framework documentation & quickstart
 ├── DOCUMENTATION.md           # Current public API guide and runnable examples
@@ -441,8 +490,8 @@ Use the public examples above for implemented core/event/input usage. Task 0.7
 selected element functions with explicit binding tokens, implemented in Phase A.
 The template exports and inline-action config shown below are not implemented. Optional templates remain deferred:
 eager state expressions capture whole views rather than exact individual binding
-dependencies. Runnable syntax examples use the separate spike entry. Routing
-remains Phase B work; inline-action/seed options below are planned sketches only.
+dependencies. Runnable syntax examples use the separate spike entry. The implemented
+router is documented above; inline-action/seed options below are planned sketches only.
 
 ### 1. Tagged Template Syntax (Evaluated Prototype, Deferred)
 The eager prototype runs natively without arrow wrappers, but its conservative whole-view tracking does not meet the exact-binding adoption gate. This preserves the evaluated PRD candidate for reference, not as a promised public API:
@@ -489,41 +538,11 @@ const app = createApp({
 });
 ```
 
-### 3. Application-Wide Shared State Across Routes
-Planned routed views share a single top-level application store, retaining state across navigation. This template-based example is a historical design sketch; the router and template API are not implemented public exports:
+### 3. Application-Wide Shared State Across Routes (Implemented)
 
-```js
-import { createApp, createRouter, html } from 'mini-framework';
-
-const router = createRouter([
-  {
-    path: '/',
-    view: ({ state, actions }) => html`
-      <div class="page">
-        <h2>Welcome, ${state.user.name}!</h2>
-        <a href="/settings">Go to Settings</a>
-      </div>
-    `
-  },
-  {
-    path: '/settings',
-    view: ({ state, actions }) => html`
-      <div class="page">
-        <h2>Editing Settings for: ${state.user.name}</h2>
-        <a href="/">Back Home</a>
-      </div>
-    `
-  }
-]);
-
-const app = createApp({
-  target: document.querySelector('#app'),
-  initialState: {
-    user: { name: 'Alice' }
-  },
-  router
-});
-```
+Use the implemented [shared-state routing example above](#shared-state-routing-and-priority-work).
+The earlier createRouter/template sketch has been replaced by the owned
+`createApp({ router: { routes } })` contract, public `outlet()` and native links.
 
 ---
 

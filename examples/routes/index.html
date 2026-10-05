@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mini-framework: routes and shared state</title>
+<style>
+  body {
+    font: 1rem/1.5 system-ui, sans-serif;
+    max-width: 48rem;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  button,
+  input {
+    font: inherit;
+    margin: .4rem;
+  }
+
+  a {
+    color: #174ea6;
+  }
+</style>
+
+<body>
+  <h1>Routes and shared state</h1>
+  <p>Edit a profile, navigate back and forward, or reload a direct route URL. State persists across route changes; a
+    reload starts a new app.</p>
+  <main id="app"></main>
+  <script type="module" src="/examples/routes/main.js"></script>
+</body>
+
+</html>

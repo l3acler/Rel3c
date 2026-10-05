@@ -5,10 +5,12 @@ import { createActionSchema, ownActionRegistry } from "./actions/schema.js";
 import { createDispatcher } from "./actions/dispatch.js";
 import { createTracking } from "./reactivity/tracking.js";
 import { createBindings, derive as binding } from "./dom/bindings.js";
-import { when, keyed } from "./dom/nodes.js";
+import { when, keyed, outlet, a } from "./dom/nodes.js";
 import { registerDiagnostics } from "./diagnostics.js";
 import { createEvents } from "./dom/events.js";
 import { createRenderer } from "./dom/renderer.js";
+import { createScheduler } from "./scheduler.js";
+import { ownRouterConfig, createRouter } from "./routing/router.js";
 
 const targets = new WeakMap();
 const emptySchema = createActionSchema()(() => ({}));
@@ -20,8 +22,9 @@ export function createApplication(config, frameworkVersion) {
     "schema",
     "view",
     "onError",
+    "router",
   ]);
-  let { view = () => "", onError } = options;
+  let { view = options.router === undefined ? () => "" : () => outlet(), onError } = options;
   if (
     typeof view !== "function" ||
     (onError !== undefined && typeof onError !== "function")
@@ -63,6 +66,7 @@ export function createApplication(config, frameworkVersion) {
   }
   let store;
   let registry;
+  let routerConfig;
   try {
     store = createTransactionStore(
       options.initialState === undefined ? {} : options.initialState,
@@ -70,6 +74,7 @@ export function createApplication(config, frameworkVersion) {
     registry = ownActionRegistry(
       options.schema === undefined ? emptySchema : options.schema,
     );
+    routerConfig = options.router === undefined ? null : ownRouterConfig(options.router);
   } catch (error) {
     report(error, "create");
   }
@@ -89,6 +94,11 @@ export function createApplication(config, frameworkVersion) {
   const tracking = createTracking(store);
   const bindingOwner = Object.freeze({});
   const bind = createBindings(bindingOwner, live);
+  const router = routerConfig ? createRouter(routerConfig, tracking, () => renderer?.schedule(), runLocationInput) : null;
+  routerConfig = null;
+  const scheduler = createScheduler(run => run(), error => {
+    reported = new WeakSet(); report(error, "schedule");
+  });
   function live() {
     if (status === "disposed" || status === "disposing")
       fail(
@@ -163,6 +173,8 @@ export function createApplication(config, frameworkVersion) {
     return binding(read, bindingOwner);
   }
   function makeContext(addCleanup, isActive) {
+    const scheduled = new Set();
+    let ownsScheduled = false;
     const scopeLive = () => {
       if (!isActive()) fail("SCOPE_DISPOSED", "This view scope is no longer active.");
       live();
@@ -173,6 +185,10 @@ export function createApplication(config, frameworkVersion) {
       actions, dispatch,
       derive(read) { scopeLive(); return derive(read); },
       when, keyed,
+      outlet,
+      get route() { scopeLive(); return router?.route ?? null; },
+      navigate(to, options) { scopeLive(); return navigate(to, options); },
+      link(to, ...args) { scopeLive(); return link(to, ...args); },
       observe(read, notify) {
         scopeLive();
         const resource = observe(read, notify);
@@ -189,6 +205,25 @@ export function createApplication(config, frameworkVersion) {
         scopeLive();
         if (typeof cleanup !== "function") fail("CLEANUP_INVALID", "onDispose requires a synchronous cleanup function.");
         addCleanup(cleanup);
+      },
+      schedule(lane, callback) {
+        scopeLive();
+        if (lane === "immediate" || typeof callback !== "function") return schedule(lane, callback, isActive);
+        let cancel;
+        const stop = schedule(lane, () => {
+          try { return callback(); } finally { scheduled.delete(cancel); }
+        }, isActive);
+        cancel = () => { scheduled.delete(cancel); stop(); };
+        if (!ownsScheduled) {
+          addCleanup(() => {
+            const errors = [];
+            for (const stop of [...scheduled]) try { stop(); } catch (error) { errors.push(error); }
+            scheduled.clear();
+            if (errors.length) throw new AggregateError(errors, "Scoped work cancellation failed.");
+          });
+          ownsScheduled = true;
+        }
+        scheduled.add(cancel); return cancel;
       },
     });
   }
@@ -214,6 +249,57 @@ export function createApplication(config, frameworkVersion) {
       report(error, "dispatch");
     }
   }
+  function schedule(lane, callback, active) {
+    if (!handlingEvent && !reporting && !dispatcher?.isActive()) reported = new WeakSet();
+    try {
+      live();
+      if (dispatcher.isActive() || (rendering && lane === "immediate") || reporting || tracking.isBusy() ||
+          (lane === "immediate" && status === "mounting"))
+        fail("SCHEDULE_REENTRANT", "Cannot schedule during actions, rendering, reactive/error work or immediate view construction.");
+      return scheduler.schedule(lane, callback, active);
+    } catch (error) {
+      if (handlingEvent || dispatcher?.isActive()) throw error;
+      report(error, "schedule");
+    }
+  }
+  function navigate(to, options) {
+    if (!handlingEvent && !reporting && !dispatcher?.isActive()) reported = new WeakSet();
+    try {
+      live();
+      if (!router) fail("ROUTER_MISSING", "Configure a router before navigating.");
+      if (status !== "mounted" || rendering || reporting || tracking.isBusy() ||
+          (dispatcher.isActive() && !dispatcher.isExecuting()))
+        fail("NAVIGATION_REENTRANT", "Navigation requires a mounted app outside reactive/render/error work or payload admission.");
+      const request = router.prepare(to, options);
+      if (dispatcher.isExecuting()) dispatcher.afterCommit(() => router.commit(request));
+      else router.commit(request);
+    } catch (error) {
+      if (handlingEvent || dispatcher?.isActive()) throw error;
+      report(error, "navigation");
+    }
+  }
+  function runLocationInput(run) {
+    if (status !== "mounted") return;
+    reported = new WeakSet();
+    try {
+      if (rendering || reporting || dispatcher.isActive() || tracking.isBusy())
+        fail("NAVIGATION_REENTRANT", "Cannot process native navigation during active runtime work.");
+      run();
+    } catch (error) { report(error, "navigation"); }
+  }
+  function link(to, ...args) {
+    live();
+    if (!router) fail("ROUTER_MISSING", "Configure a router before creating framework links.");
+    const descriptor = a(...args);
+    if (Object.hasOwn(descriptor.props, "href") || descriptor.props.onClick != null || descriptor.props.on?.click != null)
+      fail("ROUTE_LINK_INVALID", "Framework links own href and click handling; other attributes/events are supported.");
+    const href = router.href(to);
+    return a({ ...descriptor.props, href, on: { ...descriptor.props.on, click: event => {
+      if (router.follows(event, href, typeof to === "string" && to.startsWith("#"))) {
+        event.preventDefault(); navigate(router.absolute(href));
+      }
+    } } }, ...descriptor.children);
+  }
   const actions = Object.create(null);
   for (const name of actionNames)
     Object.defineProperty(actions, name, {
@@ -228,6 +314,9 @@ export function createApplication(config, frameworkVersion) {
     actions,
     dispatch,
     flush,
+    schedule,
+    navigate, link, outlet,
+    get route() { live(); return router?.route ?? null; },
     observe,
     computed,
     derive,
@@ -284,11 +373,13 @@ export function createApplication(config, frameworkVersion) {
       const context = makeContext(cleanup => register(attemptCleanups, cleanup),
         () => mountCleanups === attemptCleanups && ["mounting", "mounted"].includes(status));
       try {
+        router?.start(target.ownerDocument.defaultView);
         events = createEvents(target, runEvent);
         renderer = createRenderer(target.ownerDocument, tracking, bindingOwner, makeContext, render, error => {
           reported = new WeakSet();
           report(error, "render");
-        }, events);
+        }, events, scheduler, router);
+        scheduler.connect(target.ownerDocument.defaultView, () => renderer?.schedule());
         render(() => {
           const output = view(context);
           observePromise(output);
@@ -300,11 +391,13 @@ export function createApplication(config, frameworkVersion) {
         // Invalidate the failed view scope before running its cleanup hooks.
         mountCleanups = [];
         const cleanupErrors = [];
+        try { router?.stop(); } catch (error) { cleanupErrors.push(error); }
         try { events?.dispose(); } catch (error) { cleanupErrors.push(error); }
         events = null;
         if (renderer) cleanupErrors.push(...renderer.dispose());
         cleanupErrors.push(...drain(attemptCleanups));
         renderer = null;
+        scheduler.connect(null, null);
         targets.delete(target);
         target = null;
         status = "created";
@@ -341,9 +434,11 @@ export function createApplication(config, frameworkVersion) {
       // Stop the complete graph before scoped/user cleanup can dispose sources
       // and accidentally notify other resources in this closing application.
       const errors = [];
+      try { scheduler.dispose(); } catch (error) { errors.push(error); }
+      tracking.dispose();
+      try { router?.dispose(); } catch (error) { errors.push(error); }
       try { events?.dispose(); } catch (error) { errors.push(error); }
       events = null;
-      tracking.dispose();
       if (renderer) errors.push(...renderer.dispose());
       errors.push(...drain(mountCleanups));
       errors.push(...drain(appCleanups));
@@ -374,6 +469,8 @@ export function createApplication(config, frameworkVersion) {
     },
   });
   registerDiagnostics(app, () => ({ ...tracking.counts(),
+    ...scheduler.counts(),
+    ...(router?.counts() ?? { routeListeners: 0 }),
     ...(renderer?.counts() ?? { scopes: 0, bindings: 0, ownedNodes: 0, queuedBindings: 0, frames: 0 }),
     ...(events?.counts() ?? { handlers: 0, listeners: 0 }) }));
   if (defaultTarget !== undefined) app.mount(defaultTarget);

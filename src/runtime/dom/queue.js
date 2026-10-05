@@ -1,6 +1,6 @@
 // Per-application visual work. Failures remain pending for an explicit retry or
 // a later commit, without scheduling an endless failing frame loop.
-export function createRenderQueue(window, render, report) {
+export function createRenderQueue(window, render, report, scheduler) {
   const pending = new Set();
   let frame = null, generation = 0, disposed = false;
   const cancel = () => {
@@ -27,6 +27,7 @@ export function createRenderQueue(window, render, report) {
         try { job.run(); } catch (error) { if (job.active()) pending.add(job); errors.push(error); }
       }
     }
+    try { scheduler?.flushFrames(); } catch (error) { errors.push(error); }
     if (errors.length === 1) throw errors[0];
     if (errors.length) throw new AggregateError(errors, 'DOM bindings failed; other bindings completed.');
   };
@@ -34,7 +35,9 @@ export function createRenderQueue(window, render, report) {
     add(job) { if (!disposed) pending.add(job); },
     delete(job) { pending.delete(job); },
     schedule() {
-      if (disposed || frame !== null || !pending.size || typeof window?.requestAnimationFrame !== 'function') return;
+      if (disposed) return;
+      if (!pending.size && !scheduler?.hasFrames()) { if (frame !== null) cancel(); return; }
+      if (frame !== null || typeof window?.requestAnimationFrame !== 'function') return;
       const expected = ++generation;
       frame = window.requestAnimationFrame(() => {
         if (disposed || expected !== generation) return;

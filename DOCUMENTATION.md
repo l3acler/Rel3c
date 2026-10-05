@@ -2,7 +2,7 @@
 
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
-application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.3 add native events and semantic keyboard/text inputs, with experimental APIs and explicit browser qualification limits.
+application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.6 add native events, semantic keyboard/text inputs, cooperative priority lanes and History/hash routing with one shared application store. APIs remain experimental and browser qualification is limited.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -20,13 +20,15 @@ Import from `src/index.js`; applications do not need runtime internals.
 | Native events         | Scoped on maps with capture/passive/once and cancellation; compatible zero-argument onClick    |
 | Keyboard/text inputs  | Serializable key/held/reset and native text snapshots; composition-safe value bindings         |
 | Render frames         | Deduplicated latest-value writes, cancelled disposed work and explicit`app.flush()`          |
+| Priority work         | Immediate/frame/normal/idle lanes with cancellation and bounded FIFO turns                      |
+| Routing               | History/hash URLs, params/query, native links, scoped outlets and shared state across routes    |
 | Error reporting       | Readable framework error codes and a synchronous application error hook                        |
 | TypeScript            | Inferred action names/payloads and read-only state declarations                                |
 
 Views construct their static tree once per mount; explicit bindings update affected
 text, attributes, classes and styles on render frames after committed actions. Conditional factories
 run when their selected boolean branch changes. Native events, keyboard and text editing
-are implemented; routing, priorities, persistence, controlled services, recording and
+are implemented alongside routing and priorities; persistence, controlled services, recording and
 replay remain unimplemented. Broad browser/OS IME qualification remains open.
 
 ## Start from the project root
@@ -94,6 +96,7 @@ explicit bindings below for updates.
 | `element(tag, props?, ...children)` and HTML helpers | Create immutable declarative elements                                 |
 | `keyed(itemsBinding, key, view)`                     | Retain item scopes and DOM across list updates                        |
 | `derive(read)` and `when(condition, yes, no?)`     | Explicit derived bindings and scoped conditional children             |
+| `outlet()`                                         | Render the active route in a persistent app shell                      |
 | `FrameworkError`                                     | Framework error class with a readable message and`code`             |
 | `VERSION`                                            | Package version string                                                |
 | `FRAMEWORK_INFO`                                     | Frozen metadata describing implemented and planned capabilities       |
@@ -106,8 +109,8 @@ called; `app.mount(element)` uses a custom DOM Element. Passing `target` to
 `createApp` mounts immediately. Invalid explicit targets do not fall back to `#app`.
 A missing target/document rejects clearly, and the app may retry later.
 
-Config supports only `initialState`, `schema`, `view`, `target` and `onError`.
-Defaults are `{}` state, an empty schema and an empty text view. Unknown options
+Config supports only `initialState`, `schema`, `view`, `target`, `onError` and `router`.
+Defaults are `{}` state, an empty schema and an empty text view; with a router, the default view is an outlet. Unknown options
 and accessor configuration properties reject. Inline `actions` and `seed`
 configuration are not implemented.
 
@@ -274,7 +277,7 @@ Open [http://localhost:3000/examples/keyed/](http://localhost:3000/examples/keye
 for a public-import list with clickable increment, add/remove/reorder, completion,
 visibility and rollback controls. Its text edits deliberately remain native/local;
 add `onText` to opt into action-based text synchronization. The [example guide](examples/keyed/README.md) describes focus and
-scope behavior. Routing, priorities and replay remain unimplemented.
+scope behavior. Routing and priorities are described below; replay remains unimplemented.
 
 ## Native events, keyboard and text editing
 
@@ -432,8 +435,8 @@ cleanup and disposal also pass. These are correctness observations, not a perfor
 or heap-collection claim. See [core acceptance evidence](docs/reports/task-A.10-core-slice.md).
 
 The API stays experimental. B.1–B.3 now add native events and keyboard/text
-synchronization. Remaining Phase B work includes routing, priorities and state
-locations; Phase C adds deterministic services and replay.
+synchronization. B.4–B.6 add priority work and shared-state routing. Remaining Phase B work includes state
+locations and the auditor acceptance gate; Phase C adds deterministic services and replay.
 
 ## Render frames and explicit flush
 
@@ -454,7 +457,7 @@ app.flush(); // Clean queue: no duplicate writes.
 ```
 
 `app.flush()` takes no arguments, returns undefined and can be detached. It
-synchronously drains pending bindings and cancels its scheduled callback; it is
+synchronously drains pending bindings and queued frame callbacks, and cancels its scheduled callback; it is
 a no-op before mounting. If the target document has no animation-frame API, work
 stays queued until explicit flush. Disposal cancels all work. Flush during an
 action/guard, mounting, reactive read/notification, render factory or error hook
@@ -470,10 +473,166 @@ old branch; a cleanup failure after replacement reports the completed change.
 Rendering is not an atomic DOM transaction: successful writes survive another
 binding's failure. Derived callbacks must stay pure and synchronous.
 
-This is visual batching only. Scheduler priorities, fairness budgets, fixed
-simulation ticks and interpolation remain
-future work. Hidden-tab rendering follows native animation-frame behavior; use
+This is visual batching only. Priority work is described below; fixed
+simulation ticks and interpolation remain future work. Hidden-tab rendering follows native animation-frame behavior; use
 explicit flush for deterministic checks. No speed or heap claims are made.
+
+## Priority work and cancellation
+
+`app.schedule(lane, callback)` runs a synchronous callback in a selected lane and
+returns an idempotent cancel function. Use normal work for effects that dispatch
+results as actions. Frame work is presentation work and cannot dispatch or navigate.
+
+| Lane | Execution and ordering |
+| --- | --- |
+| `immediate` | Runs synchronously now; named actions already commit synchronously without scheduling |
+| `frame` | Runs after dirty bindings in the next render frame or `app.flush()`; work added by a frame callback waits for another frame |
+| `normal` | Independent timer task, FIFO, at most 32 callbacks per turn; input/frames do not replace its pending task |
+| `idle` | Native idle callback with 1,000 ms timeout, or a 32 ms timer fallback; at most eight callbacks per turn, after pending normal work and within the idle deadline |
+
+```js
+const cancel = app.schedule('normal', () => app.actions.increment());
+cancel(); // Cancel queued work; harmless after it has run.
+app.schedule('immediate', () => app.actions.increment());
+app.schedule('frame', () => console.log('Visual bindings have been applied.'));
+```
+
+The view-context `schedule` also cancels pending work when its view/route/list scope
+unmounts. Completed tasks are removed from that scope's pending set. Application
+work lasts until it runs, is canceled or the app is disposed. Frame work waits for
+mounting if queued beforehand; normal/idle work can run headlessly. `app.flush()`
+never drains normal or idle tasks. Native browser task/paint timing determines the
+relative order of a normal task and a future frame; there is no total ordering of
+all lanes. Idle work must not control correctness, and budgets bound callback counts,
+not arbitrary callback duration or browser scheduling while JavaScript is blocked.
+
+At most 1,024 deferred callbacks may be queued per app. Invalid lanes/functions
+reject `SCHEDULE_LANE_INVALID`/`SCHEDULE_CALLBACK_INVALID`; overflow rejects
+`SCHEDULE_LIMIT`. Actions, reactive reads/notifications and error hooks cannot schedule;
+immediate work also rejects during view construction/rendering and recursive
+immediate scheduling (`SCHEDULE_REENTRANT`). Promise/thenable results reject
+`SCHEDULE_ASYNC`. A failed task is consumed, other eligible work is attempted and
+future turns still run. Immediate/normal/idle failures report phase `schedule`;
+frame callback failures report `render`. Deferred failures also reach the browser's
+uncaught-error path. Cancellation and disposal guard stale native callbacks.
+See [scheduling reference](docs/api/scheduling.md).
+
+## Routing and shared application state
+
+A router keeps native URLs and a reactive location snapshot synchronized while
+all routes use the existing application store and action schema. No app is recreated
+on navigation. Save the following as a root browser module, load it in a page with
+`<main id="app"></main>`, and open that page with `#/` for this hash-mode example:
+
+```js
+import { createApp, createActionSchema, div, button, span, outlet } from './src/index.js';
+const schema = createActionSchema()(({ action }) => ({
+  increment: action(draft => { draft.count++; }),
+  openProfile: action(draft => {
+    draft.count++;
+    app.navigate('/people/Ada?tab=profile'); // Applied after this action commits.
+  }),
+}));
+const app = createApp({
+  initialState: { count: 0 }, schema,
+  router: {
+    mode: 'hash',
+    routes: [
+      { path: '/', view: ({ bind, actions, link }) => div(
+        span(bind.count), button({ type: 'button', onClick: actions.increment }, 'Increment'),
+        button({ type: 'button', onClick: actions.openProfile }, 'Open profile'), link('/people/Ada', 'Profile')) },
+      { path: '/people/:id', view(context) { return div(
+        context.derive(() => context.route.params.id), ' shared count: ', context.bind.count,
+        context.link('/', 'Home')); } },
+    ],
+    notFound: ({ link }) => div('Not found. ', link('/', 'Home')),
+  },
+  view: ({ link }) => div(link('/', 'Home'), outlet()), // Persistent shell; optional.
+});
+app.mount();
+```
+
+The runnable History-mode example is
+[http://localhost:3000/examples/routes/](http://localhost:3000/examples/routes/).
+It includes two routes, a shared counter, semantic text editing, form submission
+that navigates after commit, rollback and normal scheduled work. Its server fallback
+also supports direct entry and reload at `/examples/routes/people/Ada?tab=details`.
+Reload creates a new store from defaults; route sharing does not imply persistence.
+
+Configure `router: { mode?, base?, routes, notFound? }`. Default mode is `history`
+and base is `/`. History hosts must serve the same HTML/module page at deep URLs;
+use absolute script paths so modules survive direct loads. The root server supplies
+this fallback only for missing extensionless URLs under `/examples/routes/`, and
+keeps missing assets at 404. Hash mode keeps the mounted document path/query and
+places application path/query/fragment after `#`; `base` affects History mode only.
+
+Routes are an ordered array of at most 256 `{ path, view }` declarations; first
+match wins. Use absolute application paths with literal segments and `:name`
+parameters. Trailing slashes match equivalently; parameter names must be unique
+identifiers. Parameters decode once, including encoded slash as opaque text.
+Wildcards, optional segments, regex patterns, dot segments, duplicates, holes,
+accessors, extra properties and async views are unsupported. `notFound` defaults
+to `Not found`. Configuration/pattern errors reject `ROUTER_CONFIG_INVALID`.
+One mounted router owns each Window (`ROUTER_OWNED`); ordinary nonrouter apps
+can still share that Window. Mount failure/disposal releases listeners and claims.
+
+`app.route` and `context.route` are deeply frozen snapshots: `path` is the encoded
+application pathname; `params` contains decoded strings; `query` maps keys to
+frozen arrays preserving duplicate values; `search` and `hash` are serialized query
+and fragment; `url` is native pathname/search/hash; `matched` and `outsideBase`
+expose matching. Route is null before mount or without a router. Route-view context
+has a route at construction. Read route inside `derive`, `observe` or `computed`
+to react; capturing a snapshot in static text does not update it. Route dependencies
+track the entire location snapshot, independently of exact user-state properties.
+Location changes do not increment `stateVersion` or mutate user state.
+
+`app.navigate(to, { replace?: boolean })` accepts absolute application paths,
+relative/query/fragment references, or full same-origin URLs within the router's
+URL space. History application paths prepend `base`; relative references resolve
+against the route current at admission. In hash mode full URLs must retain the
+mounted document path/query. Replace uses `replaceState`, otherwise `pushState`;
+identical URLs write nothing. Writes preserve native `history.state`. Native
+back/forward and hash changes publish once without feedback writes. Native
+History traversal outside the base produces a not-found snapshot. Malformed native
+URLs report an error and retain the previous snapshot until a valid location arrives;
+the browser has already changed its URL in that case. URL strings are
+bounded to 8,192 characters; credentials, external origins, unsupported protocols,
+whitespace/backslashes and malformed path encoding reject `ROUTE_URL_INVALID`.
+Bad options reject `ROUTE_OPTIONS_INVALID`. Navigation requires a mounted router;
+missing configuration rejects `ROUTER_MISSING`. Reactive reads/notifications,
+payload guards, rendering and error hooks reject `NAVIGATION_REENTRANT`.
+
+Inside an action, valid navigation requests wait for its successful commit.
+State notifications run first, then that action's requests FIFO, then queued child
+actions. Each request resolves against the location at admission, not previous
+queued requests. Throwing/async/invalid actions discard their requests and children
+without URL writes. At most 1,024 requests per action are admitted
+(`ROUTE_QUEUE_LIMIT`). Notification or native History failure after commit cannot
+roll back committed state; healthy requests and children continue. Native write
+failure rejects `ROUTE_HISTORY_FAILED` and leaves the old route snapshot.
+Direct/native navigation failures report phase `navigation`; failures during an
+action report through its outer dispatch, or `event` when invoked by a handler.
+
+`outlet()` mounts one active route scope. Path/record changes prepare a candidate,
+then dispose the old scope's bindings, subscriptions, handlers and scheduled work;
+query/hash-only changes retain nodes, edits, focus and selection. Several navigations
+before a frame coalesce to the latest view. A failing candidate leaves the previous
+DOM for retry with `app.flush()` while URL/route stay committed. Cleanup errors
+report the completed replacement. One active outlet is supported
+(`ROUTE_OUTLET_DUPLICATE`); an outlet without configuration rejects `ROUTER_MISSING`.
+Nested/multiple outlets, loaders, async navigation guards, automatic focus/scroll
+policies, persistence and recorded navigation/replay are not implemented.
+
+`context.link(to, props?, ...children)` or `app.link` creates a native anchor with
+owned href/click handling. Use it during mounted view construction; an unmounted
+router rejects `ROUTER_NOT_MOUNTED`. Unmodified primary activation navigates and
+cancels default; modified/middle clicks, already prevented events, download,
+non-self target, `rel="external"`, external/out-of-base URLs and History fragment-only
+references preserve browser behavior. Keyboard Enter uses native anchor activation.
+Other attributes/events are supported; href/onClick/on.click overrides reject
+`ROUTE_LINK_INVALID`. Ordinary `a` descriptors remain native links. No app-owned
+listeners or DOM patching are needed. See [routing reference](docs/api/routing.md)
+and decisions [0012](docs/adr/0012-priority-scheduling.md)/[0013](docs/adr/0013-routing-navigation.md).
 
 ## State and named actions
 
@@ -707,7 +866,7 @@ disposal still completes and then throws an AggregateError. Hooks must be
 synchronous, and disposed view scopes reject new registrations.
 
 An optional synchronous `onError(error, { phase })` observes creation, mounting,
-dispatch, click event, rendering and disposal failures without swallowing them. For a dispatch batch it
+dispatch, native event, rendering, scheduled work, navigation and disposal failures without swallowing them. For a dispatch batch it
 runs once after draining, when committed state is complete. If the hook also
 throws, its failure aggregates with the original. It cannot dispatch recovery
 work; the caller can catch the outer error and dispatch afterward. Unknown
@@ -757,7 +916,8 @@ npm run test:types
 Browser checks require installed Chrome. Type checks require the development-only
 TypeScript installation; startup and Node tests do not. For the full reference,
 see [application API](docs/api/application.md). For current validation results,
-see [B.1–B.3 input evidence](docs/reports/task-B.1-B.3-inputs.md) and
+see [B.4–B.6 routing/scheduling evidence](docs/reports/task-B.4-B.6-routing-scheduling.md),
+[B.1–B.3 input evidence](docs/reports/task-B.1-B.3-inputs.md) and
 [A.10 core evidence](docs/reports/task-A.10-core-slice.md). The
 [README](README.md) provides repository structure, feature status and the remaining
 verification commands; the [PRD](Framework_PRD.md) defines future acceptance gates.
