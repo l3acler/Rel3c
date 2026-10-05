@@ -132,3 +132,15 @@ persisted.flushPersistence();
 const pending: boolean = persisted.persistence.pending;
 const issues: readonly import('mini-framework').PersistenceIssue[] = persisted.persistence.errors;
 void pending; void issues;
+
+// B.9: inferred state survives a contextually typed synchronous error hook.
+const withErrorHook = createApp({ initialState: { ready: true }, onError(error, info) {
+  const message: string = error.message;
+  const phase: import('mini-framework').ErrorPhase = info.phase;
+  if (error instanceof FrameworkError) { const code: string = error.code; void code; }
+  void message; void phase; return 1;
+} });
+type ErrorHookState = Expect<Equal<typeof withErrorHook.state.ready, boolean>>;
+const withSchemaHook = createApp({ schema, initialState, onError: (error, info) => info.phase });
+type ErrorHookActions = Expect<Equal<Parameters<typeof withSchemaHook.actions.rename>, [payload: DeepReadonly<{ name: string }> ]>>;
+withSchemaHook.actions.rename({ name: 'Checked' });

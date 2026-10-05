@@ -1,12 +1,12 @@
 # Framework development plan
 
-**Status:** Phase 0 and Phase A complete; A.1–A.10 verified. Phase B is in progress; remaining B–D tasks are planned.
+**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C/D are planned.
 
 **Created:** 30 September 2026.
 
 **Source:** [Framework_PRD.md](Framework_PRD.md), version 2.13, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** Phase A complete; Phase B in progress. B.1–B.3 implemented and Chrome-verified; OS/native clipboard/mobile/cross-browser input qualification remains open. B.4–B.6 priorities/routing are implemented and Chrome-verified. B.7/B.8 state locations are implemented. B.9–B.11 public-contract refinement and auditor verification are next.
+**Current milestone:** B.9–B.11 public contracts/documentation and the clean-candidate auditor walkthrough pass. B.1–B.8 are implemented. Desktop Chrome is verified; OS IMEs, system clipboard paste, mobile/other browsers and assistive technology remain open release gates. Next implementation batch: C.1/C.2 serialization/version contracts and controlled clock/random services; experimental compatibility is explicit in ADR 0015.
 
 ## 1. Purpose and scope
 
@@ -149,9 +149,9 @@ Deliver tested public core exports and a root-runnable example. Pass rollback, a
 - [x] **B.6 — Implement routing with persistent app ownership.** Dependencies: B.5, A.9. Mount/dispose route views while retaining the application store; process framework links, action navigation, direct load, and browser back/forward. Synchronize URL and reactive route state without feedback loops. Acceptance: two routes update the same state; navigation changes the expected URL/view/state; direct loads and back/forward work; removed routes release handlers and subscriptions.
 - [x] **B.7 — Specify state locations and hydration precedence.** Dependencies: A.2, B.5. Define explicit memory/session/local/URL field configuration, supported serialization, defaults, precedence, invalid-data handling, namespace/schema versions, and synchronization directions. Coordinate route query and URL-backed state ownership. Acceptance: an ADR resolves conflicting persisted/URL/default values and prevents routing/persistence loops.
 - [x] **B.8 — Implement state-location adapters.** Dependencies: B.6, B.7, B.4. Hydrate configured fields through a defined initialization/input boundary; queue storage writes after successful commits. Handle quota/access/parse failures without undoing committed memory. Acceptance: reload retains only configured fields; memory-only state resets; failed actions write nothing; storage errors are reported; URL-backed state follows back/forward without loops.
-- [ ] **B.9 — Publish declarations and diagnostics.** Dependencies: 0.8, B.1–B.8. Provide action/payload inference, read-only state, element/event/router types, and clear errors for unsupported values, unknown actions, mutation violations, computed cycles, and list keys. Acceptance: positive/negative TypeScript fixtures pass while plain JavaScript examples remain usable; runtime validation independently catches invalid external data.
-- [ ] **B.10 — Write root documentation and public examples.** Dependencies: B.1–B.9. Replace the placeholder README with the exact root command/URL, folder map, feature status, dependency disclosure, and explanations of the execution model. Add copyable examples for a `div`, nested children/text, ID/class/other attributes, click/scroll/key handling, forms, shared route state, and navigation requested by an action. Acceptance: every example runs through public imports without DOM patches or application-managed listeners; API/lifecycle/storage/browser limitations are documented.
-- [ ] **B.11 — Run the clean-checkout auditor walkthrough.** Dependencies: B.10. Recreate the documented startup using a clean temporary checkout/copy that includes the candidate changes. Build a small routed form/list interface from README instructions, and inspect dependencies/source for independent implementation. Acceptance: setup requires no internal edits or moving files; all general frontend tests and supported-browser checks pass; exact commands/results are recorded.
+- [x] **B.9 — Publish declarations and diagnostics.** Dependencies: 0.8, B.1–B.8. Provide action/payload inference, read-only state, element/event/router types, and clear errors for unsupported values, unknown actions, mutation violations, computed cycles, and list keys. Acceptance: positive/negative TypeScript fixtures pass while plain JavaScript examples remain usable; runtime validation independently catches invalid external data.
+- [x] **B.10 — Write root documentation and public examples.** Dependencies: B.1–B.9. Replace the placeholder README with the exact root command/URL, folder map, feature status, dependency disclosure, and explanations of the execution model. Add copyable examples for a `div`, nested children/text, ID/class/other attributes, click/scroll/key handling, forms, shared route state, and navigation requested by an action. Acceptance: every example runs through public imports without DOM patches or application-managed listeners; API/lifecycle/storage/browser limitations are documented.
+- [x] **B.11 — Run the clean-checkout auditor walkthrough.** Dependencies: B.10. Recreate the documented startup using a clean temporary checkout/copy that includes the candidate changes. Build a small routed form/list interface from README instructions, and inspect dependencies/source for independent implementation. Acceptance: setup requires no internal edits or moving files; all general frontend tests and supported-browser checks pass; exact commands/results are recorded.
 
 **B.1–B.3 verification boundary:** Implemented and verified with Node/Chrome fixtures,
 trusted keyboard/Unicode editing and Chrome composition-engine automation. B.3
@@ -255,7 +255,7 @@ This register tracks recorded architecture choices and later open decisions, not
 | Format versions, canonical encoding, checkpoint metadata | Alias round trips and compatibility fixtures | Draft before public API freeze; prove in C.1 |
 | Retention budgets, keyframe interval, oversized snapshot behavior | Byte accounting and eviction workloads | Draft before public API freeze; prove in C.8 |
 | Undo/redo grouping and effect policy | Seek, branch, external-effect scenarios | D.1, before history API freeze |
-| Final name, exports, and stable release surface | Public examples, declarations, remaining decision review | Before the first stable API release |
+| Final name, exports, and stable release surface | ADR 0015 defines experimental frontend/Phase C compatibility; public entry verified B.9–B.11 | Stable name/release freeze remains future work |
 
 Resolve the PRD's “before API freeze” decisions before declaring the corresponding surface stable. A Phase B candidate may expose verified frontend APIs while deterministic formats remain experimental; an experimental format is not a frozen recording contract. If decisions force a contract change, update the PRD where necessary and publish the compatibility impact.
 
@@ -708,16 +708,16 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 
 - [x] Both transaction strategies were measured on equivalent workloads; the selected strategy has an evidence-backed ADR (0003, task 0.9).
 - [ ] All 24 PRD functional requirements have implemented public contracts, documentation, and passing acceptance evidence.
-- [ ] A clean checkout runs from the root and an auditor builds the documented form/list/routed interface using only public imports.
+- [x] A clean candidate copy runs from the root and an auditor builds the documented form/list/routed interface using only public imports (B.11; revision not committed yet).
 - [ ] Click, scroll, key, and semantic text inputs work with native focus/form behavior and verified cleanup.
-- [ ] Shared application state survives navigation; URL, route state, and configured state locations remain synchronized.
+- [x] Shared application state survives navigation; URL, route state, and configured state locations remain synchronized (B.6/B.8/B.11).
 - [ ] Ticks, versions, controlled services, external inputs, bounded recording, and replay meet the deterministic contract.
 - [ ] Interpolation changes visuals only; retention always preserves a usable baseline and bounded seeking.
 - [ ] History policy, inspector, and benchmark report meet their acceptance gates.
-- [ ] Runtime capabilities are independently implemented; development dependencies and limitations are disclosed.
+- [x] Implemented frontend capabilities are independent; development dependencies and limitations are disclosed (B.11).
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** B.7/B.8 implemented and verified; B.4–B.6 committed; see [routing/scheduling report](docs/reports/task-B.4-B.6-routing-scheduling.md). B.7/B.8 state locations are implemented; see [persistence report](docs/reports/task-B.7-B.8-persistence.md). B.9–B.11 are next. B.1–B.3 were committed at user request; B.4–B.6 committed at user request. Phase A exit gate remains verified. See the [core report](docs/reports/task-A.10-core-slice.md). A.8/A.9 were committed at user request; their [report](docs/reports/task-A.8-A.9-keyed-events.md) and [ADR 0010](docs/adr/0010-keyed-scopes-clicks.md) remain historical evidence.
+**Current batch:** B.9–B.11 implemented and verified; see [auditor report](docs/reports/task-B.9-B.11-auditor.md). Batch 3 committed as c278bd0 at user request; Batch 2 committed as 24a0636. Batch 4 remains uncommitted; no push. Next: C.1/C.2. Native OS/mobile/cross-browser input qualification remains open before a stable frontend release.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -827,4 +827,29 @@ checks and root smoke pass. See [evidence](docs/reports/task-B.7-B.8-persistence
 No live distributed/cross-tab merging, automatic migrations/unload flushing,
 recording/replay or separate demo app is included. Phase B remains incomplete.
 Next is B.9–B.11 contract/documentation refinement and clean-checkout auditor
-verification. Batch 3 remains uncommitted; Batch 2 was committed at user request.
+verification. Batch 3 was subsequently committed as c278bd0 at user request; no push.
+
+
+### B.9–B.11 public contracts and auditor walkthrough — complete (6 October 2026)
+
+Owner: Codex. Baseline: Batch 3 commit c278bd0. B.9 aligns async error-hook
+checking with the existing runtime and adds public-entry diagnostics/type cases.
+B.10 replaces stale README/planned snippets with a full routed native form/keyed
+list, exact startup/import paths, lifecycle/persistence behavior, tooling and
+browser/compatibility limits. ADR 0015 separates experimental frontend and future
+deterministic versions. B.11 creates a clean temporary candidate, reconstructs
+README files, runs root startup/tests before installing tooling, verifies locked
+TypeScript/source independence and exercises the app in isolated Chrome.
+
+Verification: 425 runtime, 292 spike and 15 workload tests; strict positive TS /
+checked JavaScript and 108 independently rejected negative lines; 114 Chrome
+checks including eight README-app checks; root smoke and empty runtime dependency
+tree. Candidate sources stay unchanged during verification. See the report/raw
+artifact for exact commands, hashes, environment and boundaries. The test runner
+now discovers files explicitly rather than relying on newer Node's glob support;
+Node 26 is verified, not every version in the Node 18+ range.
+
+Batch 4 remains uncommitted. The frontend candidate auditor gate passes; broad OS
+IME/clipboard/mobile/browser qualification and stable release freeze remain open.
+Recording/replay/controlled services are unimplemented. Next: C.1/C.2 design and
+implementation. No separate demonstration app or publication is included.

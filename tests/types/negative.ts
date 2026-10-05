@@ -29,7 +29,7 @@ app.mount({ nodeType: 1 });
 createApp({ schema, initialState: { count: 'bad', name: 'Ada', rows: [] } });
 // @ts-expect-error async views do not satisfy the text boundary
 createApp({ view: async () => 'text' });
-// @ts-expect-error element descriptors are not implemented yet
+// @ts-expect-error plain objects are not framework-created element descriptors
 createApp({ view: () => ({ tag: 'div' }) });
 // @ts-expect-error placeholder seed is not an implemented option
 createApp({ seed: 1 });
@@ -168,3 +168,19 @@ createApp({ initialState: { n: 0 }, persistence: { namespace: 'test', fields: { 
 app.persistence.errors.push({ code: 'x', source: 'local', field: null, message: 'x' });
 // @ts-expect-error Flush accepts no arguments.
 app.flushPersistence('local');
+
+// B.9: error hooks have the same synchronous contract in both createApp overloads.
+// @ts-expect-error Promise-returning error hooks are rejected.
+createApp({ onError: async () => {} });
+// @ts-expect-error Promise-returning error hooks are rejected with a schema too.
+createApp({ schema, initialState: { count: 0, name: 'Ada', rows: [] }, onError: async () => {} });
+// @ts-expect-error Error metadata is read-only.
+createApp({ onError: (error, info) => { info.phase = 'mount'; } });
+// @ts-expect-error Event snapshots preserve contextual native event types.
+input({ on: { keydown: event => { const number: number = event.nativeEvent.key; } } });
+// @ts-expect-error Native events are not a supported action payload.
+app.actions.rename(new Event('input'));
+// @ts-expect-error Persisted issue entries are read-only too.
+app.persistence.errors[0]!.code = 'changed';
+// @ts-expect-error Route parameter maps cannot be mutated.
+app.route!.params.id = 'changed';

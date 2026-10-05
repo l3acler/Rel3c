@@ -123,7 +123,7 @@ async function runSmoke() {
     assert.ok(mainJsRes.body.includes('app.mount()'), 'Example must use default public mounting');
     assert.ok(!mainJsRes.body.includes('innerHTML') && !mainJsRes.body.includes('addEventListener'),
       'Example consumes public lifecycle without manual DOM/event behavior');
-    for (const file of ['examples/dom/', 'examples/dom/main.js', 'examples/features/', 'examples/features/main.js', 'examples/features/styles.css', 'examples/keyed/', 'examples/keyed/main.js', 'examples/inputs/', 'examples/inputs/main.js', 'examples/routes/', 'examples/persistence/', 'examples/persistence/main.js', 'examples/routes/main.js', 'examples/routes/people/Ada?tab=details']) {
+    for (const file of ['examples/auditor/', 'examples/auditor/main.js', 'examples/dom/', 'examples/dom/main.js', 'examples/features/', 'examples/features/main.js', 'examples/features/styles.css', 'examples/keyed/', 'examples/keyed/main.js', 'examples/inputs/', 'examples/inputs/main.js', 'examples/routes/', 'examples/persistence/', 'examples/persistence/main.js', 'examples/routes/main.js', 'examples/routes/people/Ada?tab=details']) {
       const response = await fetchUrl(`${base}/${file}`);
       assert.equal(response.statusCode, 200, 'Public DOM example must be served');
       assert.ok(!response.body.includes('addEventListener') && !response.body.includes('innerHTML'));

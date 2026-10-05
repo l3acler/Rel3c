@@ -52,7 +52,7 @@ window.runAppLifecycleTests = async () => {
     throws(() => a.mount(), 'APP_DISPOSED');
   });
   await test('public browser-native module exports current lifecycle metadata', () => {
-    assert(FRAMEWORK_INFO.phase.startsWith('B.7')); assert(Object.isFrozen(FRAMEWORK_INFO));
+    assert(FRAMEWORK_INFO.phase.startsWith('B.9')); assert(Object.isFrozen(FRAMEWORK_INFO));
     assert(typeof createActionSchema === 'function' && typeof FrameworkError === 'function');
   });
   await test('lazy create, explicit mount, terminal/idempotent dispose', () => {

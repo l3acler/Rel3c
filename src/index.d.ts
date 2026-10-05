@@ -1,4 +1,4 @@
-/** Experimental public runtime including inputs, routing, priorities and state locations (B.1–B.8). */
+/** Experimental public frontend runtime. See DOCUMENTATION.md for compatibility and browser qualification. */
 export const VERSION: string;
 export interface FrameworkInfo {
   readonly name: string; readonly version: string; readonly phase: string;
@@ -37,6 +37,8 @@ type ArgsOf<T> = T extends ActionSpec<unknown, infer Args> ? Args : never;
 type DispatchArgs<D> = { [K in keyof D & string]: [name: K, ...ArgsOf<D[K]>] }[keyof D & string];
 export type AppStatus = 'created' | 'mounting' | 'mounted' | 'disposing' | 'disposed';
 export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' | 'schedule' | 'navigation' | 'persistence';
+export type ErrorHandler = (error: Error, info: Readonly<{ phase: ErrorPhase }>) => unknown;
+type SyncErrorHook<F extends ErrorHandler> = { readonly onError?: F & Sync<F> };
 type Cleanup<F extends () => unknown> = F & Sync<F>;
 export interface Observer<T> {
   /** Rerun the read and replace its dependency set. */
@@ -197,7 +199,7 @@ export interface AppConfig<S extends object, D extends Definitions<S> = {}> {
   readonly initialState?: S;
   readonly schema?: ActionSchema<S, D>;
   readonly view?: (context: ViewContext<S, D>) => Child | void;
-  readonly onError?: (error: Error, info: Readonly<{ phase: ErrorPhase }>) => void;
+  readonly onError?: ErrorHandler;
   readonly router?: RouterConfig<S, D>;
   readonly persistence?: PersistenceConfig<S>;
 }
@@ -227,7 +229,9 @@ export interface AppInstance<S extends object, D extends Definitions<S> = {}> ex
   mount(target?: Element): AppInstance<S, D>;
   dispose(): void;
 }
-export function createApp<S extends object, D extends Definitions<S>>(
-  config: Omit<AppConfig<NoInfer<S>, D>, 'schema'> & { schema: ActionSchema<S, D> }
+export function createApp<S extends object, D extends Definitions<S>, F extends ErrorHandler = ErrorHandler>(
+  config: Omit<AppConfig<NoInfer<S>, D>, 'schema' | 'onError'> & { schema: ActionSchema<S, D> } & SyncErrorHook<F>
 ): AppInstance<S, D>;
-export function createApp<S extends object = Record<string, unknown>>(config?: AppConfig<S>): AppInstance<S>;
+export function createApp<S extends object = Record<string, unknown>, F extends ErrorHandler = ErrorHandler>(
+  config?: Omit<AppConfig<S>, 'onError'> & SyncErrorHook<F>
+): AppInstance<S>;

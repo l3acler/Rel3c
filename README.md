@@ -1,599 +1,291 @@
 # mini-framework
 
-A standalone JavaScript frontend framework built from scratch with a reactive runtime; deterministic services and replay are planned. It supports interactive browser applications.
+A JavaScript frontend framework built here, with no third-party runtime dependencies.
+It provides transactional state, precise DOM bindings, native events, keyed lists,
+routing, priorities and selected state persistence. Fixed ticks, controlled
+clock/random, recording, replay and developer tools are planned for Phases C/D.
 
-Read [DOCUMENTATION.md](DOCUMENTATION.md) for the public framework guide, runnable
-examples, lifecycle, actions, exact observers, computed values, errors and limits. It is maintained alongside every
-framework addition or change.
+The public API is experimental (`0.1.0`). The Phase B frontend walkthrough is
+qualified in desktop Chrome; OS IMEs, system clipboard paste, mobile and other
+browsers remain unverified. See [browser support](docs/browser-support.md) and the
+[public guide](DOCUMENTATION.md) for the exact contracts and limits.
 
-## Table of Contents
+## Run from the root
 
-- [Overview & Purpose](#overview--purpose)
-- [Execution Model: Why APIs Work This Way](#execution-model-why-apis-work-this-way)
-- [Current Milestone Status](#current-milestone-status)
-- [Zero-Dependency & Tooling Disclosure](#zero-dependency--tooling-disclosure)
-- [Quick Start](#quick-start)
-- [Current Public Application API](#current-public-application-api)
-- [Repository Structure](#repository-structure)
-- [Planned API Contracts & Examples](#planned-api-contracts--examples)
-- [Verification & Quality Gates](#verification--quality-gates)
+Use Node.js 18 or later (verified with Node 26). From this folder:
 
----
-
-## Overview & Purpose
-
-`mini-framework` is a project building a frontend framework with zero third-party runtime dependencies for applications where state transitions must be reproducible, fine-grained, and auditable. Architecture spikes and Phase A (A.1–A.10) are complete: lifecycle, transactions, named dispatch, exact dependencies, computed values, declarative DOM, keyed lists and scoped clicks. B.1–B.8 add native/semantic events, cooperative priorities, shared-state History/hash routing and guarded state locations. Remaining Phase B tasks are planned; deterministic services and replay remain Phase C tasks.
-
-The runtime implements named transactions and frame-batched reactive rendering.
-Deterministic simulation services remain planned:
-
-1. **Fine-Grained Reactive Bindings (`DOM-1`, `DOM-2`, implemented A.6)**: State properties track which exact DOM nodes or computed values depend on them. Updating one property touches only its bound DOM node, leaving unaffected nodes and browser focus untouched.
-2. **Transactional State Actions (`ACTION-1`, `STATE-1`, implemented A.3)**: Synchronous actions execute against a draft transaction view. Successful actions publish one immutable version atomically; throwing actions roll back completely without partial leakage. Exact subscriptions and lazy computed values are implemented in A.4/A.5.
-3. **Frame-Coalesced Rendering (`SCHED-1`, implemented A.7)**: State mutations coalesce so that multiple commits before a render frame result in at most one latest-value DOM update per dirty binding.
-4. **Deterministic Simulation & Replay (`TIME-1`, `RECORD-1`, `REPLAY-1`, planned Phase C)**: Simulation ticks operate on a logical clock and seeded PRNG, separating simulation rate from display refresh rate.
-
----
-
-## Execution Model: Why APIs Work This Way
-
-1. **Why Named Synchronous Actions?**
-   Application state is read-only to external code. All mutations occur inside named, synchronous action functions. Async operations (such as `fetch`) execute outside transactions; their resolved responses enter as supported action payloads. This provides a complete-state transition boundary for later recording and replay.
-
-2. **Why Fine-Grained Reactive Tracking Instead of a Virtual DOM?**
-   Virtual DOM diffing requires re-executing render trees and diffing VNode objects on every state change. Fine-grained dependency tracking records dependencies at the property level. When property `state.user.name` updates, only the text node bound to `user.name` updates.
-
-3. **Why Frame Batching and Separate Simulation Ticks?**
-   Decoupling simulation updates from browser `requestAnimationFrame` allows applications to run at a consistent logical rate (e.g., 60 Hz simulation ticks) regardless of whether the user's monitor runs at 30 Hz, 60 Hz, 120 Hz, or 240 Hz. Optional render interpolation (`TIME-2`) visually smooths transforms without altering authoritative state hashes.
-
-4. **Why Framework-Owned Event Delegation?**
-   Native browser events use framework-managed root delegates where suitable and
-   direct listeners for capture/nonbubbling events. Application components register declarative handlers via framework attributes rather than calling imperative `addEventListener()` on elements. This guarantees automatic resource cleanup (`LIFE-1`) when components unmount. Repeated-cycle resource checks cover owned cleanup; they do not prove heap collection.
-
----
-
-## Current Milestone Status
-
-- **Phase 0 — Architecture Spikes (Complete)**:
-  - [x] **0.1 Root Scaffold**: Browser-native ES module setup, public entry placeholder, zero-dependency dev server, minimal browser example, and smoke test runner.
-  - [x] **0.2 Prototype Contract**: Tiny begin/read/write/commit/abort transaction interface and shared test fixtures.
-  - [x] **0.3 Copy-on-Write Prototype**: Structural sharing and property-level change tracking.
-  - [x] **0.4 Staged-Operation Prototype**: Change-log staging and read-your-writes semantics.
-  - [x] **0.5 Correctness & Identity Comparison**: Stable graph identities, exact invalidation metadata, and independent seeded correctness checks. See the [comparison report](docs/reports/task-0.5-correctness.md).
-  - [x] **0.6 Workload Measurements**: Equivalent Node/browser timing, memory/GC observations, and median/p95 results. See the [measurement report](docs/reports/task-0.6-measurements.md).
-  - [x] **0.7 View Syntax Evaluation**: Element functions with binding tokens selected; optional templates deferred. See the [syntax ADR](docs/adr/0001-view-syntax.md) and [browser evidence](docs/reports/task-0.7-view-syntax.md).
-  - [x] **0.8 Action Schema & Serialization**: Typed named actions, independent runtime payload validation, and alias-preserving canonical snapshots; cycles rejected. See the [schema ADR](docs/adr/0002-action-schema-serialization.md) and [evidence report](docs/reports/task-0.8-actions-serialization.md).
-  - [x] **0.9 Architecture Review & Selection**: COW selected after validation fixes and fresh equivalent-work benchmarks. Stable graph IDs, data/action/view decisions and proposed browser/input targets are documented. See [engine ADR](docs/adr/0003-transaction-engine-identity.md), [browser/input ADR](docs/adr/0004-browser-input-support.md), and [review/evidence](docs/reports/task-0.9-architecture-review.md).
-
-- **Phase A — Core Runtime (Complete; experimental API)**:
-  - [x] **A.1 Public Application Lifecycle**: Owned initial state/action registration, framework-called text views, mount/dispose, cleanup/error reporting and public-only root example. See [current API](docs/api/application.md), [ADR 0005](docs/adr/0005-application-lifecycle.md) and [verification](docs/reports/task-A.1-application-lifecycle.md).
-  - [x] **A.2 Production Transactions**: App-owned COW store, frozen snapshots, stable IDs, aliases/arrays, atomic publication/rollback, native draft revocation and growth guards. See [ADR 0006](docs/adr/0006-production-transactions.md) and [verification/measurements](docs/reports/task-A.2-production-transactions.md).
-  - [x] **A.3 Named Dispatch and Ordering**: Owned validated payloads, synchronous transactional actions, bounded FIFO queues and failure propagation. See [ADR 0007](docs/adr/0007-named-dispatch-ordering.md) and [verification](docs/reports/task-A.3-named-dispatch.md).
-  - [x] **A.4 Exact Dependencies**: Property/presence/key/array subscriptions, aliases, dynamic branches and scope disposal.
-  - [x] **A.5 Computed Values**: Lazy caches, chained/dynamic dependencies and useful cycle errors. See [reactivity API](docs/api/reactivity.md) and [batch verification](docs/reports/task-A.4-A.5-reactivity.md).
-
-  - [x] **A.6 Declarative DOM**: Elements, exact text/attribute/class/style bindings, native form properties and conditional scopes. See [DOM API](docs/api/dom.md) and the [copyable form example](DOCUMENTATION.md#declarative-elements-and-bindings).
-
-  - [x] **A.7 Render Frames**: Latest-value deduplication, equal-value write suppression, cancellation and explicit flush. See [batch verification](docs/reports/task-A.6-A.7-dom-frames.md).
-
-  - [x] **A.8 Keyed Collections**: Insert/remove/reorder with retained nodes, focus and exact item bindings. See [collections API](docs/api/collections.md).
-
-  - [x] **A.9 Scoped Clicks and Cleanup**: One bubbling delegate, zero-argument action callbacks and full scope disposal. See [click API](docs/api/events.md).
-
-  - [x] **A.10 Core Acceptance**: One click commits once, evaluates one binding and changes one text node; rollback leaves state/UI unchanged. The integrated example also verifies nested fields, conditionals, keyed identity and cleanup. See [core guide](DOCUMENTATION.md#verified-core-example) and [verification](docs/reports/task-A.10-core-slice.md).
-
-- **Phase B — General frontend (In progress; experimental API)**:
-  - **B.1–B.3**: Native event maps/options, semantic keys/held/reset, native text snapshots and composition-safe bindings. See [input contracts](DOCUMENTATION.md#native-events-keyboard-and-text-editing) and [evidence](docs/reports/task-B.1-B.3-inputs.md). OS IMEs, clipboard paste and broad browser qualification remain open.
-  - **B.4–B.6**: Bounded priority lanes and History/hash routing with native links, post-commit navigation and one shared store. See [routing and scheduling](docs/reports/task-B.4-B.6-routing-scheduling.md).
-  - **B.7/B.8**: Memory/session/local/URL field configuration, validated hydration, coalesced post-commit writes and URL history synchronization. See [persistence guide](DOCUMENTATION.md#state-locations-and-hydration).
-  - **Next: B.9–B.11** declaration/documentation refinement and the clean-checkout auditor gate; Phase B acceptance is pending.
-
-Registered actions now execute through public wrappers or dispatch. Each action commits once or rolls back; nested requests wait for a successful parent and run in FIFO order. Exact observers and lazy computed values work through public APIs. Declarative elements, bindings, native events and semantic keyboard/text inputs are implemented. Routing and priorities are implemented; state locations are implemented; controlled services, recording and replay remain future work.
-
-> [!NOTE]
-> Phase A's core gate passes. B.1–B.8 implement events/editing, routing, priorities and state locations with Chrome evidence; broad browser/OS input qualification remains open. Phase B is incomplete; deterministic runtime and tooling remain planned.
-
----
-
-## Zero-Dependency & Tooling Disclosure
-
-In compliance with `TECH-1` and `PACK-1`:
-- **No Third-Party Frontend Frameworks**: All state management, DOM abstraction, reactive dependency tracking, router, and event handling are built entirely from scratch in vanilla JavaScript. React, Vue, Angular, Solid, Lit, MobX, Redux, Immer, or similar packages are strictly prohibited.
-- **Zero Third-Party Runtime Dependencies**: The framework package ships standard browser-native ES Modules (`"type": "module"`) requiring no external runtime dependencies.
-- **Development Tooling**:
-  - `node:test` and `node:assert`: Built-in Node.js test runner for unit tests and smoke verification.
-  - `node:http` and `node:fs`: Built-in Node.js modules for the local development server (`scripts/dev-server.js`).
-  - Installed headless Google Chrome: isolated temporary-profile browser checks/measurements; no signed-in browser or frontend library is used.
-  - TypeScript **5.9.3**: pinned development-only type checker for positive/negative fixtures. It emits no application code and supplies no framework behavior. Install it with `npm ci`; the lockfile records the exact dependency.
-
----
-
-## Quick Start
-
-### Prerequisites
-- Node.js >= 18.0.0 (tested on Node.js v26)
-- No installation required for root startup, Node correctness tests, or smoke checks. Type fixtures require `npm ci` to install the development-only checker.
-
-### 1. Run the Development Server
-Starts the local dev server and serves the root browser verification page:
-```bash
+```sh
 npm run dev
 ```
-Open [http://localhost:3000/](http://localhost:3000/) in your browser (redirects automatically to the basic example at `/examples/basic/`).
 
-Try the current feature showcase at
-[http://localhost:3000/examples/features/](http://localhost:3000/examples/features/):
-a responsive Launch Board with computed progress, conditional content, native
-form settings, burst updates and rollback. Its [instructions](examples/features/README.md)
-explain native form reloads and console commands for live updates.
+Open [http://localhost:3000/](http://localhost:3000/) for the basic example, or
+[http://localhost:3000/examples/auditor/](http://localhost:3000/examples/auditor/)
+for the routed form/list walkthrough below. Startup needs no install or build.
+If port 3000 is busy, use `npm run dev -- --port 3001` and open the same path on
+port 3001. Stop the server with Ctrl+C.
 
-For clickable controls without a reload, open
-[http://localhost:3000/examples/keyed/](http://localhost:3000/examples/keyed/).
-The [keyed tasks example](examples/keyed/README.md) demonstrates public `onClick`,
-item bindings, retained rows, scope cleanup and rollback. Native text edits remain
-local in that example; the [inputs example](examples/inputs/README.md) demonstrates opt-in synchronization.
+Browser modules import `../../src/index.js` from an example folder. Package
+consumers import `mini-framework`; `package.json` exposes `src/index.js` and its
+TypeScript declarations. Only the public entry is supported for application use.
 
-The [core example](http://localhost:3000/examples/core/) combines the counter,
-nested state, independent bindings, conditional details and keyed rows in one
-public-import application. Its [guide](examples/core/README.md) explains the controls
-and intentional rollback error. Tests measure one binding evaluation and one text
-mutation for one increment; unrelated bindings do no work.
+## Build the walkthrough using public imports
 
-### 2. Run the Smoke Test
-Verifies public imports, module integrity, and dev server response headers:
-```bash
-npm run smoke
+Create `examples/auditor/index.html` with the following content. These are the
+complete files served by the example; no runtime edits are needed.
+
+<!-- auditor:index.html -->
+```html
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>mini-framework public walkthrough</title>
+  <div id="app"></div>
+  <script type="module" src="./main.js"></script>
+</html>
 ```
 
-### 3. Run Correctness Tests
-Runs the built-in test suite:
-```bash
-npm test
-```
+Create `examples/auditor/main.js` with this code. The type comments help the
+optional checker; the browser runs the JavaScript directly.
 
-Public lifecycle checks run in real isolated Chrome (installed Chrome required;
-override its location with `MINI_FRAMEWORK_CHROME_PATH`):
-
-```bash
-npm run test:browser
-```
-
-Current verification: 278 runtime tests, 292 spike tests and 15 workload tests,
-76 negative type lines, and 80 browser
-lifecycle/transaction/dispatch/reactivity/DOM/list/click checks.
-Type checks include the plain-JS root and core examples and require `npm ci`. Startup and
-Node tests still need no dependency installation. Native input/IME and broad
-cross-browser qualification remain later work.
-
-### 4. Run Spike Benchmarks
-Runs the architecture spike benchmark harness:
-```bash
-npm run bench:spikes
-```
-
-This runs seven equivalent workloads across eager reference, copy-on-write, and staged engines at 128/1,024 rows, with separate timing and memory/GC processes. Raw results are written to unique JSON files under `benchmarks/results/`. Browser frame-callback measurements use an installed Chrome and an isolated temporary profile:
-
-```bash
-npm run bench:spikes:browser
-```
-
-Use `-- --quick` on either benchmark command for a harness smoke check. See [benchmark prerequisites and methodology](benchmarks/README.md) and the [corrected selection evidence](docs/reports/task-0.9-architecture-review.md). COW is selected for A.2; these remain transaction spikes, not production renderer benchmarks. Run workload and transaction correctness separately:
-
-```bash
-npm run test:spikes
-npm run test:benchmarks
-```
-
-Measure the bounded production port against the selected COW spike separately:
-
-```bash
-npm run bench:runtime
-```
-
-Use `-- --quick` only for a harness smoke check. The full run has 84 timing trials
-and 28 separate memory/GC profiles. Collect without concurrent tests/benchmarks.
-Changing-workload state/identity hashes, versions and net invalidation totals must
-match; successful no-op versions and resource-limit behavior intentionally differ
-from the old spike outside these cases. The current production port is slower,
-not a speedup. See [A.2 measurements](docs/reports/task-A.2-production-transactions.md).
-
-Task 0.5 verifies 157 transaction tests, including 12 seeded sequences and 5,760 programmed transaction attempts across reference, copy-on-write, and staged-operation engines. Task 0.9 selects COW as the Phase A basis and adds 17 type-policy tests; the engines remain isolated in `spikes/`, not shipped public runtime code.
-
-Task 0.7 adds seven Node syntax tests and 40 browser checks, with three-round mount/update/reorder/dispose measurements. Run:
-
-```bash
-npm run check:view-syntax
-```
-
-Requires installed Chrome (override with `MINI_FRAMEWORK_CHROME_PATH`). `-- --quick` shortens measurements. For the runnable syntax examples, open `http://localhost:3000/spikes/view-syntax/` after `npm run dev`. These use spike exports, not the A.1 public lifecycle API. See the [spike guide](spikes/view-syntax/README.md).
-
-Task 0.8 adds 111 action/serialization tests, plus strict positive TypeScript and checked-JavaScript fixtures with 25 independently checked negative lines:
-
-```bash
-npm ci
-npm run test:types
-npm run test:spikes
-```
-
-The action harness and codec run as plain JavaScript without compilation. Snapshots preserve aliases, holes, undefined, negative zero and property order; cycles and unsupported input types are rejected. These are experimental data snapshots, not replay checkpoints or public exports. Task 0.9 fixes the shared assignment/DAG validation gaps and remeasures both strategies. Phase 0's 292 spike tests, eight workload tests, 25 negative type lines and 40 syntax/DOM checks remain available; A.1 adds public lifecycle checks separately. See the [action/serialization spike guide](spikes/action-schema/README.md).
-
----
-
-## Current Public Application API
-
-With a `<div id="app"></div>` in the page, a browser module at the repository
-root can run this today:
-
+<!-- auditor:main.js -->
 ```js
-import { createApp } from './src/index.js';
+import {
+  createApp, createActionSchema, div, p, span, button, form, label, input, ul, li,
+} from '../../src/index.js';
 
-const app = createApp({
-  initialState: { message: 'Hello from an owned application' },
-  view: ({ state, onDispose }) => {
-    onDispose(() => console.log('View disposed'));
-    return state.message;
-  },
-});
-
-app.mount(); // Finds #app; framework calls the view and appends its owned text.
-// app.state is a deep-frozen copy; caller state is not frozen or mutated.
-app.dispose(); // Runs cleanup and removes only app-owned content.
-```
-
-Use `app.mount()` with the conventional `#app` container, `app.mount(element)`
-for a custom container, or pass `target` to createApp for automatic mounting.
-Targetless creation stays headless/lazy. Missing `#app` throws clearly at mount
-time and allows retry; explicit invalid targets never fall back to `#app`.
-Disposal is terminal/idempotent; failed mounts clean up and may be retried.
-Views accept text, finite numbers, null/undefined/booleans, arrays, binding tokens
-and framework elements. See the [DOM reference](docs/api/dom.md).
-
-A public form and conditional example is served at `/examples/dom/`. With
-`<div id="app"></div>` in a root page:
-
-```js
-import { createApp, createActionSchema, div, form, label, input, span } from './src/index.js';
-const schema = createActionSchema()(({ action }) => ({
-  rename: action(value => typeof value === 'string', (draft, value) => { draft.name = value; }),
+/** @typedef {{ nextId: number, rows: { id: number, title: string, done: boolean }[] }} Board */
+/** @typedef {{ board: Board, draft: string, scroll: number, key: string }} State */
+/** @type {typeof createActionSchema<State>} */
+const createSchema = createActionSchema;
+const schema = createSchema({ version: 'walkthrough-1' })(({ action }) => ({
+  edit: action(/** @returns {value is string} */ value => typeof value === 'string',
+    (draft, value) => { draft.draft = value; }),
+  save: action(draft => {
+    const title = draft.draft.trim();
+    if (!title) return;
+    draft.board.rows.push({ id: draft.board.nextId++, title, done: false });
+    draft.draft = '';
+    app.navigate('/'); // Applied after this action commits; discarded if it throws.
+  }),
+  toggle: action(/** @returns {value is number} */ value => Number.isSafeInteger(value),
+    (draft, id) => {
+      const row = draft.board.rows.find(row => row.id === id);
+      if (row) row.done = !row.done;
+    }),
+  reverse: action(draft => { draft.board.rows.reverse(); }),
+  scrolled: action(/** @returns {value is number} */ value => typeof value === 'number' && Number.isFinite(value),
+    (draft, value) => { draft.scroll = value; }),
+  key: action(/** @returns {value is string} */ value => typeof value === 'string',
+    (draft, value) => { draft.key = value; }),
 }));
-const app = createApp({ initialState: { name: 'Ada', visible: true }, schema,
-  view: ({ bind, when }) => div({ id: 'profile', class: 'profile', 'data-kind': 'form' },
-    form(label({ htmlFor: 'name' }, 'Name'), input({ id: 'name', value: bind.name })),
-    when(bind.visible, () => span(bind.name)),
+
+/** @param {unknown} value @returns {value is Board} */
+function isBoard(value) {
+  if (!value || typeof value !== 'object' || !('nextId' in value) || !('rows' in value)
+    || typeof value.nextId !== 'number' || !Number.isSafeInteger(value.nextId)
+    || value.nextId < 1 || !Array.isArray(value.rows)) return false;
+  const ids = new Set(), nextId = value.nextId;
+  return value.rows.every(row => {
+    if (!row || typeof row !== 'object' || !Number.isSafeInteger(row.id) || row.id < 1
+      || row.id >= nextId || typeof row.title !== 'string' || typeof row.done !== 'boolean'
+      || ids.has(row.id)) return false;
+    ids.add(row.id); return true;
+  });
+}
+
+export const app = createApp({
+  initialState: {
+    board: { nextId: 3, rows: [
+      { id: 1, title: 'Read the guide', done: false },
+      { id: 2, title: 'Try a native form', done: false },
+    ] },
+    draft: '', scroll: 0, key: '',
+  },
+  schema,
+  persistence: { namespace: 'walkthrough', version: '1', fields: {
+    board: { location: 'local', validate: isBoard },
+    draft: { location: 'session', validate: value => typeof value === 'string' },
+  } },
+  onError: (error, { phase }) => console.error(phase, error),
+  router: { mode: 'hash', routes: [
+    { path: '/', view: ({ bind, keyed, actions, link }) => div({ id: 'tasks' },
+      p(link('/new', { id: 'new-task' }, 'Add a task')),
+      button({ id: 'reverse', type: 'button', onClick: actions.reverse }, 'Reverse order'),
+      ul({ id: 'task-list' }, keyed(bind.board.rows, row => row.id, context =>
+        li({ 'data-id': context.key },
+          span({ class: { complete: context.item.done } }, context.item.title), ' ',
+          button({ type: 'button', 'aria-pressed': context.item.done,
+            onClick: () => actions.toggle(context.key) }, 'Toggle complete'),
+        ))),
+    ) },
+    { path: '/new', view: ({ bind, actions, link }) => div({ id: 'editor' },
+      form({ id: 'task-form', on: { submit: event => {
+        event.preventDefault(); actions.save();
+      } } },
+        label({ htmlFor: 'title' }, 'Task title'),
+        input({ id: 'title', name: 'title', required: true, value: bind.draft,
+          onText: value => actions.edit(value.value),
+          onKey: (value, event) => {
+            if (value.type === 'keydown' && value.key === 'Escape' && !value.isComposing) {
+              event.preventDefault(); actions.edit(''); actions.key('Escape');
+            }
+          },
+        }),
+        button({ id: 'save', type: 'submit' }, 'Save and return'),
+      ),
+      p(link('/', { id: 'cancel' }, 'Cancel')),
+    ) },
+  ], notFound: ({ link }) => p('Page not found. ', link('/', 'Home')) },
+  view: ({ bind, derive, outlet, link, actions }) => div(
+    { id: 'board', class: 'task-board', 'data-example': 'public-api' },
+    p(link('/', { id: 'home' }, 'Tasks'), ' · ', link('/new', 'New task')),
+    p('Tasks: ', span({ id: 'total' }, derive(state => state.board.rows.length))),
+    outlet(),
+    div({ id: 'scroll-area', tabIndex: 0, role: 'region', 'aria-label': 'Scroll example',
+      style: { height: '80px', overflow: 'auto' },
+      on: { scroll: { passive: true, handler: event => {
+        if (event.currentTarget instanceof HTMLElement) actions.scrolled(event.currentTarget.scrollTop);
+      } } },
+    }, div({ style: { height: '240px' } }, 'Scroll with the keyboard or pointer.')),
+    p({ role: 'status' }, 'Scroll: ', span({ id: 'scroll-position' }, bind.scroll),
+      ' · Last handled key: ', span({ id: 'last-key' }, bind.key)),
   ),
 });
 app.mount();
-app.actions.rename('Grace'); // State commits now; DOM updates next frame.
-app.flush(); // Optional synchronous visual boundary; avoids a duplicate frame write.
 ```
 
-Bindings track each property read, so unrelated nodes retain identity and focus.
-Native form editing remains local without a synchronization handler. `onText`
-now supplies actual text values to actions; `on` and `onKey` support native and
-semantic keyboard events. Shared route state and navigation are implemented below; later template/clock sketches remain explicitly unimplemented.
+Open `/examples/auditor/` after starting the server. Add a task, enter a title,
+and press Enter or Save. An empty required field uses native validation. Escape
+clears the edit. Toggle a task, reverse the list, and scroll the focusable region.
+Navigation retains the shared store; browser back/forward changes the routed
+view. Reload retains the local board and session draft while resetting memory-only
+scroll/key values. Each successful commit queues a storage write; to guarantee a
+write before a programmatic reload or disposal, call `app.flushPersistence()`.
 
-Register an implemented click action using public imports:
+The example uses hash routing so copying it to a static server needs no route
+fallback. [The History example](examples/routes/README.md) uses
+`/examples/routes/people/Ada` and documents direct loads and host fallback setup.
+For URL-backed fields, see [the persistence example](examples/persistence/README.md).
 
-```js
-import { createApp, createActionSchema, div, button, span } from './src/index.js';
-const schema = createActionSchema()(({ action }) => ({ increment: action(draft => { draft.count++; }) }));
-const counter = createApp({ initialState: { count: 0 }, schema,
-  view: ({ bind, actions }) => div({ id: 'counter', class: 'counter', 'aria-live': 'polite' },
-    span('Count: ', bind.count), button({ type: 'button', onClick: actions.increment }, 'Increment')),
-});
-counter.mount();
+## Why these APIs behave this way
+
+- **Elements describe native HTML.** `div(props, children...)` creates a descriptor;
+  the framework mounts it. Props set ID, class and other attributes, and child
+  arguments nest elements or text. Dynamic text is written as text, so task titles
+  cannot inject markup. `label`/`input`/`form` preserve native HTML semantics.
+- **Bindings select the work.** `bind.draft` and `context.item.title` subscribe to
+  the properties they read. `derive(...)` captures a calculation's dependencies.
+  A state commit invalidates those bindings; a render frame writes their latest
+  values. Unrelated nodes retain identity. `app.flush()` explicitly applies pending
+  visual work when a synchronous boundary is useful.
+- **Named actions are atomic.** Actions mutate a transaction draft synchronously.
+  A successful action publishes one version, including a no-op; a throwing action
+  publishes none. Nested dispatches run FIFO after a successful parent. Side effects
+  outside the draft cannot roll back. Async effects run outside actions and dispatch
+  their results; controlled time/random and replay are not implemented yet.
+- **Events belong to view scopes.** `onClick` needs no event argument; `on.submit`
+  supplies cancellation and native event access; `onText` supplies semantic text;
+  `onKey` supplies key/held/reset information. Scroll reads happen in the event
+  adapter before dispatching a scalar payload. Disposal removes handlers.
+- **Keys retain rows and focus.** `keyed` uses stable, unique string/finite-number
+  keys when items move. Read `context.key`/`context.value` when handling an event;
+  avoid saving an old item snapshot.
+- **Routes share app ownership.** `link`, `outlet` and `app.navigate` manage views
+  and history while keeping the same state store. Navigation requested inside an
+  action is applied after commit and discarded if the action throws.
+- **Persistence is explicit.** Each configured top-level field selects one source.
+  Valid storage/URL inputs hydrate before the first view. Missing or invalid
+  storage retains current memory; URL absence restores the configured initial
+  default. Writes run after commits and coalesce. Errors are reported through
+  `onError` and rethrown; they do not undo committed memory. `app.dispose()` cancels
+  pending work rather than flushing it.
+
+For disposal, argument validation, errors, resource budgets and copyable focused
+examples, read [DOCUMENTATION.md](DOCUMENTATION.md). Runtime validation remains
+necessary for imported data even when TypeScript accepts its declared type.
+
+## Features and boundaries
+
+| Available through public imports | Qualification / next work |
+| --- | --- |
+| Read-only state, synchronous actions, rollback and FIFO dispatch | Supported acyclic data only; no ambient-value sandbox |
+| Exact observers/computed values, conditional DOM and keyed lists | Native HTML subset; no SVG, custom elements, compiler or public templates |
+| Click/scroll/keyboard/text/composition adapters | Desktop Chrome evidence; native OS/mobile/browser matrix remains open |
+| Immediate/frame/normal/idle work | Cooperative bounded scheduling; no CPU preemption guarantee |
+| History/hash routing and shared state | One router per Window; History hosts need a scoped fallback |
+| Memory/session/local/URL field locations | Top-level fields, guarded bounded format; no cross-tab merging or migrations |
+| Declarations, error codes and root public examples | Experimental compatibility policy; no stable release claim |
+| Fixed ticks, seeded randomness, recording/replay, history/inspector | Unimplemented Phase C/D |
+
+[Compatibility and versioning](docs/adr/0015-public-frontend-compatibility.md)
+explain how the experimental frontend can evolve into Phase C without treating
+persisted data as a recording format. The assignment's separate demonstration
+app is a later integration task; this walkthrough validates the framework API.
+
+## Verification
+
+Node tests and the root smoke test need no dependencies:
+
+```sh
+npm test
+npm run test:spikes
+npm run test:benchmarks
+npm run smoke
 ```
 
-Click callbacks receive no arguments, so direct no-payload actions remain valid;
-use closures for payloads. Nodes/scopes own handlers and scheduled visual work.
-See [click API](docs/api/events.md) and [collections API](docs/api/collections.md).
+Declarations and checked JavaScript need the pinned development-only checker:
 
-`createActionSchema()` registers explicit no-payload/payload modes with inferred
-types. Run named actions through public wrappers or dispatch:
-
-```js
-import { createApp, createActionSchema } from './src/index.js';
-
-const schema = createActionSchema()(({ action }) => ({
-  increment: action(draft => { draft.count++; }),
-  setCount: action(Number.isFinite, (draft, count) => { draft.count = count; }),
-}));
-const app = createApp({ initialState: { count: 0 }, schema });
-app.actions.increment(); // same as app.dispatch('increment')
-app.dispatch('setCount', 10);
-console.log(app.state.count, app.stateVersion); // 10, 3
-app.dispose();
+```sh
+npm ci --ignore-scripts
+npm run test:types
 ```
 
-Payloads are copied/frozen before a pure synchronous guard that must return `true`.
-Throwing or Promise/thenable-returning actions publish no state; successful no-ops
-still advance the version. Both dispatch forms return `undefined`. Nested calls
-validate now and execute after their parent commits, in FIFO order. Failed parents
-discard their children. Failed children leave earlier commits intact; queued
-siblings continue, and the outer call throws failures after draining. Batches have
-action-count and aggregate payload limits. See [the implemented API](docs/api/application.md)
-for ordering examples, exact bounds, error observation and cleanup details.
+With installed Google Chrome, run:
 
-Root views construct once; explicit `bind`/`derive` tokens update affected DOM
-on render frames. `app.flush()` applies latest pending bindings immediately. Exact
-observers and lazy computed values also consume committed state through public APIs:
-
-```js
-import { createApp, createActionSchema } from './src/index.js';
-
-const schema = createActionSchema()(({ action }) => ({
-  increment: action(draft => { draft.count++; }),
-}));
-const app = createApp({ initialState: { count: 1 }, schema });
-const doubled = app.computed(state => state.count * 2);
-const observer = app.observe(() => doubled.value);
-app.actions.increment(); // Invalidates; doubled has not rerun.
-console.log(observer.dirty, observer.read()); // true, 4
-observer.dispose();
-doubled.dispose();
-app.dispose();
+```sh
+npm run test:browser
+npm run audit:frontend
 ```
 
-Observers establish dependencies with one initial read and refresh explicitly
-with `read()`. Computed values first evaluate on `.value` access and stay cached
-until dirty. Reads track exact fields, presence, keys and array structure;
-branches replace old dependencies. View-context `observe`/`computed` resources
-are disposed with their mount attempt; app resources last until disposal.
-See [the public guide](DOCUMENTATION.md#exact-reactive-observers) for current-state
-facades, error ordering and limits, and [the API reference](docs/api/reactivity.md)
-for both signatures.  Dispatch inside a mounting view or payload guard rejects. The
-raw `actions`/`seed` config sketches are not implemented. The root example commits
-its initialize action before mounting one report using public imports only.
-Browser verification also disposes that app to check owned DOM removal.
+`MINI_FRAMEWORK_CHROME_PATH` can select another Chrome executable. The browser
+runner uses a fresh temporary profile and closes it afterward. The auditor command
+copies the candidate into a fresh temporary folder without `.git`, `node_modules`
+or old results, reconstructs the walkthrough files from this README, and checks
+startup, tests, declarations, source independence and real browser behavior.
+It installs only locked development tooling with scripts disabled. Use
+`npm run audit:frontend -- --offline` when the npm cache already contains it.
+The command removes only its own temporary folder and writes a report under
+`tests/results/`; failed checks exit nonzero. Neither command verifies OS IMEs or
+system clipboard paste. See [the Batch 4 report](docs/reports/task-B.9-B.11-auditor.md).
 
----
+Benchmarks are separate from the acceptance suite:
 
-### Native events and text input
-
-Run `npm run dev`, then open
-[http://localhost:3000/examples/inputs/](http://localhost:3000/examples/inputs/).
-This public-import example demonstrates live text/textarea edits, Ctrl+Enter,
-held-key reset, native form submission and scroll events.
-
-```js
-import { createApp, createActionSchema, form, input, button, span } from './src/index.js';
-const schema = createActionSchema()(({ action }) => ({
-  edit: action(value => typeof value === 'string', (draft, value) => { draft.name = value; }),
-  save: action(draft => { draft.saved = draft.name; }),
-}));
-const app = createApp({ initialState: { name: '', saved: '' }, schema,
-  view: ({ bind, actions }) => form({ on: {
-    submit: event => { event.preventDefault(); actions.save(); },
-  } }, input({ 'aria-label': 'Name', value: bind.name,
-    onText: value => actions.edit(value.value),
-    onKey: (value, event) => {
-      if (value.type === 'keydown' && value.ctrlKey && value.key === 'Enter' &&
-          !value.repeat && !value.isComposing) {
-        event.preventDefault(); actions.save();
-      }
-    },
-  }), button({ type: 'submit' }, 'Save'), span(bind.saved)),
-});
-app.mount();
+```sh
+npm run bench:spikes
+npm run bench:spikes:browser
+npm run bench:runtime
 ```
 
-Event maps accept `{ handler, capture, passive, once }` registrations as well as
-functions. Bubbling handlers delegate where suitable; scroll/capture use native
-listeners owned by the scope. A handler's currentTarget names its own element.
-Scroll measurements enter actions as serializable data:
+See [methodology](benchmarks/README.md). Architecture spikes selected copy-on-write
+using equivalent correctness/workloads. No universal speedup or leak guarantee
+is claimed, and no final renderer/replay benchmark is implemented.
 
-```js
-// Inside a view whose actions.scroll accepts a finite number:
-div({ style: { overflow: 'auto', height: '100px' }, on: {
-  scroll: { passive: true, handler: event => actions.scroll(event.currentTarget.scrollTop) },
-} }, div({ style: { height: '400px' } }, 'Scroll this area'));
-```
+## Folder map and tooling
 
-Values come from native editing, including paste and composition. Rendering defers
-bound text writes during composition and preserves/clamps active selection afterward.
-Keyboard snapshots track repeats/held keys and reset on focus loss. The framework
-cleans all listeners with their scope. See [public input guide](DOCUMENTATION.md#native-events-keyboard-and-text-editing)
-for complete options, data, cancellation, errors and browser qualification limits.
-Recording/replay is still unimplemented.
+| Path | Purpose |
+| --- | --- |
+| `src/index.js`, `src/index.d.ts` | Browser/package public exports and declarations |
+| `src/runtime/` | Independently implemented state, DOM, dependencies, events, router, scheduler and persistence |
+| `examples/` | Public-import browser applications |
+| `scripts/dev-server.js` | Root static development server, with scoped History-example fallback |
+| `tests/`, `tests/results/` | Focused/runtime/browser checks and source-fingerprinted evidence |
+| `spikes/`, `benchmarks/` | Isolated architecture prototypes and measurements |
+| `DOCUMENTATION.md`, `docs/api/` | Public guide and detailed API contracts |
+| `Framework_PRD.md`, `DEVELOPMENT_PLAN.md`, `docs/adr/` | Acceptance criteria, milestones and decisions |
 
-### Shared state, routing and priority work
-
-Run `npm run dev` and open
-[http://localhost:3000/examples/routes/](http://localhost:3000/examples/routes/).
-The two routes share one counter and profile, native links support back/forward,
-and saving the form navigates after the action commits. Direct entry/reload works
-at `/examples/routes/people/Ada?tab=details`; reload starts a new memory store.
-
-For a page with `<main id="app"></main>`, this public-import example uses hash
-routing so a static server needs no deep-URL fallback:
-
-```js
-import { createApp, createActionSchema, div, button, outlet } from './src/index.js';
-const schema = createActionSchema()(({ action }) => ({
-  increment: action(draft => { draft.count++; }),
-  openProfile: action(draft => { draft.count++; app.navigate('/people/Ada'); }),
-}));
-const app = createApp({ initialState: { count: 0 }, schema,
-  router: { mode: 'hash', routes: [
-    { path: '/', view: ({ bind, actions, link }) => div(bind.count,
-      button({ type: 'button', onClick: actions.increment }, 'Increment'),
-      button({ type: 'button', onClick: actions.openProfile }, 'Open profile'),
-      link('/people/Ada', 'Profile')) },
-    { path: '/people/:id', view(context) { return div(
-      context.derive(() => context.route.params.id), ' Count: ', context.bind.count,
-      context.link('/', 'Home')); } },
-  ] }, view: () => outlet(),
-});
-app.mount();
-const cancel = app.schedule('normal', () => app.actions.increment());
-cancel();
-```
-
-Routes retain the existing store/actions. `outlet` replaces only the route scope;
-query/hash changes retain the view and native editing focus. Action navigation is
-queued after successful commit, so throwing actions change neither state nor URL.
-Default History mode requires the host to serve the module page for deep URLs;
-`base` prefixes application paths. `context.route` is an immutable reactive snapshot
-with path/params/query, and route reads belong inside a binding for live updates.
-
-`immediate` work runs now; `frame` work follows visual bindings; `normal` uses bounded
-FIFO timer turns; `idle` uses idle callbacks or a delayed timer and must not control
-correctness. Context work cancels on unmount, app work on disposal. Frame callbacks
-cannot dispatch. See [public routing guide](DOCUMENTATION.md#routing-and-shared-application-state),
-[scheduling guide](DOCUMENTATION.md#priority-work-and-cancellation) and the detailed
-[routing](docs/api/routing.md)/[scheduling](docs/api/scheduling.md) references for
-arguments, native link behavior, errors, cleanup and bounds.
-
-### Restore selected state on reload
-
-Run `npm run dev` and visit
-[http://localhost:3000/examples/persistence/](http://localhost:3000/examples/persistence/).
-Its local count, session note and URL filter restore after reload; the memory count
-resets. Each history entry restores its own URL filter, while routes keep the
-app's local/session fields. Configuration is explicit:
-
-```js
-const app = createApp({
-  initialState: { count: 0, draft: '', filter: '', temp: 0 }, schema,
-  router, // Required for URL fields; ordinary router config from above.
-  persistence: { namespace: 'my-app', version: '1', fields: {
-    count: { location: 'local', validate: value => typeof value === 'number' && Number.isFinite(value) },
-    draft: { location: 'session', validate: value => typeof value === 'string' },
-    filter: { location: 'url', key: 'q', validate: value => typeof value === 'string' },
-    temp: { location: 'memory' },
-  } },
-});
-app.mount();
-app.flushPersistence(); // Optional explicit storage boundary; separate from visual flush.
-```
-
-This is a configuration fragment; the [public guide](DOCUMENTATION.md#state-locations-and-hydration)
-contains the complete public-import example. Valid external fields hydrate before
-views run; invalid/mismatched data falls back and queues an error report. Successful
-actions coalesce normal storage writes, while throwing actions write nothing.
-URL changes replace owned query keys; back/forward hydrates without feedback writes.
-Entering a route without an owned URL key resets that field to its initial default.
-Storage failures retain committed state and reach onError phase persistence.
-
-`app.persistence` exposes bounded status/error summaries. Disposal cancels pending
-writes; flush explicitly before disposal when needed. The graph codec preserves
-supported aliases/holes/undefined/negative zero within each area. See
-[persistence reference](docs/api/persistence.md) for versions, validation, namespace
-ownership, byte/graph limits, cleanup and compatibility. Live cross-tab merging,
-automatic migrations and unload flushing are not implemented.
-
-## Repository Structure
-
-```text
-mini-framework/
-├── AGENTS.md                  # Project rules, constraints, and work order
-├── Framework_PRD.md           # Product Requirements Document (PRD v2.13)
-├── DEVELOPMENT_PLAN.md        # Implementation backlog and task tracking
-├── README.md                  # Framework documentation & quickstart
-├── DOCUMENTATION.md           # Current public API guide and runnable examples
-├── package.json               # ES modules, zero runtime dependencies; dev type checker
-├── package-lock.json          # Pinned development-tool installation
-├── src/
-│   ├── index.js               # Documented public entry point
-│   ├── index.d.ts             # Public TypeScript declarations
-│   └── runtime/               # Framework runtime subsystems (Phases A–D)
-├── spikes/                    # Isolated prototype spikes (Phase 0)
-│   ├── transactions/          # Copy-on-write vs staged-operations prototypes
-│   ├── view-syntax/           # Element functions vs tagged templates
-│   └── action-schema/         # Action definitions & serialization
-├── examples/
-│   ├── basic/                 # Root-run lifecycle example
-│   ├── dom/                   # Declarative form and conditional bindings
-│   ├── features/              # Reactive feature walkthrough
-│   ├── keyed/                 # Keyed collection and click actions
-│   ├── core/                  # Verified Phase A integration
-│   └── inputs/                # Native events, keyboard and text editing
-├── tests/                     # Unit, integration, and smoke test suites
-│   └── smoke.test.js
-├── scripts/                   # Zero-dependency development and test scripts
-│   ├── dev-server.js          # Built-in HTTP development server
-│   ├── smoke.js               # Smoke test script
-│   └── bench-spikes.js        # Benchmark harness runner
-├── benchmarks/                # Performance benchmarks & raw results
-└── docs/                      # ADRs, API references, and technical reports
-    ├── adr/
-    ├── api/
-    └── reports/
-```
-
----
-
-## Planned API Contracts & Examples
-
-The following are future design sketches, not current runnable public examples.
-Use the public examples above for implemented core/event/input usage. Task 0.7
-selected element functions with explicit binding tokens, implemented in Phase A.
-The template exports and inline-action config shown below are not implemented. Optional templates remain deferred:
-eager state expressions capture whole views rather than exact individual binding
-dependencies. Runnable syntax examples use the separate spike entry. The implemented
-router is documented above; inline-action/seed options below are planned sketches only.
-
-### 1. Tagged Template Syntax (Evaluated Prototype, Deferred)
-The eager prototype runs natively without arrow wrappers, but its conservative whole-view tracking does not meet the exact-binding adoption gate. This preserves the evaluated PRD candidate for reference, not as a promised public API:
-
-```js
-import { createApp, html } from 'mini-framework';
-
-const app = createApp({
-  target: document.querySelector('#app'),
-  initialState: { count: 0 },
-  actions: {
-    increment(draft) { draft.count += 1; },
-    decrement(draft) { draft.count -= 1; }
-  },
-  view: ({ state, actions }) => html`
-    <div class="counter-card">
-      <button @click=${actions.decrement}>-</button>
-      <span>Current Count: ${state.count}</span>
-      <button @click=${actions.increment}>+</button>
-    </div>
-  `
-});
-```
-
-### 2. Ergonomic Element Functions (Selected Core Direction)
-Element functions eliminate boilerplate empty `{}` objects and support direct binding tokens with exact property/binding tracking:
-
-```js
-import { createApp, div, button, span } from 'mini-framework';
-
-const app = createApp({
-  target: document.querySelector('#app'),
-  initialState: { count: 0 },
-  actions: {
-    increment(draft) { draft.count += 1; },
-    decrement(draft) { draft.count -= 1; }
-  },
-  view: ({ state, bind, actions }) =>
-    div({ class: 'counter-card' },
-      button({ onClick: actions.decrement }, '-'),
-      span('Current Count: ', bind.count),
-      button({ onClick: actions.increment }, '+')
-    )
-});
-```
-
-### 3. Application-Wide Shared State Across Routes (Implemented)
-
-Use the implemented [shared-state routing example above](#shared-state-routing-and-priority-work).
-The earlier createRouter/template sketch has been replaced by the owned
-`createApp({ router: { routes } })` contract, public `outlet()` and native links.
-
----
-
-## Verification & Quality Gates
-
-Every milestone is verified through executable tests, reproducible benchmarks, and clean-checkout walkthroughs:
-
-| Gate | Check Command | What it Proves |
-| --- | --- | --- |
-| **Scaffold & Import** | `npm run smoke` | Server boots, root routes, and public imports work in clean checkout |
-| **Unit Correctness** | `npm test` | Public APIs, immutability, zero-dependency requirements pass |
-| **Spike Comparison** | `npm run test:spikes` | COW and Staged-Ops prototypes pass identical verification fixtures |
-| **Spike Measurements** | `npm run bench:spikes` | Equivalent transaction latency, sampled heap/retention, and GC observations |
-| **Browser Spike Measurements** | `npm run bench:spikes:browser` | Real rAF callback median/p95 and interval observations in isolated Chrome |
-| **Benchmark Correctness** | `npm run test:benchmarks` | Equivalent workload state, identity, exact invalidations, and summary calculations |
+Runtime dependencies: none. The framework implements its own DOM, state, routing,
+reactivity and events in JavaScript. Serving, tests and Chrome automation use Node
+standard-library modules and installed Chrome. TypeScript **5.9.3** is the sole
+pinned development dependency; it checks types without compiling the app or
+providing framework behavior. No bundler is needed.

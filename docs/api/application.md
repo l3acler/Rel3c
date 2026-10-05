@@ -1,4 +1,4 @@
-# Application lifecycle, named actions and reactivity — Phase A (A.1–A.10)
+# Application lifecycle, named actions and reactivity
 
 Experimental public API. Implemented: owned initial state/schema registration,
 synchronous declarative mounting, cleanup and disposal. A.2/A.3 add production COW
@@ -6,6 +6,14 @@ transactions, payload ownership/guards and bounded FIFO named dispatch.
 A.4/A.5 add exact observers and lazy computed values.
 Declarative elements, exact bindings and frame batching are implemented in A.6/A.7; see [DOM API](dom.md).
 A.8/A.9 add keyed collections and scoped click callbacks. B.1–B.3 add [native events and semantic keyboard/text inputs](events.md); B.4–B.6 add [priority work](scheduling.md) and [shared-state routing](routing.md); B.7/B.8 add [state locations and hydration](persistence.md); replay remains unimplemented. This document describes what actually runs today.
+
+B.9 aligns the declarations with the existing synchronous `onError` contract:
+statically visible Promise-returning hooks reject during checking. Synchronous
+return values are ignored; type-erased callbacks still require runtime checking.
+TypeScript 5.4+ is needed for `NoInfer`, with 5.9.3 verified. This changes typing,
+not execution. See [compatibility policy](../adr/0015-public-frontend-compatibility.md),
+[browser qualification](../browser-support.md) and the complete
+[root public walkthrough](../../README.md#build-the-walkthrough-using-public-imports).
 
 A.10 verifies these APIs together in the [public core example](../../examples/core/README.md)
 and [core acceptance report](../reports/task-A.10-core-slice.md). No new runtime API

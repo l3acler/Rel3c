@@ -5,6 +5,7 @@
  *
  * A.1–A.9 implement lifecycle, COW actions, exact reactivity and frame-batched DOM.
  * B.1–B.8 add events, priorities, shared-state routing and state locations.
+ * B.9–B.11 verify public contracts and the root auditor walkthrough.
  * A.10 verifies the integrated Phase A core through public imports.
  */
 
@@ -23,7 +24,7 @@ export const VERSION = "0.1.0";
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "B.7–B.8 - State Locations and Hydration",
+  phase: "B.9–B.11 - Public Frontend Contracts and Auditor Walkthrough",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
     "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
@@ -39,6 +40,7 @@ export const FRAMEWORK_INFO = Object.freeze({
     "EVENT-1: Scoped native events, options and compatible zero-argument clicks (implemented B.1)",
     "EVENT-2: Semantic keyboard/text inputs and composition-safe bindings (implemented B.2/B.3; OS/mobile/cross-browser qualification and replay remain open)",
     "Phase A: Public click/action/binding/list/cleanup acceptance verified (A.10)",
+    "Public declarations, root documentation and routed form/list walkthrough (B.9–B.11; browser qualification remains limited)",
     "TIME-1: Deterministic simulation ticks (planned Phase C)",
     "RECORD-1: Action recording & replay (planned Phase C)",
   ]),

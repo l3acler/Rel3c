@@ -3,6 +3,7 @@
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
 application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.8 add native events, semantic keyboard/text inputs, cooperative priority lanes and History/hash routing with one shared application store, plus guarded memory/session/local/URL state locations. APIs remain experimental and browser qualification is limited.
+B.9–B.11 refine the public declarations and root auditor walkthrough.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -1042,20 +1043,68 @@ its payload type. Names and dispatch arguments remain correlated, state/payloads
 are deeply read-only, and dispatch returns void. Types cannot establish runtime
 prototypes, finiteness or input ownership; runtime validation remains necessary.
 
+Declarations use TypeScript's `NoInfer` helper (5.4+) and are verified with 5.9.3
+in strict mode. Plain JavaScript runs without a checker, bundler or compiler.
+Statically visible async `onError` hooks now fail checking, matching the existing
+runtime `ERROR_HANDLER_ASYNC` contract. Synchronous return values are ignored;
+broadly typed callbacks can conceal Promise returns, so runtime checks still apply.
+
+Outside tracked reads, `app.state` is a frozen snapshot: writes throw native
+`TypeError` in strict/module code and never mutate it. Inside observer, computed
+or binding reads, the tracking facade reports `STATE_READONLY`. An old saved
+snapshot remains historical. These diagnostics enforce the same read-only rule.
+
+The [root walkthrough](README.md#build-the-walkthrough-using-public-imports) has
+complete HTML/JavaScript for a routed native form/keyed task list: labels,
+ID/class/attributes, click/scroll/key/text handlers, post-commit navigation,
+shared state and persistence. Open `http://localhost:3000/examples/auditor/`
+after `npm run dev`. Rows and their next ID persist together in `board`, avoiding
+key reuse after reload. Remove its local/session buckets in developer tools to reset.
+
 ```sh
 npm test
 npm run smoke
 npm run test:browser
-npm ci
+npm ci --ignore-scripts
 npm run test:types
+npm run audit:frontend
 ```
 
 Browser checks require installed Chrome. Type checks require the development-only
-TypeScript installation; startup and Node tests do not. For the full reference,
+TypeScript installation; startup and Node tests do not. `audit:frontend` makes
+a fresh temporary candidate copy without `.git`, dependencies or old results,
+recreates the two app files from README, and runs Node/spike/workload/root smoke
+checks before installing locked tooling with scripts disabled. It checks types,
+dependency/source independence and Chrome integration. Candidate hashes must
+remain unchanged. It removes only its own temporary folder and records JSON
+under `tests/results/`; failures exit nonzero. Use `-- --offline` with a populated
+npm cache. This verifies candidate files, not a nonexistent committed revision.
+No runtime edits or Git changes are needed. For the full reference,
 see [application API](docs/api/application.md). For current validation results,
-see [B.7/B.8 state-location evidence](docs/reports/task-B.7-B.8-persistence.md),
+see [B.9–B.11 auditor evidence](docs/reports/task-B.9-B.11-auditor.md),
+[B.7/B.8 state-location evidence](docs/reports/task-B.7-B.8-persistence.md),
 [B.4–B.6 routing/scheduling evidence](docs/reports/task-B.4-B.6-routing-scheduling.md),
 [B.1–B.3 input evidence](docs/reports/task-B.1-B.3-inputs.md) and
 [A.10 core evidence](docs/reports/task-A.10-core-slice.md). The
 [README](README.md) provides repository structure, feature status and the remaining
 verification commands; the [PRD](Framework_PRD.md) defines future acceptance gates.
+
+## Compatibility and browser qualification
+
+The public import boundary is `src/index.js` and its declarations; runtime,
+spikes and test tooling are internal. `0.1.0` is experimental. Pin a candidate
+revision; contract changes update this guide and relevant API references and
+state compatibility impact. No stable API freeze or complete product is claimed.
+
+Package, action-schema and persistence versions are separate. Bump the schema
+when action/payload meaning changes and persistence version when stored shape
+changes. Mismatched storage follows guarded fallback; no automatic migration
+exists. Use a new namespace to retain old buckets. The private graph codec is
+not a public recording/snapshot contract. Future recording/checkpoint/runtime
+versions belong to Phase C; see [ADR 0015](docs/adr/0015-public-frontend-compatibility.md).
+
+The candidate passes desktop Chrome automation and the clean-root walkthrough.
+The [support matrix](docs/browser-support.md) separates trusted edits and Chrome
+composition checks from synthetic paste and unqualified OS input. System clipboard,
+OS IMEs, mobile, other browsers and assistive technology remain unverified release
+gates. Cleanup counters show owned resources released, not heap-collection proof.

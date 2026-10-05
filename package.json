@@ -14,16 +14,17 @@
   },
   "scripts": {
     "dev": "node scripts/dev-server.js",
-    "test": "node --test 'tests/**/*.test.js'",
+    "test": "node scripts/test-node.js tests",
     "test:browser": "node scripts/check-app-lifecycle.js",
-    "test:spikes": "node --test 'spikes/**/*.test.js'",
+    "test:spikes": "node scripts/test-node.js spikes",
     "bench:spikes": "node scripts/bench-spikes.js",
     "bench:runtime": "node scripts/bench-runtime.js",
     "bench:spikes:browser": "node scripts/bench-spikes-browser.js",
-    "test:benchmarks": "node --test 'benchmarks/**/*.test.js'",
+    "test:benchmarks": "node scripts/test-node.js benchmarks",
     "check:view-syntax": "node scripts/check-view-syntax.js",
     "test:types": "node scripts/check-action-types.js",
-    "smoke": "node scripts/smoke.js"
+    "smoke": "node scripts/smoke.js",
+    "audit:frontend": "node scripts/audit-frontend.js"
   },
   "devDependencies": {
     "typescript": "5.9.3"

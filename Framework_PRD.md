@@ -1,9 +1,9 @@
 
 # Product Requirements Document: Deterministic Reactive Frontend Framework
 
-**Status:** Product definition; Phase 0 and Phase A complete. A.1–A.10 lifecycle, transactions, exact reactivity, declarative DOM, keyed lists and scoped clicks implemented and core acceptance verified. B.1–B.3 native events and semantic keyboard/text inputs implemented with Chrome evidence; OS/mobile/cross-browser input qualification remains open. B.4–B.6 priority scheduling and shared-state History/hash routing are implemented. B.7/B.8 state locations and guarded hydration are implemented. Remaining B–D tasks are planned.
-**Version:** 2.13
-**Date:** 5 October 2026
+**Status:** Product definition; Phase 0 and Phase A complete. A.1–A.10 lifecycle, transactions, exact reactivity, declarative DOM, keyed lists and scoped clicks implemented and core acceptance verified. B.1–B.3 native events and semantic keyboard/text inputs implemented with Chrome evidence; OS/mobile/cross-browser input qualification remains open. B.4–B.6 priority scheduling and shared-state History/hash routing are implemented. B.7/B.8 state locations and guarded hydration are implemented. B.9–B.11 public contracts, documentation and the clean-candidate auditor walkthrough pass. Broad native input/browser release qualification remains open; C/D are planned.
+**Version:** 2.14
+**Date:** 6 October 2026
 **Working name:** Undecided
 
 ## 1. Product overview
@@ -178,6 +178,22 @@ The required contract is atomic publication, exact dependency invalidation, stab
 
 Shared/synchronized state was considered as another location, but distributed ownership and conflict resolution require their own design. It is a future research extension, outside the planned single-runtime replay guarantee. Storage writes run after successful commits; a storage failure is reported and does not undo committed in-memory state. B.7/B.8 implement explicit top-level field locations, schema/namespace guards, startup input hydration, normal coalesced writes and URL-state synchronization. [ADR 0014](docs/adr/0014-state-locations-hydration.md) defines single-source precedence, format/limits and error/lifecycle behavior; see the [public guide](DOCUMENTATION.md#state-locations-and-hydration) and [evidence](docs/reports/task-B.7-B.8-persistence.md).
 
+### Public frontend candidate and compatibility
+
+B.9–B.11 provide checked declarations/runtime diagnostics, complete root public
+examples and a clean temporary candidate walkthrough. The auditor recreates the
+routed form/list from README, checks startup before dependency installation,
+installs only locked development tooling with scripts disabled, and verifies
+Node/type/browser behavior plus independent runtime imports. See
+[Batch 4 evidence](docs/reports/task-B.9-B.11-auditor.md).
+
+The package remains experimental. [ADR 0015](docs/adr/0015-public-frontend-compatibility.md)
+separates package/action/persistence/future-recording versions and preserves
+frontend contracts as Phase C is designed. The [browser matrix](docs/browser-support.md)
+limits acceptance evidence to desktop Chrome: OS IMEs, system clipboard paste,
+mobile/other browsers and assistive technology remain unqualified. This is no
+stable release or completed deterministic-product claim.
+
 ## 5. Determinism and side effects
 
 For supported state types, the transition function is:
@@ -200,8 +216,8 @@ Recordings may contain sensitive application values. Export must be an explicit 
 | --------- | ----------------------------------------------------- | --------------------------------------------------------------- |
 | Immediate | Capture input and process or enqueue its action.      | Stable action order; no promise that DOM is already painted.    |
 | Frame     | Evaluate dirty visual bindings and commit DOM writes. | Deduplicate by target within one render batch.                  |
-| Normal    | Prompt nonvisual framework work.                      | Must make progress under sustained input.                       |
-| Idle      | Persistence and optional diagnostics.                 | May be delayed; core correctness cannot depend on when it runs. |
+| Normal    | Prompt nonvisual framework work and coalesced persistence writes.                      | Must make progress under sustained input.                       |
+| Idle      | Optional diagnostics and maintenance.                 | May be delayed; core correctness cannot depend on when it runs. |
 
 The fixed-step loop uses an elapsed-time accumulator with a configurable maximum catch-up ticks per display frame. It never silently skips a numbered tick; under overload the simulation may lag. Hidden-tab behavior and explicit pause/resume must be documented and reflected in the time/input contract.
 
