@@ -1,12 +1,12 @@
 # Framework development plan
 
-**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C.1/C.2 are implemented; remaining C/D tasks are planned.
+**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C.1–C.8 are implemented; C.9/C.10 and Phase D remain planned.
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.16, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.18, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** C.1–C.4 implement checkpoints, controlled services, fixed ticks and external-input/effect adapters. B.1–B.11 frontend candidate remains verified. Native OS/clipboard/mobile/other-browser qualification stays open. Next implementation batch: C.5 semantic event input integration and C.6 display interpolation; recording/replay remain later gates.
+**Current milestone:** C.1–C.8 implement checkpoints, controlled services, fixed ticks, semantic input packets, optional interpolation and bounded recording. The frontend candidate remains verified; broad native qualification stays open. Current batch: C.7/C.8 ordered recording and bounded retention; next C.9/C.10 replay and qualification.
 
 ## 1. Purpose and scope
 
@@ -175,10 +175,10 @@ Before calling the general frontend API stable, resolve the applicable decisions
 - [x] **C.2 — Add controlled clock and seeded randomness.** Dependencies: A.3, C.1. Provide runtime services to actions and define seed initialization, logical timestamps, draw ordering, and transaction failure semantics. Acceptance: identical seeds/inputs yield identical draws/times; failed actions leave controlled services in the documented state, with no unrecorded advancement affecting later replay.
 - [x] **C.3 — Implement fixed simulation ticks.** Dependencies: B.4, C.2. Add configurable tick duration, ordered tick input queues, pause/resume, elapsed-time accumulator, bounded catch-up, and a hidden-tab policy. Specify input assignment and actions dispatched from tick logic. Acceptance: tick IDs never silently skip; overload can lag with bounded per-frame work; fake 30/60/120 Hz and irregular schedules produce identical corresponding tick states.
 - [x] **C.4 — Implement external-input and effect adapters.** Dependencies: C.1–C.3. Normalize viewport/layout/scroll measurements, storage reads, timers, and network/effect results outside actions. Define serializable success/error/cancellation inputs, ordering, origin metadata, and scope disposal. Acceptance: actions receive recorded values rather than querying ambient APIs; replay works with different live dimensions/network; late results cannot update disposed apps/routes contrary to the documented ownership policy.
-- [ ] **C.5 — Integrate semantic event inputs.** Dependencies: C.4, B.2, B.3, B.6, B.8. Route keyboard/text/navigation/location inputs through the ordered recordable boundary. Specify which native observations become authoritative input and which remain browser-only presentation. Acceptance: key/repeat/held-key, IME/paste, route, and hydration fixtures produce identical committed values from recorded inputs.
-- [ ] **C.6 — Add optional render interpolation.** Dependencies: C.3, A.7. Expose previous/current committed tick values and display-only alpha for opt-in bindings. Define alpha behavior during overload, pause, and resume; avoid extrapolation by accident. Acceptance: position/transform visuals can differ across frame rates while tick hashes match; interpolation cannot mutate state and ordinary text/forms use committed values.
-- [ ] **C.7 — Record ordered transitions.** Dependencies: C.1–C.5. Capture a baseline snapshot/reference, seed/PRNG state, versions, action/payload order, measured inputs, tick IDs, and checkpoint metadata. Distinguish queued/dispatched/committed/failed inputs so failed transitions and nested dispatches are not replayed twice. Acceptance: export/import round trips; recorded nested action fixtures reproduce version order; exports happen only through explicit developer action.
-- [ ] **C.8 — Bound recording memory and preserve baselines.** Dependencies: C.7. Enforce configurable action/byte limits, baseline advancement, periodic keyframes, and coordinated eviction. Budget snapshots and metadata, reject budgets that cannot hold a usable baseline, and define oversized-entry handling. Add explicit full-session memory/export limits and a visible limit-reached result. Acceptance: long runs stay within the documented accounting policy; every retained suffix is replayable; no silent full-session data loss occurs.
+- [x] **C.5 — Integrate semantic event inputs.** Dependencies: C.4, B.2, B.3, B.6, B.8. Route keyboard/text/navigation/location inputs through the ordered recordable boundary. Specify which native observations become authoritative input and which remain browser-only presentation. Acceptance: key/repeat/held-key, IME/paste, route, and hydration fixtures produce identical committed values from recorded inputs.
+- [x] **C.6 — Add optional render interpolation.** Dependencies: C.3, A.7. Expose previous/current committed tick values and display-only alpha for opt-in bindings. Define alpha behavior during overload, pause, and resume; avoid extrapolation by accident. Acceptance: position/transform visuals can differ across frame rates while tick hashes match; interpolation cannot mutate state and ordinary text/forms use committed values.
+- [x] **C.7 — Record ordered transitions.** Dependencies: C.1–C.5. Capture a baseline snapshot/reference, seed/PRNG state, versions, action/payload order, measured inputs, tick IDs, and checkpoint metadata. Distinguish queued/dispatched/committed/failed inputs so failed transitions and nested dispatches are not replayed twice. Acceptance: export/import round trips; recorded nested action fixtures reproduce version order; exports happen only through explicit developer action.
+- [x] **C.8 — Bound recording memory and preserve baselines.** Dependencies: C.7. Enforce configurable action/byte limits, baseline advancement, periodic keyframes, and coordinated eviction. Budget snapshots and metadata, reject budgets that cannot hold a usable baseline, and define oversized-entry handling. Add explicit full-session memory/export limits and a visible limit-reached result. Acceptance: long runs stay within the documented accounting policy; every retained suffix is replayable; no silent full-session data loss occurs.
 - [ ] **C.9 — Implement replay and divergence reports.** Dependencies: C.6–C.8. Restore baseline/control services, re-execute ordered inputs, suppress live effects/storage writes/navigation side effects, and compare committed checkpoint hashes. Define nested-dispatch replay ownership. Acceptance: first divergence identifies checkpoint/action/tick and expected/actual values or hashes; incompatible imports fail before partial replay; replay does not repeat live external effects.
 - [ ] **C.10 — Verify deterministic boundaries and document them.** Dependencies: C.9. Add randomized recording/replay tests and varied frame schedules, retention windows, measured-input, async-result, and interpolation fixtures. Document synchronous coding rules, controlled services, format/versioning, and the limits of detecting ambient global reads. Acceptance: every supported fixture matches hashes at corresponding checkpoints; unsupported inputs and deliberate divergence fail clearly; root startup and earlier acceptance suites still pass.
 
@@ -717,7 +717,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [x] Implemented frontend capabilities are independent; development dependencies and limitations are disclosed (B.11).
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** C.3/C.4 complete and verified; see [ticks/input report](docs/reports/task-C.3-C.4-ticks-inputs.md). Batch 4 committed as 35bd747; Batch 3 as c278bd0; Batch 2 as 24a0636. Batch 5 committed as 3a4c6b8; Batch 6 remains uncommitted; no push. Next: C.5/C.6. The frontend auditor still passes, with native OS/mobile/browser qualification open.
+**Current batch:** C.7/C.8 complete and verified; preceding C.5/C.6 candidate verified but uncommitted. Last commit: Batch 6, 6504d2b. No push. Next: C.9/C.10. Frontend/native browser qualification remains limited.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -894,4 +894,42 @@ lines; 123 Chrome checks, root smoke and empty runtime dependencies. Every
 candidate source fingerprint matches the final workspace. See the report/raw
 artifact for exact commands, environment and limits.
 No recording/replay, interpolation, semantic-input integration or performance
-claim is included. Next: C.5/C.6. Batch 6 remains uncommitted; no push.
+claim is included. Next: C.5/C.6. Batch 6 committed as 6504d2b at user request; no push.
+
+### C.5/C.6 semantic inputs and display interpolation — complete (6 October 2026)
+
+Owner: Codex. Baseline: Batch 6 commit 6504d2b. ADR 0018 preceded implementation.
+Owned semantic/native-location/navigation/hydration packets cross an ordered
+boundary with scoped synchronous observation and compatible saved-packet input.
+Fixed root inputs queue; boot/derived work preserves initial hydration and
+post-commit navigation. Optional interpolation retains two frozen tick roots,
+clamps alpha during pause/hidden/backlog, and cannot control structural scopes.
+Authoritative state/hash/control services remain independent of display alpha.
+Public guide, declarations, example, PRD v2.17 and detailed references are updated.
+Final clean-candidate audit passes: 547 runtime tests (13 semantic input and nine
+interpolation cases), 292 spike and 15 benchmark correctness tests; strict positive
+TS/checked JavaScript and 135 independently rejected negative lines; 128 Chrome
+checks, root smoke and empty runtime dependencies. Candidate source fingerprints
+match the final workspace. See the [batch report](docs/reports/task-C.5-C.6-semantic-interpolation.md)
+for raw evidence, commands, environment and limits. No retained recording,
+full replay/suppression, publication or performance claim is included.
+Next: C.7/C.8. Batch 7 remains uncommitted; no push.
+
+### C.7/C.8 ordered recording and bounded retention — complete (6 October 2026)
+
+Owner: Codex. Baseline: verified C.5/C.6 candidate (uncommitted), auditor artifact
+1791232680040-b641b70c; last committed batch is 6504d2b. ADR 0019 preceded
+implementation. Opt-in executed roots own nested action/input traces and failures;
+canonical explicit import/export preserves graph and controlled continuation.
+Recent retention advances complete keyframe baselines; session limits stop visibly
+without altering runtime commits. Keyframes use complete root boundaries, so the
+PRD v2.18 seeking bound explicitly allows one atomic root beyond the interval.
+Guide/types/example/API references are updated. Final clean-copy audit passes:
+581 runtime tests (34 new recording/retention cases), 292 spike and 15 benchmark
+correctness tests, strict positive TS/checked JavaScript and 144 independently
+rejected negative lines, 133 Chrome checks, root smoke, README auditor walkthrough
+and empty runtime dependencies. All 155 candidate source hashes match the final
+workspace. See the [batch report](docs/reports/task-C.7-C.8-recording-retention.md)
+for raw evidence, exact commands, environment and limitations.
+No full replay, effect suppression, seek, publication or performance claim.
+This batch and preceding Batch 7 remain uncommitted; no push. Next: C.9/C.10.

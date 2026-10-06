@@ -27,14 +27,14 @@ retain normal FIFO order, parent rollback and successful sibling continuation.
 Direct dispatch remains immediate at current logical time. Tick advancement
 publishes no state version independently of actions.
 
-`ticks` exposes frozen nonreactive enabled/paused/accumulator/queuedInputs/
+`ticks` exposes frozen nonreactive enabled/paused/hidden/accumulator/queuedInputs/
 maxCatchUp. The accumulator retains all eligible elapsed work, including overload;
 zero elapsed can drain it. No numbered ticks skip. Frame timestamps are rounded
 absolute microseconds. Mounting connects the target window; headless advances
 need no browser. First frame/resume/visibility establishes a new epoch. Hiding
 stops frame sampling and excludes hidden wall time; existing backlog remains.
 Explicit advances are allowed while hidden. Avoid driving elapsed time twice.
-`flush()` only renders. Display interpolation is not implemented.
+`flush()` only renders. C.6 adds optional [display interpolation](semantic-interpolation.md).
 
 Failed roots roll back their state/draws while healthy roots/tick logic continue.
 The consumed tick and successful prefixes remain. Failures pause the driver,
@@ -118,7 +118,7 @@ Aborting cannot reverse an already completed remote effect or force an arbitrary
 promise to release application-owned closures. Runtime cleanup removes its owned
 resources; no heap-collection guarantee is made.
 
-This is an ordered serializable external-input boundary. Durable input logs,
-semantic event/router/persistence integration, replay import/suppression and
-interpolation remain unimplemented. Manually forwarding a saved envelope through
+This is an ordered serializable external-input boundary. C.7/C.8 provide opt-in [bounded executed-prefix recording](recording.md);
+full replay/suppression remain unimplemented. C.5/C.6 implement
+[semantic event/router/persistence packets and display interpolation](semantic-interpolation.md). Manually forwarding a saved envelope through
 enqueue can demonstrate deterministic transitions without claiming public replay.

@@ -4,12 +4,13 @@ const readers = new WeakMap();
 export const isBinding = value => value !== null &&
   (typeof value === 'object' || typeof value === 'function') && readers.has(value);
 
-export function derive(read, owner = null) {
+export function derive(read, owner = null, presentation = false) {
   if (typeof read !== 'function') fail('BINDING_INVALID', 'derive requires a synchronous read function.');
   const token = Object.freeze({});
-  readers.set(token, { read, owner });
+  readers.set(token, { read, owner, presentation });
   return token;
 }
+export const isPresentationBinding = value => isBinding(value) && readers.get(value).presentation === true;
 
 export function createBindings(owner, check, path = [], source = state => state) {
   const children = new Map();

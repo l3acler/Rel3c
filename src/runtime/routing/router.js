@@ -50,7 +50,7 @@ export function ownRouterConfig(raw) {
   return Object.freeze({ mode, base, routes: Object.freeze(routes), notFound: config.notFound ?? (() => 'Not found') });
 }
 
-export function createRouter(config, tracking, schedule, receive, onLocation = () => {}) {
+export function createRouter(config, tracking, schedule, receive, onLocation = () => {}, admit = null) {
   const cell = tracking.cell(null);
   let view = null, origin = null, documentURL = null, disposed = false, listener = null, generation = 0;
   const withinBase = path => config.base === '/' || path === config.base || path.startsWith(config.base + '/');
@@ -64,8 +64,9 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
   function snapshot(url) {
     let path, search, hash, outsideBase = false;
     if (config.mode === 'hash') {
-      const route = new URL(url.hash.slice(1) || '/', origin);
-      if (route.origin !== origin) fail('ROUTE_URL_INVALID', 'Hash routes must be application paths.');
+      const routeOrigin = origin ?? url.origin;
+      const route = new URL(url.hash.slice(1) || '/', routeOrigin);
+      if (route.origin !== routeOrigin) fail('ROUTE_URL_INVALID', 'Hash routes must be application paths.');
       path = trim(route.pathname); search = route.search; hash = route.hash;
     } else {
       outsideBase = !withinBase(url.pathname);
@@ -91,6 +92,11 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
       if (hydrate) onLocation(next.route);
     }); }
     finally { schedule(); }
+  }
+  function observed(next, cause, hydrate = true) {
+    if (admit) return admit({ version: 1, kind: 'location', mode: config.mode, base: config.base,
+      url: next.route.url, cause, hydrate }, () => publish(next, hydrate));
+    publish(next, hydrate);
   }
   function mounted() { if (!view || disposed) fail('ROUTER_NOT_MOUNTED', 'Navigation requires a mounted router.'); }
   function resolve(to) {
@@ -120,6 +126,7 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
     }
   }
   return Object.freeze({
+    mode: config.mode, base: config.base,
     start(window) {
       if (!window?.location || !window.history?.pushState || !window.history?.replaceState || !window.addEventListener)
         fail('ROUTER_HOST_INVALID', 'Routing requires native location, History and event APIs.');
@@ -130,10 +137,10 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
       const expected = ++generation;
       listener = () => {
         if (!disposed && view === window && generation === expected)
-          receive(() => publish(snapshot(new URL(window.location.href))));
+          receive(() => observed(snapshot(new URL(window.location.href)), 'native'));
       };
       try {
-        publish(snapshot(new URL(view.location.href)));
+        observed(snapshot(new URL(view.location.href)), 'mount');
         view.addEventListener('popstate', listener); view.addEventListener('hashchange', listener);
       } catch (error) {
         try { this.stop(); } catch (cleanup) { throw new AggregateError([error, cleanup], 'Router startup and cleanup failed.'); }
@@ -161,12 +168,24 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
       if (options.replace !== undefined && typeof options.replace !== 'boolean') fail('ROUTE_OPTIONS_INVALID', 'replace requires a boolean.');
       return Object.freeze({ ...resolve(to), replace: options.replace === true });
     },
+    prepareInput(input) {
+      if (input.mode !== config.mode || input.base !== config.base)
+        fail('INPUT_INCOMPATIBLE', 'Route input mode/base does not match this app.');
+      if (typeof input.url !== 'string' || !input.url.startsWith('/') || input.url.startsWith('//') ||
+          input.url.length > MAX_URL || /[\u0000-\u0020\\]/.test(input.url))
+        fail('INPUT_INVALID', 'Location inputs require a bounded absolute local URL.');
+      const next = snapshot(new URL(input.url, origin ?? 'https://mini-framework.invalid'));
+      if (next.route.url !== input.url) fail('INPUT_INVALID', 'Location input URL must be canonical.');
+      return next;
+    },
+    applyInput(input) { publish(this.prepareInput(input), input.hydrate); },
+    applyPrepared(next, hydrate) { publish(next, hydrate); },
     commit(request, hydrate = true) {
       mounted();
       if (cell.value.route.url === request.url) return;
       try { view.history[request.replace ? 'replaceState' : 'pushState'](view.history.state, '', request.url); }
       catch (cause) { throw new FrameworkError('ROUTE_HISTORY_FAILED', 'Native history write failed; route state remains unchanged.', { cause }); }
-      publish(request.next, hydrate);
+      observed(request.next, hydrate ? 'navigation' : 'state', hydrate);
     },
     prepareQuery(updates) {
       mounted();

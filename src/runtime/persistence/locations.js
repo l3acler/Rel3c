@@ -47,7 +47,7 @@ export function ownPersistenceConfig(raw, state, schemaVersion, hasRouter) {
   return Object.freeze({ namespace: config.namespace, version, fields: Object.freeze(owned) });
 }
 
-export function createPersistence(config, store, router, scheduler, publish, guarded) {
+export function createPersistence(config, store, router, scheduler, publish, guarded, admit = null) {
   let host = null, cancel = null, dirty = false, disposed = false, flushing = false, dropped = 0;
   const reports = [], issues = [], written = new Map(), defaults = new Map();
   for (const field of config.fields) if (field.location === 'url') defaults.set(field.name, store.getState()[field.name]);
@@ -118,13 +118,16 @@ export function createPersistence(config, store, router, scheduler, publish, gua
     }
     return { fields, values };
   }
-  function apply(groups) {
+  function apply(groups, fromInput = false) {
     const changes = [];
     for (const group of groups.filter(Boolean)) {
       if (encodeSnapshot(projection(group.fields, store.getState())) !== encodeSnapshot(group.values))
         changes.push(group);
     }
     if (!changes.length) return;
+    if (admit && !fromInput) return admit({ version: 1, kind: 'hydration', namespace: config.namespace,
+      schemaVersion: config.version, groups: changes.map(group => ({ location: group.fields[0].location, values: group.values })) },
+      () => apply(changes, true));
     let result;
     try {
       result = store.run(draft => {
@@ -180,11 +183,32 @@ export function createPersistence(config, store, router, scheduler, publish, gua
       { cause: failures.length === 1 ? failures[0] : new AggregateError(failures, 'Persistence failures.') });
   }
   return Object.freeze({
+    prepareInput(input) {
+      if (input.namespace !== config.namespace || input.schemaVersion !== config.version)
+        fail('INPUT_INCOMPATIBLE', 'Hydration namespace/version does not match this app.');
+      if (!Array.isArray(input.groups) || input.groups.length > 3) fail('INPUT_INVALID', 'Hydration requires at most three location groups.');
+      const seen = new Set(), groups = [];
+      for (const raw of input.groups) {
+        const group = readRecord(raw, 'INPUT_INVALID', 'hydration group', ['location', 'values']);
+        if (![...areas, 'url'].includes(group.location) || seen.has(group.location)) fail('INPUT_INVALID', 'Invalid/duplicate hydration location.');
+        seen.add(group.location);
+        const values = readRecord(group.values, 'INPUT_INVALID', 'hydration values'), fields = [];
+        for (const name of Object.keys(values)) {
+          const field = config.fields.find(field => field.name === name && field.location === group.location);
+          if (!field) fail('INPUT_INVALID', 'Hydration cannot assign an unconfigured field.');
+          accepted(field, values[name]); fields.push(field);
+        }
+        groups.push({ fields, values });
+      }
+      return groups;
+    },
+    applyInput(input) { apply(this.prepareInput(input), true); },
+    applyPrepared(groups) { apply(groups, true); },
     start(window) {
       host = window;
       guarded(() => apply([...areas.map(storageInput), router ? urlInput(router.route) : null]));
     },
-    location(route) { if (host && !disposed) guarded(() => apply([urlInput(route)])); },
+    location(route, allowUnstarted = false) { if ((host || allowUnstarted) && !disposed) guarded(() => apply([urlInput(route)])); },
     committed() {
       if (!host || disposed) return;
       guarded(writeURL);

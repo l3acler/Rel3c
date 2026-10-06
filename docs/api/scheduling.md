@@ -37,5 +37,8 @@ after an error. Immediate/normal/idle errors report phase schedule; frame callba
 report render. Queued failures reach the browser after the synchronous onError hook.
 
 This extends A.7 batching without changing commit/rollback ordering. Fixed ticks,
-controlled time/random, interpolation and replay remain unimplemented.
+controlled time/random and optional display interpolation are available through
+their dedicated APIs; scheduling does not advance logical time. [Bounded recording](recording.md) is opt-in;
+full replay remains unimplemented. See [ticks and inputs](ticks-inputs.md) and
+[semantic inputs and interpolation](semantic-interpolation.md).
 Decision: [ADR 0012](../adr/0012-priority-scheduling.md).

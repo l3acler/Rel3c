@@ -10,6 +10,47 @@ export class FrameworkError extends Error {
   constructor(code: string, message: string, options?: ErrorOptions);
 }
 export function hashSnapshot(snapshot: string): string;
+export interface RecordingOptions {
+  readonly mode?: 'recent' | 'session'; readonly maxActions?: number;
+  readonly maxBytes?: number; readonly keyframeInterval?: number;
+}
+export interface RecordingStatus {
+  readonly status:'off'|'active'|'stopped'|'limit-reached'; readonly mode:'recent'|'session'|null;
+  readonly reason:'action-limit'|'byte-limit'|'baseline-limit'|'capture-failed'|null;
+  readonly records:number; readonly actions:number; readonly bytes:number;
+  readonly maxBytes:number; readonly maxActions:number; readonly keyframeInterval:number;
+  readonly baselineSequence:number; readonly endSequence:number;
+  readonly evictedRecords:number; readonly evictedActions:number;
+}
+export interface RecordedError { readonly name:string; readonly message:string; readonly code:string|null; }
+export interface RecordedRoute { readonly mode:'history'|'hash'; readonly base:string; readonly url:string; }
+export interface RecordingPoint { readonly sequence:number; readonly snapshot:string; readonly route:RecordedRoute|null; }
+export type RecordingRoot =
+  | Readonly<{kind:'dispatch';packet:Extract<InputPacket,{kind:'action'}>}>
+  | Readonly<{kind:'input';input:InputExecution;queued:boolean}>
+  | Readonly<{kind:'tick';tick:number;action:string|null}>
+  | Readonly<{kind:'time';time:number}>;
+export type RecordingEvent =
+  | Readonly<{type:'action';phase:'queued';id:number;parent:number|null;packet:Extract<InputPacket,{kind:'action'}>}>
+  | Readonly<{type:'action';phase:'dispatched'|'committed'|'failed'|'discarded';id:number;stateVersion:number;error:RecordedError|null}>
+  | Readonly<{type:'input';phase:'dispatched';id:number;parent:number|null;input:InputExecution;queued:boolean}>
+  | Readonly<{type:'input';phase:'succeeded'|'failed';id:number;stateVersion:number;error:RecordedError|null}>;
+export interface RecordingRecord {
+  readonly sequence:number; readonly root:RecordingRoot; readonly events:readonly RecordingEvent[];
+  readonly actions:number; readonly commits:number;
+  readonly after:Readonly<{hash:string;stateVersion:number;tick:number;time:number;draws:number;randomState:number;route:RecordedRoute|null}>;
+  readonly checkpoint:string|null; readonly outcome:'succeeded'|'failed'; readonly error:RecordedError|null;
+}
+export interface Recording {
+  readonly format:'mini-framework-recording'; readonly version:1; readonly runtimeVersion:'mini-framework-runtime/1'; readonly schemaVersion:string;
+  readonly policy:Required<RecordingOptions>; readonly status:'active'|'stopped'|'limit-reached'; readonly reason:RecordingStatus['reason'];
+  readonly evictedRecords:number; readonly evictedActions:number; readonly baseline:RecordingPoint;
+  readonly records:readonly RecordingRecord[]; readonly end:RecordingPoint;
+}
+/** Validate a canonical recording and decode frozen traces without executing it. */
+export function readRecording(text:string, options?:Readonly<{schemaVersion?:string}>): Recording;
+/** Return the canonical wire of an immutable recording returned by readRecording. */
+export function serializeRecording(recording:Recording): string;
 export interface ActionServices {
   /** Logical microseconds; constant throughout an action batch. */
   readonly now: () => number;
@@ -54,7 +95,7 @@ export interface SimulationConfig<D> {
   readonly tickDuration: number; readonly maxCatchUp?: number; readonly action?: TickNames<D>;
 }
 export interface TickStatus {
-  readonly enabled: boolean; readonly paused: boolean; readonly accumulator: number;
+  readonly enabled: boolean; readonly paused: boolean; readonly hidden: boolean; readonly accumulator: number;
   readonly queuedInputs: number; readonly maxCatchUp: number | null;
 }
 export interface InputTicket {
@@ -66,10 +107,27 @@ export interface ExternalInput {
   readonly value: unknown; readonly error: Readonly<{ name: string; message: string }> | null;
 }
 export interface ExternalReceipt extends InputTicket { readonly input: ExternalInput; }
+export type InputPacket =
+  | Readonly<{ version:1; kind:'action'; name:string; args:readonly [] | readonly [unknown] }>
+  | Readonly<{ version:1; kind:'navigation'; mode:'history'|'hash'; base:string; url:string; replace:boolean }>
+  | Readonly<{ version:1; kind:'location'; mode:'history'|'hash'; base:string; url:string;
+      cause:'native'|'mount'|'navigation'|'state'; hydrate:boolean }>
+  | Readonly<{ version:1; kind:'hydration'; namespace:string; schemaVersion:string;
+      groups:readonly Readonly<{ location:'session'|'local'|'url'; values:Readonly<Record<string,unknown>> }>[] }>;
+export interface InputExecution {
+  readonly sequence:number; readonly tick:number; readonly time:number; readonly derived:boolean;
+  readonly packet:InputPacket;
+}
+export interface InterpolationFrame<S> {
+  readonly previous:DeepReadonly<S>; readonly current:DeepReadonly<S>;
+  readonly alpha:number; readonly tick:number; readonly time:number;
+}
 export interface EffectTask {
   readonly cancel: () => void; readonly done: Promise<ExternalReceipt | null>;
 }
 export interface InputAdapters<D> {
+  keyboard(origin:string, action:ExternalNames<D>): KeyboardHandler;
+  text(origin:string, action:ExternalNames<D>): TextHandler;
   send(origin: string, action: ExternalNames<D>, value: unknown): ExternalReceipt;
   sample<F extends () => unknown>(origin: string, action: ExternalNames<D>, read: F & Sync<F>): ExternalReceipt;
   effect(origin: string, action: ExternalNames<D>, run: (signal: AbortSignal) => unknown): EffectTask;
@@ -80,7 +138,7 @@ export interface InputAdapters<D> {
   timer(origin: string, action: ExternalNames<D>, delay: number, value?: unknown): EffectTask;
 }
 export type AppStatus = 'created' | 'mounting' | 'mounted' | 'disposing' | 'disposed';
-export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' | 'schedule' | 'navigation' | 'persistence' | 'control' | 'snapshot' | 'input';
+export type ErrorPhase = 'create' | 'mount' | 'dispatch' | 'event' | 'render' | 'dispose' | 'schedule' | 'navigation' | 'persistence' | 'control' | 'snapshot' | 'input' | 'recording';
 export type ErrorHandler = (error: Error, info: Readonly<{ phase: ErrorPhase }>) => unknown;
 type SyncErrorHook<F extends ErrorHandler> = { readonly onError?: F & Sync<F> };
 type Cleanup<F extends () => unknown> = F & Sync<F>;
@@ -228,6 +286,8 @@ export interface ViewContext<S, D extends Definitions<S>> {
   /** Drains an outer batch synchronously; nested calls only admit queued work. */
   readonly dispatch: (...args: DispatchArgs<D>) => void;
   readonly inputs: InputAdapters<D>;
+  observeInputs<F extends (input:InputExecution) => unknown>(callback:F & Sync<F>): () => void;
+  interpolate<F extends (frame:InterpolationFrame<S>) => unknown>(read:F & Sync<F>): Binding<ReturnType<F>>;
   readonly route: RouteSnapshot | null;
   navigate(to: string, options?: NavigationOptions): void;
   readonly link: LinkBuilder;
@@ -275,10 +335,17 @@ export interface AppInstance<S extends object, D extends Definitions<S> = {}> ex
   readonly persistence: PersistenceStatus;
   /** Export committed state/version and service continuation as canonical JSON. */
   snapshot(): string;
+  startRecording(options?:RecordingOptions): RecordingStatus;
+  stopRecording(): RecordingStatus;
+  clearRecording(): void;
+  exportRecording(): string;
+  readonly recording:RecordingStatus;
   /** Monotone manual time input, in integer logical microseconds. */
   setLogicalTime(time: number): void;
   /** Frozen, nonreactive committed control snapshot. */
   readonly controls: ControlSnapshot;
+  /** Validate and admit a saved versioned packet. This is not a recording importer. */
+  receiveInput(packet:InputPacket, options?:Readonly<{tick?:number}>): InputTicket;
   readonly ticks: TickStatus;
   readonly enqueue: (...args: DispatchArgs<D>) => InputTicket;
   readonly enqueueAt: (tick: number, ...args: DispatchArgs<D>) => InputTicket;

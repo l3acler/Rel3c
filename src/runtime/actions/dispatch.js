@@ -20,10 +20,10 @@ function payloadError(error) {
   return error;
 }
 
-export function createDispatcher(store, registry, check, publish = () => {}, controls = null) {
+export function createDispatcher(store, registry, check, publish = () => {}, controls = null, hooks = {}) {
   let running = false,
     preparing = false,
-    children = null, executing = false, postCommit = null;
+    children = null, executing = false, postCommit = null, currentId = null;
   let admitted = 0,
     usage = null;
 
@@ -99,7 +99,9 @@ export function createDispatcher(store, registry, check, publish = () => {}, con
           "Cannot dispatch from a payload guard or during payload admission.",
         );
       if (running) {
-        children.push(prepare(name, args));
+        const entry = prepare(name, args);
+        entry.recordId = hooks.queued?.(name, entry.spec.input === 'none' ? [] : [entry.payload], currentId);
+        children.push(entry);
         return;
       }
       running = true;
@@ -108,48 +110,59 @@ export function createDispatcher(store, registry, check, publish = () => {}, con
       const queue = [],
         failures = [];
       try {
-        queue.push(prepare(name, args));
-        // Release consumed entries rather than retaining the complete batch.
-        while (queue.length) {
-          const { spec, payload } = queue.shift();
-          children = [];
-          postCommit = [];
-          let result, serviceTransaction;
-          try {
-            const { run } = spec;
-            serviceTransaction = controls?.begin(() => executing && !preparing);
-            result = store.run((draft) => {
-              executing = true;
-              try {
-                const services = serviceTransaction?.services;
-                const result = spec.input === "none" ? run(draft, services) : run(draft, payload, services);
-                requireSync(result, "ACTION_ASYNC", "Actions must be synchronous; Promise/thenable returns reject.");
-              } finally { executing = false; serviceTransaction?.revoke(); }
-            });
-            serviceTransaction?.commit();
-            queue.push(...children);
-          } catch (error) {
-            serviceTransaction?.abort();
-            failures.push(error);
+        const initial = prepare(name, args);
+        const packet = { version: 1, kind: 'action', name, args: initial.spec.input === 'none' ? [] : [initial.payload] };
+        const drain = () => {
+          initial.recordId = hooks.queued?.(name, packet.args, null);
+          queue.push(initial);
+          // Release consumed entries rather than retaining the complete batch.
+          while (queue.length) {
+            const { spec, payload, recordId } = queue.shift();
+            currentId = recordId;
+            children = [];
+            postCommit = [];
+            let result, serviceTransaction;
+            hooks.action?.(recordId, 'dispatched', store.getVersion());
+            try {
+              const { run } = spec;
+              serviceTransaction = controls?.begin(() => executing && !preparing);
+              result = store.run((draft) => {
+                executing = true;
+                try {
+                  const services = serviceTransaction?.services;
+                  const result = spec.input === "none" ? run(draft, services) : run(draft, payload, services);
+                  requireSync(result, "ACTION_ASYNC", "Actions must be synchronous; Promise/thenable returns reject.");
+                } finally { executing = false; serviceTransaction?.revoke(); }
+              });
+              serviceTransaction?.commit();
+              hooks.action?.(recordId, 'committed', store.getVersion());
+              queue.push(...children);
+            } catch (error) {
+              serviceTransaction?.abort();
+              failures.push(error);
+              hooks.action?.(recordId, 'failed', store.getVersion(), error);
+              for (const child of children) hooks.action?.(child.recordId, 'discarded', store.getVersion());
+            }
+            // Successful actions retain queued children and operations even if a
+            // notification or native History write fails after publication.
+            if (result) {
+              try { publish(result); } catch (error) { failures.push(error); }
+              for (const operation of postCommit) try { operation(); } catch (error) { failures.push(error); }
+            }
+            children = postCommit = null;
           }
-          // Successful actions retain queued children and operations even if a
-          // notification or native History write fails after publication.
-          if (result) {
-            try { publish(result); } catch (error) { failures.push(error); }
-            for (const operation of postCommit) try { operation(); } catch (error) { failures.push(error); }
-          }
-          children = postCommit = null;
-        }
-        if (failures.length === 1) throw failures[0];
-        if (failures.length > 1)
-          throw new AggregateError(
-            failures,
-            "Dispatch batch actions failed; successful actions remain committed.",
-          );
+          if (failures.length === 1) throw failures[0];
+          if (failures.length > 1)
+            throw new AggregateError(
+              failures,
+              "Dispatch batch actions failed; successful actions remain committed.",
+            );
+        };
+        return hooks.batch ? hooks.batch(packet, drain) : drain();
       } finally {
         queue.length = 0;
         children = null;
-        postCommit = null; executing = false;
+        postCommit = null; executing = false; currentId = null;
         usage = null;
         admitted = 0;
         running = false;

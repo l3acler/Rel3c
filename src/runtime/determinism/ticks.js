@@ -18,7 +18,7 @@ export function ownSimulation(options, registry, clock) {
   return Object.freeze({ tickDuration, action, maxCatchUp });
 }
 
-export function createTicks(config, controls, dispatch, operation, report) {
+export function createTicks(config, controls, dispatch, operation, report, hooks = {}) {
   const queue = new Map();
   let usage = zeroUsage(), sequence = 0, accumulator = 0, paused = true, busy = false, disposed = false;
   let host = null, document = null, frame = null, epoch = null;
@@ -51,7 +51,7 @@ export function createTicks(config, controls, dispatch, operation, report) {
       finally { request(); }
     }); } catch (error) { if (frame === ticket) frame = null; throw error; }
   }
-  function visibility() { cancelFrame(); request(); }
+  function visibility() { cancelFrame(); try { hooks.frame?.(); } finally { request(); } }
   function advance(elapsed) {
     enabled();
     if (!logicalTime(elapsed) || !logicalTime(accumulator + elapsed)) fail('TICK_INVALID', 'Elapsed microseconds exceed the safe integer range.');
@@ -62,30 +62,44 @@ export function createTicks(config, controls, dispatch, operation, report) {
     try {
       while (accumulator >= config.tickDuration && count < config.maxCatchUp) {
         // Overflow must leave the pending numbered tick and its inputs untouched.
-        controls.nextTick(); accumulator -= config.tickDuration; count++;
-        const tick = controls.snapshot.clock.tick;
-        for (const [id, entry] of [...queue]) {
-          if (entry.tick !== tick) continue;
-          remove(id);
-          if (!entry.active()) continue;
-          try { dispatch(entry.input.name, ...entry.input.args); } catch (error) { errors.push(error); }
-        }
-        if (config.action !== undefined) try { dispatch(config.action); } catch (error) { errors.push(error); }
+        const before = controls.snapshot.clock;
+        if (!logicalTime(before.tick + 1) || !logicalTime(before.time + before.tickDuration))
+          fail('CONTROL_LIMIT', 'Tick/time exceeds the safe integer range.');
+        const performTick = () => {
+          controls.nextTick(); accumulator -= config.tickDuration; count++;
+          const tick = controls.snapshot.clock.tick;
+          for (const [id, entry] of [...queue]) {
+            if (entry.tick !== tick) continue;
+            remove(id);
+            if (!entry.active()) continue;
+            try {
+              if (entry.input.run) entry.input.run();
+              else dispatch(entry.input.name, ...entry.input.args);
+            } catch (error) { errors.push(error); }
+          }
+          if (config.action !== undefined) try { dispatch(config.action); } catch (error) { errors.push(error); }
+          try { hooks.tick?.(); } catch (error) { errors.push(error); }
+          if (errors.length) throw errors.length === 1 ? errors[0] : new AggregateError(errors, 'Tick root failed.');
+        };
+        try { if (hooks.runTick) hooks.runTick(controls.snapshot.clock.tick + 1, config.action ?? null, performTick); else performTick(); }
+        catch (error) { if (!errors.includes(error) && !errors.length) errors.push(error); }
         if (errors.length) break;
       }
     } catch (error) { errors.push(error); }
     finally { busy = false; }
     if (errors.length) {
       paused = true; cancelFrame();
+      try { hooks.frame?.(); } catch (error) { errors.push(error); }
       if (errors.length === 1) throw errors[0];
       throw new AggregateError(errors, 'Tick inputs failed; successful commits and the numbered tick remain consumed.');
     }
+    hooks.frame?.();
     return count;
   }
   return Object.freeze({
     get busy() { return busy; },
     get pending() { return queue.size; },
-    get status() { return Object.freeze({ enabled: !!config, paused, accumulator, queuedInputs: queue.size,
+    get status() { return Object.freeze({ enabled: !!config, paused, hidden: document?.visibilityState === 'hidden', accumulator, queuedInputs: queue.size,
       maxCatchUp: config?.maxCatchUp ?? null }); },
     enqueue(input, tick, active = () => true) {
       enabled();
@@ -102,8 +116,8 @@ export function createTicks(config, controls, dispatch, operation, report) {
       return Object.freeze({ sequence: id, tick, time, cancel: () => remove(id) });
     },
     advance,
-    pause() { enabled(); paused = true; cancelFrame(); },
-    resume() { enabled(); paused = false; request(); },
+    pause() { enabled(); paused = true; cancelFrame(); hooks.frame?.(); },
+    resume() { enabled(); paused = false; hooks.frame?.(); request(); },
     connect(view, ownerDocument) {
       if (!config) return;
       host = view; document = ownerDocument;

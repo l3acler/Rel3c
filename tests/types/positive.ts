@@ -181,3 +181,30 @@ const task: EffectTask=externalApp.inputs.effect('network','result',async signal
 });
 externalApp.inputs.measure('viewport','result','viewport');externalApp.inputs.timer('timer','result',10);
 void task; void consumed;
+
+// C.5/C.6 adapters preserve native callback types and interpolation state inference.
+input({onKey:externalApp.inputs.keyboard('keys','result'),onText:externalApp.inputs.text('text','result')});
+const inputStop:()=>void=externalApp.observeInputs(event=>{
+  const observed:import('mini-framework').InputExecution=event;
+  if(event.packet.kind==='action'){const name:string=event.packet.name;void name;}
+  void observed;
+});inputStop();
+externalApp.receiveInput({version:1,kind:'action',name:'result',args:[{version:1,origin:'saved',status:'success',value:2,error:null}]});
+const display=ticked.interpolate(frame=>{
+  const before:number=frame.previous.n,after:number=frame.current.n;return before+(after-before)*frame.alpha;
+});span(display);
+
+// C.7/C.8 recording policy, frozen validated roots and explicit developer operations.
+import { readRecording, serializeRecording } from '../../src/index.js';
+app.startRecording({ mode:'recent', maxActions:32, maxBytes:65536, keyframeInterval:4 });
+const recordingStatus = app.recording;
+const recordingText:string = app.exportRecording();
+const recording = readRecording(recordingText, { schemaVersion:app.schemaVersion });
+const baselineText:string = recording.baseline.snapshot;
+for(const record of recording.records) {
+  if(record.root.kind==='dispatch') { const actionName:string=record.root.packet.name; void actionName; }
+  if(record.root.kind==='tick') { const tick:number=record.root.tick; void tick; }
+}
+app.stopRecording();app.clearRecording();void [recordingStatus,baselineText];
+
+const roundTripRecording:string=serializeRecording(recording);void roundTripRecording;

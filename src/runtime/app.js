@@ -15,8 +15,11 @@ import { ownPersistenceConfig, createPersistence } from "./persistence/locations
 import { createControls } from "./determinism/controls.js";
 import { encodeCheckpoint, decodeCheckpoint } from "./serialization/checkpoint.js";
 import { ownSimulation, createTicks } from './determinism/ticks.js';
-import { ownInput } from './inputs/ownership.js';
+import { ownInput, ownValue } from './inputs/ownership.js';
 import { createInputs } from './inputs/adapters.js';
+import { createInputBoundary } from './inputs/boundary.js';
+import { createInterpolation } from './determinism/interpolation.js';
+import { createRecorder } from './recording/recorder.js';
 
 const targets = new WeakMap();
 const emptySchema = createActionSchema()(() => ({}));
@@ -117,16 +120,21 @@ export function createApplication(config, frameworkVersion) {
   let mountCleanups = [];
   const appCleanups = [];
   const tracking = createTracking(store);
+  let interpolation = null;
+  let recorder = null;
+  const recordRun = (root, run) => recorder?.active ? recorder.run(root, run) : run();
+  const captureRecording = () => ({ snapshot: encodeCheckpoint(store.getState(), store.getVersion(), schemaVersion, controls.snapshot),
+    route: router?.route ? { mode: router.mode, base: router.base, url: router.route.url } : null });
   const bindingOwner = Object.freeze({});
   const bind = createBindings(bindingOwner, live);
   const router = routerConfig ? createRouter(routerConfig, tracking, () => renderer?.schedule(), runLocationInput,
-    route => persistence?.location(route)) : null;
+    route => persistence?.location(route, status === 'created'), packet => admitInternal(packet)) : null;
   routerConfig = null;
   const scheduler = createScheduler(run => run(), error => {
     reported = new WeakSet(); report(error, error.code?.startsWith("PERSIST_") ? "persistence" : "schedule");
   });
   const persistence = persistenceConfig ? createPersistence(persistenceConfig, store, router, scheduler,
-    publishInput, withInput) : null;
+    publishInput, withInput, packet => admitInternal(packet)) : null;
   persistenceConfig = null;
   function withInput(run) {
     const previous = inputBusy; inputBusy = true;
@@ -134,7 +142,7 @@ export function createApplication(config, frameworkVersion) {
   }
   function publishInput(result) {
     const errors = [];
-    try { tracking.publish(result); } catch (error) { errors.push(error); }
+    try { tracking.batch(() => { tracking.publish(result); interpolation?.committed(); }); } catch (error) { errors.push(error); }
     try { renderer?.schedule(); } catch (error) { errors.push(error); }
     if (errors.length === 1) throw errors[0];
     if (errors.length) throw new AggregateError(errors, "External input notifications failed after commit.");
@@ -182,12 +190,17 @@ export function createApplication(config, frameworkVersion) {
     const errors = [];
     try { tracking.batch(() => {
       tracking.publish(result);
+      interpolation?.committed();
       persistence?.committed();
     }); } catch (error) { errors.push(error); }
     try { renderer?.schedule(); } catch (error) { errors.push(error); }
     if (errors.length === 1) throw errors[0];
     if (errors.length) throw new AggregateError(errors, "Notifications/scheduling failed after commit.");
-  }, controls);
+  }, controls, {
+    batch: (packet, run) => recordRun({ kind: 'dispatch', packet }, run),
+    queued: (name, args, parent) => recorder?.queued(name, args, parent),
+    action: (...args) => recorder?.action(...args),
+  });
   function render(run) {
     const previous = rendering;
     rendering = true;
@@ -215,6 +228,13 @@ export function createApplication(config, frameworkVersion) {
   function derive(read) {
     live();
     return binding(read, bindingOwner);
+  }
+  function interpolate(read, check = live) {
+    check();
+    if (inputBusy || reporting || dispatcher.isActive() || tracking.isBusy())
+      fail('INTERPOLATION_REENTRANT', 'Cannot create interpolation bindings during active actions/reads/input reporting.');
+    interpolation ??= createInterpolation(store, tracking, controls, ticks, bindingOwner, () => renderer?.schedule());
+    return interpolation.binding(read, check);
   }
   function flushPersistence() {
     if (!reporting && !dispatcher?.isActive() && !handlingEvent) reported = new WeakSet();
@@ -251,26 +271,90 @@ export function createApplication(config, frameworkVersion) {
       report(error, 'input');
     }
   }
+  function recordingOperation(run) {
+    if (!reporting && !dispatcher?.isActive() && !handlingEvent) reported = new WeakSet();
+    try {
+      live();
+      if (status === 'mounting' || ticks.busy || inputBusy || rendering || reporting || dispatcher.isActive() || tracking.isBusy() || recorder?.busy)
+        fail('RECORDING_REENTRANT', 'Recording operations require an idle runtime boundary.');
+      return run();
+    } catch (error) {
+      if (handlingEvent || dispatcher?.isActive()) throw error;
+      report(error, 'recording');
+    }
+  }
   const ticks = createTicks(simulationConfig, controls, (...args) => dispatcher.dispatch(...args),
-    run => checkpointOperation(run, 'control'), error => report(error, 'control'));
+    run => checkpointOperation(run, 'control'), error => report(error, 'control'),
+    { tick: () => interpolation?.tick(), frame: () => interpolation?.frame(),
+      runTick: (tick, action, run) => recordRun({ kind: 'tick', tick, action }, run) });
   simulationConfig = null;
-  let inputSequence = 0;
+  function normalizePacket(value) {
+    const record = readRecord(value, 'INPUT_INVALID', 'input packet');
+    if (record.version !== 1) fail('INPUT_INCOMPATIBLE', 'Unsupported semantic input packet version.');
+    if (record.kind === 'action') {
+      readRecord(value, 'INPUT_INVALID', 'action input', ['version', 'kind', 'name', 'args']);
+      const args = record.args;
+      if (!Array.isArray(args) || args.length > 1 || Object.getPrototypeOf(args) !== Array.prototype ||
+          Reflect.ownKeys(args).some(key => key !== 'length' && key !== '0') ||
+          args.length && !Object.hasOwn(Object.getOwnPropertyDescriptor(args, '0') ?? {}, 'value'))
+        fail('INPUT_INVALID', 'Action input args require a dense zero/one-element data array.');
+      const owned = ownInput(registry, record.name, args);
+      const packet = Object.freeze({ version: 1, kind: 'action', name: owned.name, args: Object.freeze(owned.args) });
+      return { packet, usage: owned.usage, execute: () => dispatcher.dispatch(owned.name, ...owned.args) };
+    }
+    const owned = ownValue(value), packet = owned.value;
+    if (packet.kind === 'location' || packet.kind === 'navigation') {
+      const location = packet.kind === 'location';
+      readRecord(packet, 'INPUT_INVALID', 'route input', ['version', 'kind', 'mode', 'base', 'url',
+        ...(location ? ['cause', 'hydrate'] : ['replace'])]);
+      if (!router) fail('ROUTER_MISSING', 'Route packets require a configured router.');
+      if (location && (!['native','mount','navigation','state'].includes(packet.cause) || typeof packet.hydrate !== 'boolean') ||
+          !location && typeof packet.replace !== 'boolean') fail('INPUT_INVALID', 'Malformed route input policy.');
+      const next = router.prepareInput(packet);
+      const request = location ? null : router.prepare(router.absolute(packet.url), { replace: packet.replace });
+      return { packet, usage: owned.usage, execute: () => location
+        ? router.applyPrepared(next, packet.hydrate && !(packet.cause === 'mount' && status === 'created')) : router.commit(request) };
+    }
+    if (packet.kind === 'hydration') {
+      readRecord(packet, 'INPUT_INVALID', 'hydration input', ['version','kind','namespace','schemaVersion','groups']);
+      if (!persistence) fail('PERSIST_CONFIG_INVALID', 'Hydration packets require configured persistence fields.');
+      const groups = withInput(() => persistence.prepareInput(packet));
+      return { packet, usage: owned.usage, execute: () => persistence.applyPrepared(groups) };
+    }
+    fail('INPUT_INVALID', 'Unknown semantic input packet kind.');
+  }
+  const inputBoundary = createInputBoundary(() => controls.snapshot.clock, ticks, normalizePacket, withInput, {
+    root: (input, queued, run) => recordRun({ kind: 'input', input, queued }, run),
+    input: (input, queued) => recorder?.input(input, queued),
+    end: (id, error, failed) => recorder?.inputEnd(id, store.getVersion(), error, failed),
+  });
+  function admitInternal(packet) {
+    const derived = inputBoundary.executing || dispatcher.isActive() || packet.cause === 'state';
+    return inputBoundary.admit(packet, { derived, immediate: derived || status === 'mounting' || packet.kind === 'hydration' });
+  }
   const inputs = createInputs((name, payload, active) => {
-    const owned = ownInput(registry, name, [payload]);
-    if (controls.snapshot.clock.mode === 'fixed') return ticks.enqueue(owned, undefined, active);
-    if (inputSequence >= Number.MAX_SAFE_INTEGER) fail('INPUT_LIMIT', 'Input sequence exceeds the safe integer range.');
-    const receipt = Object.freeze({ sequence: ++inputSequence, tick: 0, time: controls.snapshot.clock.time });
-    if (active()) dispatcher.dispatch(name, payload);
-    return receipt;
+    return inputBoundary.admit({ version: 1, kind: 'action', name, args: [payload] }, { active });
   }, run => inputOperation(run), (run, scopedConstruction) => inputOperation(run, scopedConstruction || status === 'mounting'), name => {
     if (registry.get(name)?.input !== 'payload') fail('INPUT_INVALID', 'External inputs require a registered payload action.');
   }, () => target?.ownerDocument.defaultView ?? globalThis, withInput);
   const appInputs = inputs.scoped();
   function enqueue(tick, name, args) {
     return inputOperation(() => {
-      const ticket = ticks.enqueue(ownInput(registry, name, args), tick);
+      if (!ticks.status.enabled) fail('TICK_MISSING', 'Configure simulation before enqueueing tick inputs.');
+      const ticket = inputBoundary.admit({ version: 1, kind: 'action', name, args }, { tick });
       return Object.freeze({ ...ticket, cancel: () => inputOperation(ticket.cancel) });
     });
+  }
+  function receiveInput(packet, raw = {}) {
+    return inputOperation(() => {
+      const { tick } = readRecord(raw, 'INPUT_INVALID', 'input options', ['tick']);
+      if (tick !== undefined && !ticks.status.enabled) fail('TICK_MISSING', 'Tick assignment requires fixed simulation.');
+      const ticket = inputBoundary.admit(packet, { tick, bootstrap: status === 'created' && tick === undefined });
+      return Object.freeze({ ...ticket, cancel: () => inputOperation(() => ticket.cancel?.()) });
+    });
+  }
+  function observeInputs(callback, scoped = false) {
+    return inputOperation(() => inputBoundary.observe(callback), scoped);
   }
   function makeContext(addCleanup, isActive) {
     const scheduled = new Set();
@@ -285,7 +369,9 @@ export function createApplication(config, frameworkVersion) {
       get bind() { scopeLive(); return bind; },
       actions, dispatch,
       get inputs() { scopeLive(); return scopedInputs ??= inputs.scoped(isActive, addCleanup); },
+      observeInputs(callback) { scopeLive(); const stop = observeInputs(callback, true); addCleanup(stop); return stop; },
       derive(read) { scopeLive(); return derive(read); },
+      interpolate(read) { return interpolate(read, scopeLive); },
       when, keyed,
       outlet,
       get route() { scopeLive(); return router?.route ?? null; },
@@ -376,8 +462,10 @@ export function createApplication(config, frameworkVersion) {
           (dispatcher.isActive() && !dispatcher.isExecuting()))
         fail("NAVIGATION_REENTRANT", "Navigation requires a mounted app outside reactive/render/error work or payload admission.");
       const request = router.prepare(to, options);
-      if (dispatcher.isExecuting()) dispatcher.afterCommit(() => router.commit(request));
-      else router.commit(request);
+      const prepared = { version: 1, kind: 'navigation', mode: router.mode, base: router.base,
+        url: request.url, replace: request.replace };
+      if (dispatcher.isExecuting()) dispatcher.afterCommit(() => admitInternal(prepared));
+      else admitInternal(prepared);
     } catch (error) {
       if (handlingEvent || dispatcher?.isActive()) throw error;
       report(error, "navigation");
@@ -424,10 +512,32 @@ export function createApplication(config, frameworkVersion) {
       if (ticks.pending || inputs.pending) fail('SNAPSHOT_PENDING', 'Drain/cancel queued inputs and pending effects before exporting a checkpoint.');
       return encodeCheckpoint(store.getState(), store.getVersion(), schemaVersion, controls.snapshot);
     }, 'snapshot'); },
-    setLogicalTime(time) { return checkpointOperation(() => controls.setTime(time), 'control'); },
+    setLogicalTime(time) { return checkpointOperation(() => {
+      // Validate before opening a recording root; invalid control calls have no transition.
+      if (controls.snapshot.clock.mode !== 'manual' || !Number.isSafeInteger(time) || Object.is(time, -0) || time < controls.snapshot.clock.time)
+        return controls.setTime(time);
+      return recordRun({ kind: 'time', time }, () => controls.setTime(time));
+    }, 'control'); },
+    startRecording(options = {}) { return recordingOperation(() => {
+      if (recorder?.active) fail('RECORDING_ACTIVE', 'Stop or clear the current recording first.');
+      if (ticks.pending || inputs.pending) fail('RECORDING_PENDING', 'Drain/cancel pending inputs/effects before starting recording.');
+      const next = createRecorder(options, captureRecording, schemaVersion);
+      recorder?.dispose(); recorder = next; return recorder.status;
+    }); },
+    stopRecording() { return recordingOperation(() => { recorder?.stop(); return app.recording; }); },
+    clearRecording() { return recordingOperation(() => { recorder?.dispose(); recorder = null; }); },
+    exportRecording() { return recordingOperation(() => {
+      if (!recorder) fail('RECORDING_MISSING', 'Start recording before exporting.');
+      return recorder.export();
+    }); },
+    get recording() { live(); return recorder?.status ?? Object.freeze({ status: 'off', mode: null, reason: null,
+      records: 0, actions: 0, bytes: 0, maxBytes: 0, maxActions: 0, keyframeInterval: 0,
+      baselineSequence: 0, endSequence: 0, evictedRecords: 0, evictedActions: 0 }); },
     get controls() { live(); return controls.snapshot; },
     get ticks() { live(); return ticks.status; },
     inputs: appInputs,
+    receiveInput,
+    observeInputs,
     enqueue(name, ...args) { return enqueue(undefined, name, args); },
     enqueueAt(tick, name, ...args) { return enqueue(tick, name, args); },
     advanceTicks(elapsed) { return checkpointOperation(() => ticks.advance(elapsed), 'control'); },
@@ -443,6 +553,7 @@ export function createApplication(config, frameworkVersion) {
     observe,
     computed,
     derive,
+    interpolate,
     when, keyed,
     get bind() { live(); return bind; },
     get status() {
@@ -465,6 +576,7 @@ export function createApplication(config, frameworkVersion) {
     mount(mountTarget = defaultTarget) {
       try {
         live();
+        if (recorder?.active) fail('RECORDING_ACTIVE', 'Mount before recording, or stop recording before mounting.');
         if (ticks.busy || inputBusy || dispatcher.isActive() || rendering || tracking.isBusy())
           fail(
             "LIFECYCLE_REENTRANT",
@@ -563,11 +675,16 @@ export function createApplication(config, frameworkVersion) {
       // Stop the complete graph before scoped/user cleanup can dispose sources
       // and accidentally notify other resources in this closing application.
       const errors = [];
+      try { recorder?.dispose(); } catch (error) { errors.push(error); }
+      recorder = null;
       try { ticks.dispose(); } catch (error) { errors.push(error); }
+      try { inputBoundary.dispose(); } catch (error) { errors.push(error); }
       try { inputs.dispose(); } catch (error) { errors.push(error); }
       try { scheduler.dispose(); } catch (error) { errors.push(error); }
       try { persistence?.dispose(); } catch (error) { errors.push(error); }
       tracking.dispose();
+      try { interpolation?.dispose(); } catch (error) { errors.push(error); }
+      interpolation = null;
       try { router?.dispose(); } catch (error) { errors.push(error); }
       try { events?.dispose(); } catch (error) { errors.push(error); }
       events = null;
@@ -603,6 +720,8 @@ export function createApplication(config, frameworkVersion) {
   });
   registerDiagnostics(app, () => ({ ...tracking.counts(),
     ...ticks.counts(), ...inputs.counts(),
+    ...inputBoundary.counts(),
+    ...(recorder?.counts() ?? { recordingRecords: 0, recordingBytes: 0, recordingScratch: 0 }),
     ...scheduler.counts(),
     ...(persistence?.counts() ?? { persistenceTasks: 0 }),
     ...(router?.counts() ?? { routeListeners: 0 }),

@@ -2,8 +2,7 @@
 
 Implemented: versioned state/control checkpoints, canonical SHA-256 comparison,
 manual logical time and transactional seeded simulation draws. C.3/C.4 add
-[fixed ticks and external-input adapters](ticks-inputs.md). Recording, replay,
-external-input logs and interpolation remain unimplemented.
+[fixed ticks and external-input adapters](ticks-inputs.md). C.7/C.8 add [bounded recording](recording.md). Full replay remains unimplemented. C.5/C.6 provide [semantic input packets and optional display interpolation](semantic-interpolation.md).
 Public APIs are experimental; [ADR 0016](../adr/0016-deterministic-checkpoints-services.md)
 defines the exact format and compatibility contract.
 

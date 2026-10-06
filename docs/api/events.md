@@ -161,3 +161,9 @@ Chrome fixtures and trusted keyboard/composition-engine automation do not qualif
 OS IMEs, real clipboard paste, Firefox/Safari, mobile keyboards or broad browser
 support. Recording/replay remains Phase C; these data shapes are recordable inputs,
 not an implemented recorder.
+
+C.5 adds view-owned `inputs.keyboard(origin,action)` / `inputs.text(origin,action)`
+callbacks for these native snapshots. They dispatch/queue versioned external
+payloads, preserving native composition/selection/cancellation behavior. Custom
+callbacks/direct dispatch remain immediate. See
+[semantic input reference](semantic-interpolation.md).

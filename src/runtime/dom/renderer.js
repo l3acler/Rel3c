@@ -1,5 +1,5 @@
 import { fail, observePromise, requireSync } from '../errors.js';
-import { createBindings, derive, isBinding, resolveBinding } from './bindings.js';
+import { createBindings, derive, isBinding, resolveBinding, isPresentationBinding } from './bindings.js';
 import { isViewNode } from './nodes.js';
 import { text, prepareProperty, applyProperty, hasBindings, propertyName, validateName } from './properties.js';
 
@@ -118,6 +118,7 @@ export function createRenderer(document, tracking, owner, makeContext, render, r
       return;
     }
     if (value.kind === 'when') {
+      if (isPresentationBinding(value.condition)) fail('INTERPOLATION_STRUCTURAL', 'Interpolation cannot control view lifetime.');
       append(document.createComment('when'), parent, current);
       const end = append(document.createComment('/when'), parent, current);
       let selected = null, previous;
@@ -151,6 +152,7 @@ export function createRenderer(document, tracking, owner, makeContext, render, r
       return;
     }
     if (value.kind === 'keyed') {
+      if (isPresentationBinding(value.items)) fail('INTERPOLATION_STRUCTURAL', 'Interpolation cannot control keyed view lifetime.');
       append(document.createComment('keyed'), parent, current);
       const end = append(document.createComment('/keyed'), parent, current);
       let entries = new Map();

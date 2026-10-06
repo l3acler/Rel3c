@@ -140,7 +140,7 @@ and revokes it too. Action return values are ignored, and both dispatch forms
 return `undefined`. Keep async effects outside actions and dispatch their results
 as supported payloads. Do not read ambient layout/storage/time/random values
 inside actions. C.1/C.2 add [controlled services/checkpoints](determinism.md);
-input adapters, recording and replay remain later Phase C work. Arbitrary external side effects cannot be undone.
+[input adapters](ticks-inputs.md) and [bounded recording](recording.md) are implemented; full replay remains future work. Arbitrary external side effects cannot be undone.
 
 ## Nested dispatch and failures
 
@@ -314,5 +314,29 @@ and bounded catch-up. `enqueue`/`enqueueAt` admit future inputs; `resumeTicks`,
 `app.ticks` exposes frozen nonreactive status. `app.inputs` owns adapter work for
 the app; `context.inputs` owns it for that view. See [ticks/inputs](ticks-inputs.md)
 and the [guide](../../DOCUMENTATION.md#fixed-ticks-and-external-inputs) for arguments,
-errors, hidden policy, cancellation and fixed-checkpoint restoration. Recording
-and replay remain unimplemented.
+errors, hidden policy, cancellation and fixed-checkpoint restoration. Bounded recording is available in C.7/C.8; full replay remains unimplemented.
+
+## Semantic input packets and optional display interpolation (C.5/C.6)
+
+`inputs.keyboard/text` connect normalized native snapshots to owned payload
+inputs. `observeInputs` subscribes to scoped execution attempts; `receiveInput`
+validates supplied packets (and optional future tick) without retaining a log.
+Live navigation/location/hydration are integrated with boot/derived policies.
+`interpolate` creates presentation bindings from frozen previous/current tick
+roots and clamped alpha; ordinary forms/bindings stay committed. See
+[semantic/interpolation](semantic-interpolation.md) and the
+[guide](../../DOCUMENTATION.md#semantic-input-packets) for arguments, errors,
+compatibility and cleanup. Bounded recording is available in C.7/C.8; full replay remains unimplemented.
+
+## Ordered recording and bounded retention (C.7/C.8)
+
+App-only startRecording(options), stopRecording(), clearRecording(),
+exportRecording() and nonreactive recording status own executed-prefix history.
+Standalone public readRecording(text,{schemaVersion?}) validates without running
+application code; serializeRecording(value) round-trips that immutable import.
+Recent mode advances whole checkpoint baselines; session mode stops visibly at
+limits. Capture never changes runtime commit/error semantics. Mount and drain
+existing inputs/effects before starting; all recording operations require idle
+boundaries. See [recording](recording.md) and [the guide](../../DOCUMENTATION.md#bounded-recording)
+for options, byte accounting, ownership, errors, cleanup and an executable example.
+Full replay/seek/live-effect suppression remain unimplemented.

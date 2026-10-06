@@ -2,7 +2,7 @@
 
 A JavaScript frontend framework built here, with no third-party runtime dependencies.
 It provides transactional state, precise DOM bindings, native events, keyed lists,
-routing, priorities and selected state persistence. C.1–C.4 also provide versioned checkpoints, controlled clock/random, fixed ticks and scoped external-input/effect adapters. Recording, replay and developer tools remain planned for Phases C/D.
+routing, priorities and selected state persistence. C.1–C.8 also provide checkpoints, controlled services, fixed ticks, semantic inputs, optional interpolation and bounded recording. Replay and developer tools remain planned for Phases C/D.
 
 The public API is experimental (`0.1.0`). The Phase B frontend walkthrough is
 qualified in desktop Chrome; OS IMEs, system clipboard paste, mobile and other
@@ -183,7 +183,7 @@ For URL-backed fields, see [the persistence example](examples/persistence/README
   publishes none. Nested dispatches run FIFO after a successful parent. Side effects
   outside the draft cannot roll back. Async effects run outside actions and dispatch
   their results. Controlled `now()`/`random()` services are available to actions;
-  fixed ticks/external adapters are implemented; recording/replay remain unimplemented.
+  fixed ticks/external adapters are implemented; bounded recording is available; full replay remains unimplemented.
 - **Events belong to view scopes.** `onClick` needs no event argument; `on.submit`
   supplies cancellation and native event access; `onText` supplies semantic text;
   `onKey` supplies key/held/reset information. Scroll reads happen in the event
@@ -236,6 +236,43 @@ See the [guide](DOCUMENTATION.md#fixed-ticks-and-external-inputs),
 [API reference](docs/api/ticks-inputs.md), and runnable
 [ticks example](examples/ticks/README.md) at `/examples/ticks/`.
 
+## Bounded recording
+
+Call `app.startRecording({mode:'recent',maxActions:1024,maxBytes:33554432,keyframeInterval:64})`
+at an idle boundary after mounting and draining existing inputs/effects. Whole
+execution roots retain nested action/input order, failure outcomes, checkpoint
+hashes and usable baselines. Recent history evicts complete segments; session mode
+stops visibly at limits while the app continues. `app.recording` exposes limits
+and expiry. `app.stopRecording()` preserves the prefix; `app.clearRecording()`
+releases it. Only `app.exportRecording()` produces a recording string explicitly.
+Public `readRecording(text,{schemaVersion?})` validates/decode-freezes it without
+executing app code; `serializeRecording(value)` returns the same canonical wire.
+
+Run `/examples/recording/` after `npm run dev`. See the [guide](DOCUMENTATION.md#bounded-recording)
+for a complete copyable public-import example, exact byte accounting, root/queue
+ownership, limits, errors and cleanup. Full replay/effect suppression remain future
+work; structural validation does not certify application behavior.
+
+## Semantic inputs and display interpolation
+
+`context.inputs.keyboard(origin,action)` and `.text(origin,action)` supply onKey/
+onText callbacks that send owned native semantic snapshots to payload actions.
+Fixed apps queue accepted values while native editing stays live. Navigation,
+location and accepted hydration use the same packet boundary.
+`observeInputs` reports execution attempts; `receiveInput` validates supplied
+packets for controlled tests. The packet boundary has no automatic log; bounded recording is opt-in. Full replay remains unimplemented.
+
+Use `context.interpolate(({previous,current,alpha}) => ...)` in text/attributes/
+style for an optional display value between frozen ticks. Ordinary bindings/forms
+stay committed. Pause, hiding or overload displays current values without
+extrapolation. Interpolation changes no authoritative state versions or hashes;
+it cannot control effect-owning structural views.
+
+Run `/examples/interpolation/` after `npm run dev`, or read the
+[guide](DOCUMENTATION.md#semantic-input-packets) and
+[API reference](docs/api/semantic-interpolation.md) for packet compatibility,
+timing, cleanup and copyable public examples. Bounded recording is described above; full replay remains later work.
+
 ## Controlled services and checkpoints
 
 C.1/C.2 provide manual logical microseconds and seeded simulation draws to actions.
@@ -265,7 +302,7 @@ expire after the action body; explicit clock changes are monotone and change no
 state version. Checkpoints restore a new owned app with the same state version,
 clock and random position, without replacing mounted state or restoring browser
 effects. `app.controls` is frozen/nonreactive; copy service values into state to
-display them. This manual-clock example does not exercise fixed ticks. Recording/replay remain unimplemented.
+display them. This manual-clock example does not exercise fixed ticks. Bounded recording is available; full replay remains unimplemented.
 
 Try [http://localhost:3000/examples/determinism/](http://localhost:3000/examples/determinism/)
 after `npm run dev`, or read the [guide](DOCUMENTATION.md#checkpoints-and-controlled-services)
@@ -284,7 +321,9 @@ for schema/runtime versions, supported data, import limits, errors and cleanup.
 | Declarations, error codes and root public examples | Experimental compatibility policy; no stable release claim |
 | Versioned checkpoints, manual logical clock and transactional seeded draws | C.1/C.2; see the controlled-services example below |
 | Fixed ticks and scoped external-input/effect adapters | C.3/C.4; see `/examples/ticks/` and the guide |
-| Recording/replay, history/inspector | Unimplemented later Phase C/D |
+| Semantic input packets and display interpolation | C.5/C.6; see `/examples/interpolation/` and the guide |
+| Bounded recording/export/import | C.7/C.8; see `/examples/recording/` and the guide |
+| Replay, history/inspector | Unimplemented later Phase C/D |
 
 [Compatibility and versioning](docs/adr/0015-public-frontend-compatibility.md)
 explain how the experimental frontend can evolve into Phase C without treating

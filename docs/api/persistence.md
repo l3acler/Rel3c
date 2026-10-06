@@ -91,3 +91,10 @@ write is needed. Nested paths, multi-source fields, migration APIs, unload flush
 distributed/live cross-tab merging and recorded persistence replay are unimplemented.
 Browser checks cover Chrome; resource counters do not prove heap collection.
 Decision: [ADR 0014](../adr/0014-state-locations-hydration.md).
+
+C.5 represents accepted initial and location-derived field projections as owned
+hydration packets. Bootstrap still combines selected fields before the first view;
+URL changes derive values from normalized route input. Supplied hydration validates
+namespace/version/field location/guards without reading live Storage. Existing
+fallback/write behavior is retained. See [semantic packets](semantic-interpolation.md).
+No full replay/storage-write suppression is implemented by that boundary.

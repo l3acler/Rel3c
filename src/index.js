@@ -16,6 +16,7 @@ export { element, div, span, p, button, form, label, input, textarea, select, op
 export { derive } from "./runtime/dom/bindings.js";
 export { FrameworkError } from "./runtime/errors.js";
 export { hashSnapshot } from "./runtime/serialization/checkpoint.js";
+export { readRecording, serializeRecording } from "./runtime/recording/format.js";
 
 export const VERSION = "0.1.0";
 
@@ -25,7 +26,7 @@ export const VERSION = "0.1.0";
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "C.1–C.4 - Checkpoints, Controlled Services, Fixed Ticks and External Inputs",
+  phase: "C.1–C.8 - Controlled Continuation, Semantic Inputs and Bounded Recording",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
     "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
@@ -44,8 +45,11 @@ export const FRAMEWORK_INFO = Object.freeze({
     "Public declarations, root documentation and routed form/list walkthrough (B.9–B.11; browser qualification remains limited)",
     "C.1/C.2: Versioned checkpoints, SHA-256 comparison, manual logical clock and transactional seeded randomness",
     "TIME-1: Fixed simulation ticks, ordered inputs, pause/hidden policy and bounded catch-up (implemented C.3)",
-    "INPUT-1: Scoped serializable measurements, storage, timer and async effect results (implemented C.4; recording/replay planned)",
-    "RECORD-1: Action recording & replay (planned Phase C)",
+    "INPUT-1: Scoped serializable measurements, storage, timer and async effect results (implemented C.4; bounded recording C.7/C.8; replay planned)",
+    "C.5: Owned semantic key/text/navigation/location/hydration packets and execution observation",
+    "C.6: Optional display interpolation from frozen tick states; authoritative checkpoints unchanged",
+    "RECORD-1: Ordered root/action/input traces, explicit versioned export/import and bounded baseline/keyframe retention (implemented C.7/C.8)",
+    "REPLAY-1: Replay, divergence checks and live-effect suppression (planned C.9/C.10)",
   ]),
 });
 

@@ -8,6 +8,8 @@ import { runRoutingSchedulerTests } from './routing-scheduler.js';
 import { runPersistenceTests } from './persistence.js';
 import { runDeterminismTests } from './determinism.js';
 import { runTickInputTests } from './ticks-inputs.js';
+import { runSemanticInterpolationTests } from './semantic-interpolation.js';
+import { runRecordingTests } from './recording.js';
 import { runClickTests } from './click.js';
 import { runKeyedTests } from './keyed.js';
 import { runDOMTests } from './dom.js';
@@ -309,5 +311,7 @@ window.runAppLifecycleTests = async () => {
   await runPersistenceTests(test, assert, throws, host);
   await runDeterminismTests({ test, host, assert, throws });
   await runTickInputTests({ test, host, assert, throws });
+  await runSemanticInterpolationTests({ test, host, assert, throws });
+  await runRecordingTests({ test, host, assert, throws });
   return { passed: results.length, results, coreSlice };
 };

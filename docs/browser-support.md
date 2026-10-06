@@ -9,7 +9,7 @@ Chrome version or support parity elsewhere.
 | --- | --- | --- |
 | DOM, forms, keyed identity, focus/selection, cleanup | Real Chrome fixtures and README app | Native HTML subset in DOM reference |
 | Actions, reactivity, priorities | Node and Chrome integration | Cooperative work; no CPU preemption or heap-collection guarantee |
-| C.1/C.2 clock/draw rollback, checkpoints and restored continuation | Node/native browser hash oracles and varied manual render boundaries | Fixed ticks/adapters implemented in C.3/C.4; recording/replay remain unimplemented |
+| C.1/C.2 clock/draw rollback, checkpoints and restored continuation | Node/native browser hash oracles and varied manual render boundaries | Fixed ticks/adapters implemented in C.3/C.4; bounded recording implemented in C.7/C.8; full replay remains unimplemented |
 | History/hash, direct loads, reload, back/forward | Real Chrome and scoped History fallback | One router per Window; hosts configure production fallback |
 | Local/session/URL hydration, failures and reload | Browser storage and injected failure fixtures | No cross-tab merging, migration or unload flush |
 | Enter/Space, shortcuts, held/repeat/release, keyboard scroll | Trusted Chrome automation and unit fixtures | Desktop automation only |
@@ -38,3 +38,17 @@ checks. Hidden-tab policy is unit-tested with controlled document visibility;
 native background-tab behavior across browsers remains unqualified. See
 [verification](reports/task-C.3-C.4-ticks-inputs.md). Resource counters demonstrate
 owned cleanup, not heap collection. Saved input injection is not public replay.
+
+C.5/C.6 add normalized key/text packet forwarding (including synthetic paste/
+composition), native navigation packet checks, readonly interpolation and display
+fraction comparisons with unchanged hashes/forms. The public example accepts
+trusted Chrome Unicode editing. Source packet tests cover headless History/hash
+locations, initial/URL hydration, tick assignment and derived work. OS IME,
+clipboard/mobile/other-browser and full replay gates remain open. See
+[verification](reports/task-C.5-C.6-semantic-interpolation.md).
+
+C.7/C.8 additionally verify native semantic text recording, nested tick failure
+traces, whole-keyframe recent eviction, visible session limits, route continuations
+and explicit export/import in `/examples/recording/`. These checks validate
+executed-prefix recording; full replay/live-source suppression, OS IME/system
+clipboard/mobile/other-browser qualification and heap/latency claims remain open.

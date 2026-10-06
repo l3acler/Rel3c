@@ -228,3 +228,42 @@ app.inputs.send('origin','rename', 'value');
 const anyEnvelope=createApp({schema:createActionSchema<State>()(({action})=>({ any:action((v:unknown):v is unknown=>true,()=>{}) }))});
 // @ts-expect-error Samplers must be synchronous.
 anyEnvelope.inputs.sample('origin','any',async()=>1);
+
+// @ts-expect-error Input observation callbacks are synchronous.
+app.observeInputs(async input=>{});
+// @ts-expect-error Packets use version 1.
+app.receiveInput({version:2,kind:'action',name:'increment',args:[]});
+// @ts-expect-error Dense action argument tuples accept at most one payload.
+app.receiveInput({version:1,kind:'action',name:'increment',args:[1,2]});
+// @ts-expect-error Typed keyboard adapters require envelope payload actions.
+app.inputs.keyboard('origin','increment');
+// @ts-expect-error Typed text adapters require envelope payload actions.
+app.inputs.text('origin','rename');
+// @ts-expect-error Interpolation callbacks must be synchronous.
+app.interpolate(async frame=>1);
+// @ts-expect-error Previous tick state is read-only.
+app.interpolate(frame=>{frame.previous.count=2;return 0;});
+// @ts-expect-error Display alpha is read-only.
+app.interpolate(frame=>{frame.alpha=1;return 0;});
+
+// C.7/C.8 recording options, imported readonly traces and string wire input.
+import { readRecording, serializeRecording } from '../../src/index.js';
+// @ts-expect-error Unknown recording mode.
+app.startRecording({mode:'full'});
+// @ts-expect-error Numeric retention budget.
+app.startRecording({maxBytes:'large'});
+// @ts-expect-error Unknown recording option.
+app.startRecording({upload:true});
+// @ts-expect-error Canonical string import only.
+readRecording({});
+// @ts-expect-error Expected schema version is a string.
+readRecording('',{schemaVersion:3});
+// @ts-expect-error Status is read-only.
+app.recording.status='off';
+// @ts-expect-error Imported record list is read-only.
+readRecording('').records.push({});
+// @ts-expect-error Baseline continuation is read-only.
+readRecording('').baseline.snapshot='changed';
+
+// @ts-expect-error Only recording values have the serialization shape.
+serializeRecording({});

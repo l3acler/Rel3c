@@ -13,7 +13,7 @@ function errorValue(error) {
 }
 
 export function createInputs(deliver, operation, registration, validateAction, host, readExternal) {
-  const scopes = new Set(); let disposed = false, pending = 0;
+  const scopes = new Map(); let disposed = false, pending = 0;
   function scoped(active = () => true, addCleanup = null) {
     const resources = new Set(); let closed = false;
     const live = () => {
@@ -28,7 +28,7 @@ export function createInputs(deliver, operation, registration, validateAction, h
       resources.clear(); scopes.delete(close);
       if (errors.length) throw new AggregateError(errors, 'External input cleanup failed.');
     }
-    scopes.add(close); addCleanup?.(close);
+    scopes.set(close, resources); addCleanup?.(close);
     function admit(origin, action, status, value, error = null) {
       live(); originValue(origin); validateAction(action);
       const input = ownValue({ version: 1, origin, status, value, error }).value;
@@ -90,6 +90,14 @@ export function createInputs(deliver, operation, registration, validateAction, h
     }
     return Object.freeze({
       send, sample, effect,
+      keyboard(origin, action) {
+        registration(() => { live(); originValue(origin); validateAction(action); }, !!addCleanup);
+        return (input, _event) => send(origin, action, input);
+      },
+      text(origin, action) {
+        registration(() => { live(); originValue(origin); validateAction(action); }, !!addCleanup);
+        return (input, _event) => send(origin, action, input);
+      },
       measure(origin, action, kind, target) {
         return sample(origin, action, () => {
           const view = host();
@@ -134,10 +142,11 @@ export function createInputs(deliver, operation, registration, validateAction, h
   return Object.freeze({
     scoped,
     get pending() { return pending; },
-    counts: () => ({ externalEffects: pending }),
+    counts: () => ({ externalEffects: pending,
+      inputResources: [...scopes.values()].reduce((sum, resources) => sum + resources.size, 0) }),
     dispose() {
       disposed = true; const errors = [];
-      for (const close of [...scopes]) try { close(); } catch (error) { errors.push(error); }
+      for (const close of [...scopes.keys()]) try { close(); } catch (error) { errors.push(error); }
       scopes.clear();
       if (errors.length) throw new AggregateError(errors, 'Input scopes failed to close.');
     },

@@ -54,3 +54,9 @@ This batch provides ordered, serializable input boundaries. Durable recording,
 record import, replay suppression, semantic event integration and interpolation
 remain C.5–C.10 work. Different-live-source tests manually inject saved payloads;
 they do not establish the later public replay gate.
+
+## C.5/C.6 follow-up
+
+[ADR 0018](0018-semantic-inputs-interpolation.md) integrates normalized semantic/
+route/hydration packets and adds optional display interpolation. The C.3/C.4
+claims above describe that milestone; C.7–C.10 recording/replay remain planned.

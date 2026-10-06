@@ -3,7 +3,7 @@
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
 application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.8 add native events, semantic keyboard/text inputs, cooperative priority lanes and History/hash routing with one shared application store, plus guarded memory/session/local/URL state locations. APIs remain experimental and browser qualification is limited.
-B.9–B.11 refine the public declarations and root auditor walkthrough. C.1–C.4 add versioned checkpoints, controlled time/seeded draws, fixed ticks and scoped external-input adapters.
+B.9–B.11 refine the public declarations and root auditor walkthrough. C.1–C.8 add versioned checkpoints, controlled services, fixed ticks, semantic inputs, optional display interpolation and bounded recording.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -26,13 +26,14 @@ Import from `src/index.js`; applications do not need runtime internals.
 | State locations       | Guarded startup hydration, post-commit session/local writes and URL-backed fields             |
 | Error reporting       | Readable framework error codes and a synchronous application error hook                        |
 | TypeScript            | Inferred action names/payloads and read-only state declarations                                |
+| Bounded recording     | Opt-in executed roots/traces, versioned export/import and usable recent/session baselines     |
 | Checkpoints           | Canonical versioned state/control exports, owned restoration and SHA-256 comparison           |
 | Controlled services   | Manual logical microseconds and transaction-scoped seeded simulation draws                    |
 
 Views construct their static tree once per mount; explicit bindings update affected
 text, attributes, classes and styles on render frames after committed actions. Conditional factories
 run when their selected boolean branch changes. Native events, keyboard and text editing
-are implemented alongside routing, priorities, state locations, controlled services, fixed ticks and external-input adapters. Recording and replay remain unimplemented. Broad browser/OS IME qualification remains open.
+are implemented alongside routing, priorities, state locations, controlled services, fixed ticks, semantic input adapters, optional display interpolation and bounded recording. Full replay remains unimplemented. Broad browser/OS IME qualification remains open.
 
 ## Start from the project root
 
@@ -380,7 +381,7 @@ Chrome fixtures plus trusted keyboard/Unicode editing and its composition engine
 are checked. CDP's final compositionend is untrusted; this is browser automation,
 not an OS IME session. Real clipboard paste, Chinese/Japanese/Korean OS input
 methods, Firefox/Safari and mobile qualification remain open. Recordable input
-snapshots do not imply implemented recording/replay. See the
+snapshots feed the opt-in bounded recorder below; full replay remains unimplemented. See the
 [batch evidence](docs/reports/task-B.1-B.3-inputs.md).
 
 ## Verified core example
@@ -439,7 +440,7 @@ cleanup and disposal also pass. These are correctness observations, not a perfor
 or heap-collection claim. See [core acceptance evidence](docs/reports/task-A.10-core-slice.md).
 
 The API stays experimental. B.1–B.3 now add native events and keyboard/text
-synchronization. B.4–B.6 add priority work and shared-state routing. B.7/B.8 add guarded state locations. B.9–B.11 complete the public contracts and auditor walkthrough. C.1–C.4 add checkpoints, controlled services, fixed ticks and external-input adapters; recording/replay remain future work.
+synchronization. B.4–B.6 add priority work and shared-state routing. B.7/B.8 add guarded state locations. B.9–B.11 complete the public contracts and auditor walkthrough. C.1–C.8 add checkpoints, controlled services, fixed ticks, semantic inputs, interpolation and bounded recording; full replay remains future work.
 
 ## Render frames and explicit flush
 
@@ -477,7 +478,7 @@ Rendering is not an atomic DOM transaction: successful writes survive another
 binding's failure. Derived callbacks must stay pure and synchronous.
 
 This is visual batching only. Priority work is described below; fixed
-simulation ticks are documented below; interpolation remains future work. Hidden-tab rendering follows native animation-frame behavior; use
+simulation ticks and optional display interpolation are documented below. Hidden-tab rendering follows native animation-frame behavior; use
 explicit flush for deterministic checks. No speed or heap claims are made.
 
 ## Priority work and cancellation
@@ -624,7 +625,7 @@ DOM for retry with `app.flush()` while URL/route stay committed. Cleanup errors
 report the completed replacement. One active outlet is supported
 (`ROUTE_OUTLET_DUPLICATE`); an outlet without configuration rejects `ROUTER_MISSING`.
 Nested/multiple outlets, loaders, async navigation guards, automatic focus/scroll
-policies and recorded navigation/replay are not implemented. State-location configuration is described below.
+policies and replayed navigation are not implemented. Semantic navigation/location recording is opt-in below. State-location configuration is described below.
 
 `context.link(to, props?, ...children)` or `app.link` creates a native anchor with
 owned href/click handling. Use it during mounted view construction; an unmounted
@@ -770,14 +771,14 @@ intact. It does not flush automatically: call `flushPersistence()` before explic
 disposal when its pending write must complete.
 
 Nested field paths, multi-location precedence chains, migration APIs, automatic
-unload flushing, live cross-tab merging and recorded/replayed persistence inputs
-remain unimplemented. See [persistence reference](docs/api/persistence.md) and
+unload flushing, live cross-tab merging and replayed persistence inputs
+remain unimplemented. Accepted hydration packets can be recorded by the opt-in recorder below. See [persistence reference](docs/api/persistence.md) and
 [ADR 0014](docs/adr/0014-state-locations-hydration.md).
 
 ## Checkpoints and controlled services
 
 C.1/C.2 make time and simulation draws explicit and restore their continuation
-with committed state. C.3/C.4 extend this foundation with fixed ticks and external-input adapters below. Input logs, recording and replay are still unimplemented.
+with committed state. C.3/C.4 extend this foundation with fixed ticks and external-input adapters below. C.7/C.8 add bounded recording below; full replay is still unimplemented.
 
 ```js
 import { createApp, createActionSchema, hashSnapshot } from './src/index.js';
@@ -856,8 +857,8 @@ caller-retained checkpoint strings remain caller-owned.
 
 See [the full API](docs/api/determinism.md) and
 [ADR 0016](docs/adr/0016-deterministic-checkpoints-services.md) for exact encoding,
-seed initialization, budgets and future recording-format boundaries. There is
-no automatic migration, public persistence-codec decoder or implemented recording.
+seed initialization and checkpoint budgets. The recording format is documented below. There is
+no automatic migration or public persistence-codec decoder.
 
 ## Fixed ticks and external inputs
 
@@ -920,7 +921,7 @@ retaining earlier backlog. Explicit advances remain available when hidden.
 Rendering still coalesces latest bindings independently; `flush()` does not tick.
 
 `app.ticks` is frozen, nonreactive metadata: `enabled`, `paused`, `accumulator`,
-`queuedInputs`, `maxCatchUp`. Copy clock values into action state for display.
+`hidden`, `queuedInputs`, `maxCatchUp`. Copy clock values into action state for display.
 A fixed clock rejects `setLogicalTime` with `CONTROL_MODE`. Empty-queue fixed
 checkpoints preserve tick/time/duration and seeded stream. Restoring requires a
 matching `simulation.tickDuration`; configure compatible tick logic/schema.
@@ -1000,9 +1001,318 @@ advance, viewport sampling, timers and a local network request using public
 imports. [ADR 0017](docs/adr/0017-fixed-ticks-external-inputs.md),
 [API reference](docs/api/ticks-inputs.md) and
 [verification report](docs/reports/task-C.3-C.4-ticks-inputs.md) specify the limits.
-These adapters make values suitable for later recording. Semantic event/router/
-persistence integration, interpolation, bounded recording and public replay
-remain unimplemented; saved input injection tests do not implement replay.
+These adapters make normalized values suitable for opt-in recording. C.5/C.6 add semantic event/router/persistence integration and display interpolation below. Bounded recording is opt-in below; public replay remains unimplemented and saved input injection tests do not implement it.
+
+## Semantic input packets
+
+C.5 connects existing native semantic key/text snapshots, route observations,
+navigation requests and accepted hydration values to one owned packet boundary.
+The packet boundary itself retains no input log; C.7/C.8 recording is opt-in below. `observeInputs(callback)` reports execution
+attempts; `receiveInput(packet, {tick?})` validates and admits a supplied packet.
+These APIs support controlled input tests and the recorder below. Seek, full replay
+and suppression of all live effects remain unimplemented.
+
+Use view-owned helpers to admit semantic browser values through payload actions:
+
+```js
+import {createApp,createActionSchema,input,div,p} from './src/index.js';
+const schema=createActionSchema({version:'editor/1'})(({action}) => ({
+  accept:action(packet => packet?.version === 1 && packet.status === 'success',
+    (draft, packet) => {
+      if (packet.value.type === 'text') draft.text=packet.value.value;
+      else draft.held=packet.value.held;
+    }),
+}));
+const app=createApp({schema,initialState:{text:'',held:[]},
+  simulation:{tickDuration:10000},
+  view:({bind,inputs}) => div(
+    input({value:bind.text,onText:inputs.text('editor','accept'),
+      onKey:inputs.keyboard('keyboard','accept')}),p(bind.text),
+  )});
+app.mount(); app.resumeTicks();
+```
+
+Keyboard values include key/code/location, repeat, modifiers, held keys and focus/
+window-blur/hidden resets. Text values include actual edited value, phase,
+composition status, inputType/data and selection. Paste/composition use actual
+semantic values rather than reconstruction from key codes. Native editing and
+active composition remain live; fixed accepted values wait for the next tick.
+This may leave native editing ahead of committed state. Existing selection and
+composition-aware binding rules still apply. Native Event/targets, focus and
+cancellation are presentation and never enter action payloads. To cancel a key,
+wrap the helper and call `event.preventDefault()` synchronously before forwarding.
+Existing custom onKey/onText callbacks and direct dispatch keep immediate behavior.
+
+`inputs.keyboard(origin,action)` and `inputs.text(origin,action)` return synchronous
+onKey/onText callbacks. Their action receives the same C.4 external envelope with
+an owned semantic snapshot as `value`. Creation validates origin/action/scope;
+closed scopes reject and remove pending scoped packets. The framework automatically
+routes live navigation/location/hydration through the boundary without app code
+reading storage or location inside an action.
+
+Packets are plain supported values with an independent `version:1`:
+
+| kind | Required data beyond version/kind |
+| --- | --- |
+| action | name, args (dense zero/one-element data array); registered payload guard runs at execution |
+| navigation | mode, base, canonical local url, replace; request writes History when applied |
+| location | mode, base, canonical local url, cause (mount/native/navigation/state), hydrate boolean; application derives route match/params/query from compatible router config |
+| hydration | namespace, schemaVersion, groups with session/local/url locations and accepted field values; guards/configuration validate before admission |
+
+Only session/local/url groups are valid hydration locations; memory fields cannot
+be injected by hydration. Groups are unique (at most three) and may contain only
+fields configured at that location. No runtime guard functions/Storage objects are
+serialized. Values are owned/frozen and preserve supported aliases. Packet
+version/policy mismatch rejects `INPUT_INCOMPATIBLE`; malformed fields/getters,
+extra keys, invalid tuple or unknown kind use `INPUT_INVALID` or existing
+route/persistence/action/payload errors. No field getter is needed to validate an
+ordinary packet. Application Proxy traps/global reads cannot be sandboxed.
+
+Observers receive frozen `{sequence,tick,time,derived,packet}` before each live
+execution attempt. A sequence counts admission in this app session; future tick
+assignment can make execution receipts arrive in a different sequence order.
+Use callback order/tick, rather than sorting by admission sequence. Observers see
+failed action attempts, and derived location/hydration work is labeled. Nested
+named action dispatch is still owned by the dispatcher and is not a second packet.
+Ordinary direct dispatch is not observed here; the opt-in recorder separately
+captures it and dispatch outcomes. Observers must be synchronous and cannot dispatch,
+receive inputs, mutate controls or mount/dispose while observing. Failure does
+not prevent healthy input execution; errors are reported afterward or aggregated
+with body errors. No post-execution success/outcome field is claimed here.
+
+`observeInputs` returns a stop function. At most 1024 subscriptions are live;
+passing the same callback twice creates independent subscriptions. View-context
+subscriptions are disposed with their scope. Stop is idempotent. Any arrays or
+packets captured by callbacks are caller-owned; bound that retention yourself.
+Manual observation does not touch state/DOM; the opt-in recorder separately owns bounded history.
+
+For controlled tests, save a root packet and apply it to a compatible fresh app:
+
+```js
+import {createApp,createActionSchema} from './src/index.js';
+const schema=createActionSchema()(({action}) => ({
+  add:action(value => typeof value === 'number',(draft,value) => {draft.n+=value;}),
+}));
+const one=createApp({schema,initialState:{n:0}});
+let saved;
+const stop=one.observeInputs(event => { if(!event.derived) saved=event.packet; });
+one.receiveInput({version:1,kind:'action',name:'add',args:[3]});
+const two=createApp({schema,initialState:{n:0}}); two.receiveInput(saved);
+console.log(one.snapshot() === two.snapshot()); // true
+stop(); one.dispose(); two.dispose();
+```
+
+Manual roots execute immediately. Fixed action/native-location/imperative-
+navigation roots queue for the next tick, or an explicit future `tick` with
+`receiveInput`. The latter returns a frozen cancelable ticket. Live boot location/
+hydration and derived work execute synchronously, preserving initial view and
+post-commit URL projection. On a fresh unmounted app, supplied mount location and
+hydration packets also default to immediate bootstrap; an explicit tick overrides
+that behavior. Fresh mount location does not prematurely apply URL hydration;
+the captured bootstrap hydration projection supplies initial fields together.
+Later location packets derive URL-owned fields without reading current storage.
+
+In fixed mode, `navigate` writes History at its assigned tick; native browser
+history changes are already visible before their queued route state is applied.
+Multiple requests resolve relative URLs against current committed route at
+admission. Action-requested navigation remains post-commit derived work; a failed
+parent discards it. State-to-URL writes remain derived, with hydration disabled.
+Supplying a location packet updates the route cell using its saved URL and leaves
+live browser History untouched; it can work headlessly. Supplying a navigation
+packet requires a mounted compatible router and performs History normally.
+Hydration application uses configured guards, not live reads. C.9 will handle
+whole-session replay suppression of navigation/storage/effects. Matching packets
+alone do not prove action-code/domain compatibility or reproduce unrelated
+browser presentation. Snapshots still exclude route cells and any pending inputs.
+
+## Display interpolation
+
+C.6 provides `app.interpolate(read)` / `context.interpolate(read)` as opt-in
+presentation bindings for fixed simulation. The callback receives frozen
+`{previous,current,alpha,tick,time}`: two committed tick roots, bounded alpha,
+current tick ID and logical microseconds. Use it for positions/transforms. Ordinary
+bind/derive text and form values keep current committed semantics.
+
+```js
+import {createApp,createActionSchema,div,p} from './src/index.js';
+const schema=createActionSchema()(({action}) => ({tick:action(draft => {draft.x+=10;})}));
+const app=createApp({schema,initialState:{x:0},simulation:{tickDuration:10000,action:'tick'},
+  view:({bind,interpolate}) => div(
+    p('Committed: ',bind.x),
+    div({style:{transform:interpolate(({previous,current,alpha}) =>
+      `translateX(${previous.x+(current.x-previous.x)*alpha}px)`)}},'Moving dot'),
+  )});
+app.mount(); app.resumeTicks();
+```
+
+Alpha is accumulator/duration while running below one tick of backlog. Pause,
+hiding or backlog at/above a tick clamps alpha to 1, displaying current state;
+there is no extrapolation. Resume/visibility uses the retained fraction. Previous
+and current are identical initially/after restore. Successful ticks shift the
+pair; a failed tick uses its healthy committed prefix and pauses at alpha 1.
+Direct commits outside ticks reset both roots to latest state, avoiding stale
+smoothing of immediate UI changes. Historical aliases/array order remain frozen.
+
+Alpha updates dirty only interpolation consumers. The existing render queue
+coalesces those bindings; there is no extra frame driver. Explicit elapsed
+advances also update alpha. Interpolation callbacks cannot mutate roots, dispatch,
+advance clocks or create effects, and Promise returns reject. They can produce
+text, attribute or style values. Structural `when` conditions and keyed sources
+reject interpolation tokens with `INTERPOLATION_STRUCTURAL`, so paint timing
+cannot control effect-owning view lifetime. Use state bindings for structure.
+
+Manual clocks reject creation with `INTERPOLATION_MODE`; active action/read/input
+observation creation rejects `INTERPOLATION_REENTRANT`. Async callbacks use
+`REACTIVITY_ASYNC`; existing readonly/reentrant errors apply to attempted mutation.
+View-scoped tokens expire with that scope. App disposal releases the lazy reactive
+cell and both retained roots. The runtime keeps only two COW roots, with existing
+state graph budgets for each; caller captures remain caller-owned. Interpolation
+changes no state versions, clock/random stream or checkpoint hashes. Snapshot
+restoration starts from one authoritative root, not a retained display pair.
+
+See the [API reference](docs/api/semantic-interpolation.md),
+[runnable example](examples/interpolation/README.md) and
+[C.5/C.6 verification](docs/reports/task-C.5-C.6-semantic-interpolation.md).
+
+## Bounded recording
+
+C.7/C.8 add opt-in recording of executed transitions. The runtime keeps a usable
+baseline, ordered execution roots, action/input traces, checkpoint hashes and an
+end snapshot. Export is an explicit developer operation; nothing is automatically
+uploaded, downloaded or persisted. Full replay, live-effect suppression, seeking
+and divergence reports remain unimplemented.
+
+```js
+import {createApp,createActionSchema,readRecording,serializeRecording}
+  from './src/index.js';
+
+const schema=createActionSchema({version:'samples/1'})(({action})=>({
+  sample:action((draft,services)=>{
+    draft.samples.push({time:services.now(),value:services.random()});
+  }),
+}));
+const app=createApp({schema,initialState:{samples:[]},controls:{seed:7}});
+app.startRecording({mode:'recent',maxActions:100,maxBytes:1000000,keyframeInterval:10});
+app.setLogicalTime(1000);
+app.actions.sample();
+app.actions.sample();
+app.stopRecording();
+const text=app.exportRecording();
+const recording=readRecording(text,{schemaVersion:schema.version});
+console.log(recording.records.map(record=>({
+  root:record.root.kind,commits:record.commits,hash:record.after.hash,
+})));
+console.log(serializeRecording(recording)===text); // true, canonical round trip
+app.clearRecording(); // release the app's retained history
+app.dispose();
+```
+
+`startRecording(options={})` returns a frozen status. It rejects an already active
+recording, pending tick inputs/effects or a budget unable to hold the baseline.
+Mount before starting, or keep the recording app headless: mounting during active
+capture rejects `RECORDING_ACTIVE`, including automatic router/storage hydration.
+Baseline state therefore already includes accepted startup hydration. Starting
+again after stopping or reaching a limit explicitly replaces the previous history;
+a failed start preserves it. `stopRecording()` is idempotent and preserves exports.
+`clearRecording()` stops capture and releases it. `app.recording` is a frozen,
+nonreactive status snapshot; use it at an idle boundary for developer UI.
+
+These methods and `exportRecording()` require an idle boundary: they reject in
+an action, input observer, reactive read/notification, render, mounting, tick or
+error hook. Event/deferred callbacks can call them outside that work. Operation
+errors use phase `recording`. Disposal releases logs and scratch; exported strings
+and imported immutable objects remain caller-owned. Recordings include the actual
+captured application payloads/state, so choose export deliberately.
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| mode | recent | recent evicts complete checkpoint segments; session preserves its complete captured prefix and stops at limits |
+| maxActions | 1024 | Retained action slots, 1–100000; each admitted action including discarded children costs one, and an otherwise empty root costs one |
+| maxBytes | 33554432 | Retained canonical wire accounting, 1–67108864 UTF-8 bytes |
+| keyframeInterval | 64 | Charged action slots between root-boundary checkpoints, 1–100000 |
+
+The byte budget includes both baseline/end snapshots, roots, trace payloads,
+metadata and periodic snapshots. `recording.bytes` accounts the canonical wire
+with normalized active/null status plus a 256-byte reserve for terminal status;
+the actual export fits within this amount. This measures retained wire data,
+not JavaScript heap bytes. Authoritative state, one bounded in-progress root,
+serialization temporaries and caller copies are separate. Scratch encoding is
+capped by the same byte/action policy; a single transient encode can still allocate
+before being rejected. No performance or heap-collection claim is made.
+
+Recent history eviction moves the baseline to a retained keyframe and removes all
+preceding records/checkpoints together. If there is no intermediate keyframe,
+the end snapshot becomes the baseline and the suffix is empty. An oversized
+atomic root similarly advances to its endpoint and drops the older prefix;
+`evictedRecords`/`evictedActions` expose that expiry. Subsequent roots can record
+normally. If even the new baseline/end cannot fit, capture stops with
+`status:'limit-reached'` and `reason:'baseline-limit'`, preserving the last usable
+prefix. Session mode never evicts: exceeding action/byte bounds stops with
+`action-limit`/`byte-limit`. An unexpected capture/encoding failure stops with
+`capture-failed`. Capture limits do not abort application actions or tick logic.
+The preserved end may therefore precede live state; restart explicitly to record
+from the new live baseline. Stopping does not clear a limit-reached result.
+
+A record represents one complete execution root:
+
+- `dispatch`: one outer named dispatch batch, including nested FIFO children.
+- `input`: one manual/immediate semantic packet execution, including derived work.
+- `tick`: one consumed numbered tick, its ordered inputs and configured tick action.
+- `time`: one valid manual logical-time input, including a same-time no-op.
+
+A failed root can contain successful commits. Action events distinguish `queued`,
+`dispatched`, `committed`, `failed` and `discarded`; discarded children never ran.
+Nested action events are diagnostics attached to their root, not extra commands
+for a future replay engine. Direct invalid admission (unknown action, arity or
+payload guard) causes no executed root. A packet already admitted whose payload
+fails at execution has a failed input root with no admitted action. Error summaries
+are bounded inert strings; application Error objects/accessors/stacks are not retained.
+
+Consumed inputs retain admission sequence, assigned tick/time, derived status and
+`queued` delivery metadata. Actual trace/record order is execution order, so an
+explicit future assignment can execute after a later admission. Unconsumed/canceled
+queue tickets cause no transition and are not recorded. Pending work after start
+is excluded from exports: an export describes the complete executed prefix only,
+not the current future queue. Async results are recorded when normalized delivery
+executes; starting an effect itself is not a replay command. Pauses, visibility,
+render frames, elapsed fractions and interpolation values do not create records.
+
+`baseline`/`end` contain sequence, canonical state/control snapshot and separate
+local route metadata (`mode`, `base`, `url`, or null). Snapshots retain state/schema/
+runtime versions, logical time/tick/duration, seed and PRNG continuation. Each root
+has committed version delta, control metadata, SHA-256 endpoint hash and optional
+checkpoint. Supplemental route data does not change `hashSnapshot`'s state/control
+hash; ordinary `createApp({snapshot})` still does not restore route cells.
+
+Keyframes occur at complete root boundaries after the configured slot interval.
+An indivisible nested batch/tick can cross the interval; a later seek would replay
+at most that interval plus one atomic root, rather than resume half a dispatch
+without its pending children/navigation. No public seek is implemented yet.
+
+`readRecording(text,{schemaVersion?})` imports canonical version-1 JSON without
+calling action bodies/guards, starting effects or changing an app/History/storage.
+It checks hard/declaration budgets, exact versioned fields, graph data, sequences,
+clock/version progression, trace ownership/FIFO/outcomes, checkpoint hashes and
+final continuation. It returns deeply frozen decoded roots/events; tagged graph
+encoding preserves aliases, holes, custom array properties, undefined, negative
+zero, null prototypes and property order. The wire stores root/events as separate
+canonical graph strings. `serializeRecording(value)` accepts only the immutable
+value returned by `readRecording` and returns its identical canonical wire;
+constructing or spreading a recording object does not produce a trusted import.
+
+These checks establish structural compatibility, not application behavior or
+integrity/authenticity. Application schema versions must identify compatible
+bodies/guards; later replay will verify intermediate hashes against actual work.
+No migration is automatic. Malformed/noncanonical data rejects `RECORDING_INVALID`,
+incompatible versions/schema reject `RECORDING_INCOMPATIBLE`, and import/baseline
+budgets reject `RECORDING_LIMIT`. App boundaries additionally use
+`RECORDING_ACTIVE`, `RECORDING_PENDING`, `RECORDING_MISSING`,
+`RECORDING_REENTRANT` and existing disposal errors.
+
+Run `/examples/recording/` after `npm run dev` for a developer-controlled export
+example. See [recording API](docs/api/recording.md),
+[ADR 0019](docs/adr/0019-ordered-recording-retention.md) and
+[verification](docs/reports/task-C.7-C.8-recording-retention.md).
 
 ## State and named actions
 
@@ -1060,7 +1370,7 @@ data other than array length reject. Do not pass native browser Events as payloa
 Keep async effects outside actions and dispatch their results as supported data.
 Action code must not read ambient layout/storage/time/random values for
 reproducibility. Use action-scoped `services.now()`/`services.random()` for controlled
-values; external-input recording is not yet available. Rollback cannot undo arbitrary external side effects or cancel async
+values and external-input adapters; opt-in recording captures executed normalized results. Rollback cannot undo arbitrary external side effects or cancel async
 callbacks; revocation prevents deferred draft mutation.
 
 ## Exact reactive observers
@@ -1314,7 +1624,8 @@ under `tests/results/`; failures exit nonzero. Use `-- --offline` with a populat
 npm cache. This verifies candidate files, not a nonexistent committed revision.
 No runtime edits or Git changes are needed. For the full reference,
 see [application API](docs/api/application.md). For current validation results,
-see [C.1/C.2 checkpoint/service evidence](docs/reports/task-C.1-C.2-checkpoints-controls.md),
+see [C.7/C.8 recording evidence](docs/reports/task-C.7-C.8-recording-retention.md),
+[C.1/C.2 checkpoint/service evidence](docs/reports/task-C.1-C.2-checkpoints-controls.md),
 [B.9–B.11 auditor evidence](docs/reports/task-B.9-B.11-auditor.md),
 [B.7/B.8 state-location evidence](docs/reports/task-B.7-B.8-persistence.md),
 [B.4–B.6 routing/scheduling evidence](docs/reports/task-B.4-B.6-routing-scheduling.md),
@@ -1335,7 +1646,7 @@ when action/payload meaning changes and persistence version when stored shape
 changes. Mismatched storage follows guarded fallback; no automatic migration
 exists. Use a new namespace to retain old buckets. The private persistence graph codec is
 not a public recording/snapshot contract. C.1/C.2 implement a separate versioned
-public state/control checkpoint; the recording implementation remains future work.
+public state/control checkpoint; C.7/C.8 implement a separate versioned bounded recording format.
 See [ADR 0015](docs/adr/0015-public-frontend-compatibility.md) and
 [ADR 0016](docs/adr/0016-deterministic-checkpoints-services.md).
 
