@@ -2039,8 +2039,9 @@ npm run audit:frontend
 Browser checks require installed Chrome. Type checks require the development-only
 TypeScript installation; startup and Node tests do not. `audit:frontend` makes
 a fresh temporary candidate copy without `.git`, dependencies or old results,
-recreates the two app files from README, and runs Node/spike/workload/root smoke
-checks before installing locked tooling with scripts disabled. It checks types,
+recreates the two app files from README, and verifies they exactly match the
+served auditor example, including formatting. It runs Node/spike/workload/root
+smoke checks before installing locked tooling with scripts disabled. It checks types,
 dependency/source independence and Chrome integration. Candidate hashes must
 remain unchanged. It removes only its own temporary folder and records JSON
 under `tests/results/`; failures exit nonzero. Use `-- --offline` with a populated
