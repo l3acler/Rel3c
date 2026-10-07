@@ -98,9 +98,11 @@ frame loop; explicit flush or the next successful commit retries. State remains
 committed; DOM updates are not atomic across bindings. Branch construction failures
 retain the old branch; cleanup failure after replacement reports that change.
 See [guide](../../DOCUMENTATION.md#render-frames-and-explicit-flush) for examples.
-B.4 adds [priority lanes and cancellation](scheduling.md); flush also runs queued frame callbacks after visual bindings. Normal/idle work is not flushed. Simulation ticks remain unimplemented.
+B.4 adds [priority lanes and cancellation](scheduling.md); flush also runs queued frame callbacks after visual bindings. Normal/idle work is not flushed. Fixed simulation ticks are implemented separately from rendering; see [ticks and external inputs](ticks-inputs.md).
 
 B.6 adds public `outlet()` descriptors for a single active route scope, including
 the default router view. Path changes prepare/replace that scope; query/hash changes
 retain it and update route-bound expressions. See [routing](routing.md) for native
 links, reactive snapshots, disposal and retry behavior.
+
+[Optional diagnostics](inspector.md) count successful renderer tree/text/attribute/style/form-property writes and binding evaluations. Selection restoration, listener operations and node allocation are excluded; instrumentation does not change binding ordering or coalescing.

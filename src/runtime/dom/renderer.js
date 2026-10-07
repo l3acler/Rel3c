@@ -30,6 +30,7 @@ export function createRenderer(
   events,
   scheduler,
   router,
+  diagnostics = null,
 ) {
   const pending = createRenderQueue(
     document.defaultView,
@@ -38,7 +39,12 @@ export function createRenderer(
     scheduler,
   );
   let disposed = false;
-  let hasOutlet = false;
+  let hasOutlet = false, nextBinding = 1;
+  const wrote = (kind, target = null) => {
+    if (diagnostics?.enabled) diagnostics.emit("dom-write", { kind, target });
+  };
+  const insert = (parent, node, anchor = null) => { parent.insertBefore(node, anchor); wrote("insert/move", node.nodeName ?? node.tagName ?? "node"); };
+
   const scopes = new Set(),
     bindings = new Set();
   function scope(parent = null) {
@@ -79,7 +85,7 @@ export function createRenderer(
     }
     for (const node of current.nodes.reverse()) {
       try {
-        if (node.parentNode) node.parentNode.removeChild(node);
+        if (node.parentNode) { node.parentNode.removeChild(node); wrote("remove", node.nodeName ?? "node"); }
       } catch (error) {
         errors.push(error);
       }
@@ -91,9 +97,10 @@ export function createRenderer(
   function append(node, parent, current) {
     current.nodes.push(node);
     parent.appendChild(node);
+    wrote("append", node.nodeName ?? node.tagName ?? "node");
     return node;
   }
-  function watch(current, read, apply, structural = false) {
+  function watch(current, read, apply, structural = false, target = "structural") {
     let normalized,
       initial = true;
     const job = {
@@ -113,6 +120,7 @@ export function createRenderer(
         return normalized;
       },
       () => pending.add(job),
+      { id: `binding#${nextBinding++}`, target, structural },
     );
     bindings.add(job);
     current.cleanups.push(() => {
@@ -160,8 +168,10 @@ export function createRenderer(
           return text(result);
         },
         (next) => {
-          if (node.data !== next) node.data = next;
+          if (node.data !== next) { node.data = next; wrote("text", parent.id || parent.tagName || "text"); }
         },
+        false,
+        `text:${parent.id || parent.tagName || "text"}`,
       );
       return;
     }
@@ -210,7 +220,7 @@ export function createRenderer(
             );
             build(output, container, candidate, depth + 1);
             for (const node of [...container.childNodes])
-              end.parentNode.insertBefore(node, end);
+              insert(end.parentNode, node, end);
           } catch (error) {
             const errors = removeScope(candidate);
             if (errors.length)
@@ -257,7 +267,7 @@ export function createRenderer(
           );
           build(output, container, candidate, depth + 1);
           for (const node of [...container.childNodes])
-            end.parentNode.insertBefore(node, end);
+            insert(end.parentNode, node, end);
         } catch (error) {
           const errors = removeScope(candidate);
           if (errors.length)
@@ -319,7 +329,7 @@ export function createRenderer(
       const place = (entry, anchor) => {
         if (entry.end.nextSibling === anchor) return;
         for (const node of range(entry))
-          end.parentNode.insertBefore(node, anchor);
+          insert(end.parentNode, node, anchor);
       };
       const apply = (rows) => {
         const next = new Map(),
@@ -413,7 +423,7 @@ export function createRenderer(
         try {
           for (const entry of candidates) {
             for (const node of [...entry.container.childNodes])
-              end.parentNode.insertBefore(node, end);
+              insert(end.parentNode, node, end);
             entry.container = null;
           }
           // Arrange around the focused range, leaving that range connected and
@@ -566,7 +576,7 @@ export function createRenderer(
           editor?.defer(() => pending.add(job))
         )
           return;
-        applyProperty(node, prepared, initial);
+        applyProperty(node, prepared, initial, (kind, name) => wrote(kind, `${node.id || value.tag}:${name}`));
         if (prepared.kind === "property" && prepared.name === "value")
           editor?.wrote(prepared.value);
         if (prepared.kind === "style") previousStyle = prepared.value;
@@ -577,6 +587,8 @@ export function createRenderer(
           current,
           (state) => prepareProperty(node, key, input, state, owner),
           applyPrepared,
+          false,
+          `${key}:${node.id || value.tag}`,
         );
       else
         applyPrepared(
@@ -610,7 +622,7 @@ export function createRenderer(
     mount(output, target) {
       const container = document.createDocumentFragment();
       build(output, container, root);
-      for (const node of [...container.childNodes]) target.appendChild(node);
+      for (const node of [...container.childNodes]) { target.appendChild(node); wrote("append", node.nodeName ?? node.tagName ?? "node"); }
     },
     flush: pending.flush,
     schedule: pending.schedule,

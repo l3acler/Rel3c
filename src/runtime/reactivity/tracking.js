@@ -3,7 +3,7 @@ import { indexGraph } from "../state/graph.js";
 
 // Logical node IDs survive COW copies and array moves. Read facades resolve the
 // latest reachable node; frozen snapshots remain the ordinary app.state API.
-export function createTracking(store) {
+export function createTracking(store, diagnostics = null) {
   let nodes = indexGraph(store.getState(), { get: store.getObjectId });
   const facades = new Map(),
     subscriptions = new Map(),
@@ -18,6 +18,14 @@ export function createTracking(store) {
     suppressTracking = 0,
     batchDepth = 0;
   const token = (id, kind, key = null) => JSON.stringify([id, kind, key]);
+  function edges(values, project = value => value) {
+    const result = [];
+    for (const value of values) {
+      if (result.length >= 32) break;
+      result.push(project(value));
+    }
+    return result;
+  }
   function live() {
     if (disposed)
       fail("SCOPE_DISPOSED", "Reactive application scope is disposed.");
@@ -167,6 +175,7 @@ export function createTracking(store) {
       // Failed reads retain the dependencies reached before the error, allowing
       // an explicit retry; old branch dependencies never accumulate.
       replace(resource);
+      if (diagnostics?.enabled) diagnostics.emit("evaluation", { resource: resource.label, kind: resource.kind, binding: resource.binding ?? null, dependencies: edges(resource.deps), dependencyCount: resource.deps.size, sources: edges(resource.sources, x => x.label), sourceCount: resource.sources.size, failed: resource.dirty });
     }
   }
   function disposeResource(resource) {
@@ -226,8 +235,9 @@ export function createTracking(store) {
     resources.add(resource);
     return resource;
   }
-  function observe(read, notify = () => {}) {
+  function observe(read, notify = () => {}, binding = null) {
     const resource = createResource("observer", read, notify);
+    resource.binding = binding;
     const handle = Object.freeze({
       read: () => {
         if (resource.evaluating) cycle(resource);
@@ -340,6 +350,7 @@ export function createTracking(store) {
       const resource = queue[i];
       if (visited.has(resource) || resource.disposed) continue;
       visited.add(resource);
+      if (diagnostics?.enabled) diagnostics.emit("dirty", { resource: resource.label, kind: resource.kind, binding: resource.binding ?? null, dependencies: edges(resource.deps), dependencyCount: resource.deps.size, sources: edges(resource.sources, x => x.label), sourceCount: resource.sources.size, newlyDirty: !resource.dirty });
       queue.push(...resource.dependents);
       if (!resource.dirty) {
         resource.dirty = true;
@@ -412,6 +423,14 @@ export function createTracking(store) {
         }
       if (failure) throw failure;
       return result;
+    },
+    dependencies() {
+      const result = [];
+      for (const resource of resources) {
+        if (result.length >= 32) break;
+        result.push({ resource: resource.label, kind: resource.kind, binding: resource.binding ?? null, dirty: resource.dirty, dependencies: edges(resource.deps), dependencyCount: resource.deps.size, sources: edges(resource.sources, x => x.label), sourceCount: resource.sources.size });
+      }
+      return { resources: result, omitted: Math.max(0, resources.size - result.length) };
     },
     counts() {
       return {

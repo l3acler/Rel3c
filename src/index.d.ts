@@ -10,6 +10,42 @@ export class FrameworkError extends Error {
   constructor(code: string, message: string, options?: ErrorOptions);
 }
 export function hashSnapshot(snapshot: string): string;
+export type DiagnosticPreview = null | boolean | number | string | { readonly [key:string]: DiagnosticPreview };
+export interface DiagnosticsOptions { readonly maxEntries?:number; readonly maxBytes?:number; }
+export interface DiagnosticEntry {
+  readonly sequence:number; readonly kind:'dispatch'|'input'|'tick'|'time'|'render'|'restore';
+  readonly root:DiagnosticPreview;
+  readonly before:Readonly<{stateVersion:number;tick:number;time:number}>;
+  readonly after:Readonly<{stateVersion:number;tick:number;time:number}>;
+  readonly events:readonly Readonly<{type:string;detail:DiagnosticPreview}>[];
+  readonly counts:Readonly<Record<string,number>>; readonly causes:readonly number[]; readonly omittedEvents:number;
+  readonly durationMs:number|null; readonly simulationDurationMs:number|null; readonly renderDurationMs:number|null;
+  readonly frame:Readonly<{timestampMs:number;intervalMs:number|null}>|null;
+  readonly outcome:'succeeded'|'failed'; readonly error:RecordedError|null;
+  readonly resources:Readonly<Record<string,number>>;
+}
+export interface DiagnosticsSnapshot {
+  readonly format:'mini-framework-diagnostics'; readonly version:1; readonly status:'active'|'disposed';
+  readonly policy:Required<DiagnosticsOptions>; readonly bytes:number; readonly evicted:number; readonly dropped:number;
+  readonly entries:readonly DiagnosticEntry[]; readonly resources:Readonly<Record<string,number>>;
+  readonly dependencies:DiagnosticPreview; readonly recording:RecordingStatus|null; readonly included:string;
+}
+export interface DiagnosticsSession {
+  snapshot():DiagnosticsSnapshot; export():string; exportRecording():string; dispose():void;
+}
+export function createDiagnostics<S extends object,D extends Definitions<S>>(app:AppInstance<S,D>, options?:DiagnosticsOptions):DiagnosticsSession;
+export interface InspectorConfig<S extends object,D extends Definitions<S> = {}> {
+  readonly diagnostics:DiagnosticsSession; readonly target?:Element; readonly history?:HistoryController<S,D>;
+  readonly onExport?:(text:string,kind:'diagnostics'|'recording')=>void;
+}
+export interface Inspector {
+  readonly app:AppInstance<Record<string,unknown>>;
+  refresh():DiagnosticsSnapshot; select(sequence:number):DiagnosticsSnapshot;
+  export(kind?:'diagnostics'|'recording'):string; mount(target?:Element):Inspector; dispose():void;
+}
+export function createInspector<S extends object=Record<string,unknown>,D extends Definitions<S> = {},F extends (...args:never[])=>unknown = (text:string,kind:'diagnostics'|'recording')=>void>(
+  config:Omit<InspectorConfig<S,D>,'onExport'> & {readonly onExport?:F & ((text:string,kind:'diagnostics'|'recording')=>unknown) & Sync<F>}
+):Inspector;
 export interface RecordingOptions {
   readonly mode?: 'recent' | 'session'; readonly maxActions?: number;
   readonly maxBytes?: number; readonly keyframeInterval?: number;

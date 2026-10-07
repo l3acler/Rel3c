@@ -2,7 +2,7 @@
 
 A JavaScript frontend framework built here, with no third-party runtime dependencies.
 It provides transactional state, precise DOM bindings, native events, keyed lists,
-routing, priorities and selected state persistence. C.1–C.10 also provide checkpoints, controlled services, fixed ticks, semantic inputs, optional interpolation, bounded recording and isolated replay. D.1/D.2 add retained history, reversible undo/redo and explicit branching. Inspector and performance tooling remain planned.
+routing, priorities and selected state persistence. C.1–C.10 also provide checkpoints, controlled services, fixed ticks, semantic inputs, optional interpolation, bounded recording and isolated replay. D.1/D.2 add retained history, reversible undo/redo and explicit branching. D.3/D.4 add optional bounded diagnostics and a keyboard-accessible development inspector. Reproducible benchmarks and performance qualification remain planned.
 
 The public API is experimental (`0.1.0`). The Phase B frontend walkthrough is
 qualified in desktop Chrome; OS IMEs, system clipboard paste, mobile and other
@@ -389,7 +389,8 @@ for schema/runtime versions, supported data, import limits, errors and cleanup.
 | Fixed ticks and scoped external-input/effect adapters | C.3/C.4; see `/examples/ticks/` and the guide |
 | Semantic input packets and display interpolation | C.5/C.6; see `/examples/interpolation/` and the guide |
 | Bounded recording/export/import | C.7/C.8; see `/examples/recording/` and the guide |
-| Replay, history/inspector | Unimplemented later Phase C/D |
+| Isolated replay, retained history/undo/branching | C.9/C.10 and D.1/D.2; explicit policy and ambient-source limits |
+| Bounded diagnostics and separate development inspector | D.3/D.4; lossy previews, explicit refresh/export, no performance claim |
 
 [Compatibility and versioning](docs/adr/0015-public-frontend-compatibility.md)
 explain how the experimental frontend can evolve into Phase C without treating
@@ -462,3 +463,45 @@ reactivity and events in JavaScript. Serving, tests and Chrome automation use No
 standard-library modules and installed Chrome. TypeScript **5.9.3** is the sole
 pinned development dependency; it checks types without compiling the app or
 providing framework behavior. No bundler is needed.
+
+
+## Explain transitions with the inspector
+
+`createDiagnostics(app,{maxEntries:64,maxBytes:256000})` enables bounded capture;
+attach before mounting for construction details or later for subsequent work.
+Capture is off by default. The separate inspector uses native select/buttons and
+labeled read-only textareas to show inputs, changed properties, dirty/evaluated
+bindings, actual DOM writes, observed duration, frame timing and owned resources.
+Selection and refresh read the source; optional history buttons explicitly seek
+or apply its undo/redo policy.
+
+```js
+import {createApp,createActionSchema,createDiagnostics,createInspector,div,p} from './src/index.js';
+const schema=createActionSchema()(({action})=>({increment:action(s=>{s.count++;})}));
+const app=createApp({schema,initialState:{count:0,other:'Unchanged'},
+  view:({bind})=>div(p({id:'count'},bind.count),p(bind.other))});
+const diagnostics=createDiagnostics(app,{maxEntries:64,maxBytes:256000});
+// In a page with #app and a separate #debug host:
+app.mount();
+const inspector=createInspector({diagnostics,target:document.getElementById('debug')});
+app.actions.increment();app.actions.increment();app.flush();inspector.refresh();
+console.log(diagnostics.snapshot().entries.at(-1).counts['dom-write']); // 1
+const previews=inspector.export(); // explicit: payload/value previews + metrics
+inspector.dispose();diagnostics.dispose();app.dispose();
+```
+
+The default window holds at most 256 entries / 1,048,576 serialized entry bytes;
+oldest entries are evicted and detailed values/events are truncated with markers.
+Timing never enters authoritative state, actions, hashes or recordings. These
+are owned-resource/observed-work counters, not heap or speed claims. The panel
+shows included values before explicit diagnostic/full-recording export. Full
+recording export requires an existing recording and includes its snapshots and
+payloads. Its UI preview is capped at 65,536 characters; `inspector.export(kind)`
+and optional synchronous `onExport(text,kind)` receive the complete string.
+The panel owns only its UI; supplied diagnostics/history remain caller-owned.
+App disposal automatically closes its diagnostics.
+
+Run `/examples/inspector/` after `npm run dev`. See the
+[guide](DOCUMENTATION.md#development-diagnostics-and-inspector),
+[API and limits](docs/api/inspector.md), and
+[verification](docs/reports/task-D.3-D.4-diagnostics-inspector.md).

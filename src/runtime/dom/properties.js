@@ -190,10 +190,10 @@ export function prepareProperty(node, rawName, input, state, owner) {
         : String(value),
   };
 }
-export function applyProperty(node, prepared, initial) {
+export function applyProperty(node, prepared, initial, wrote = () => {}) {
   const { kind, name, value, defaultName } = prepared;
   if (kind === "property") {
-    if (initial && defaultName) node[defaultName] = value;
+    if (initial && defaultName) { node[defaultName] = value; wrote("default-property", defaultName); }
     if (!Object.is(node[name], value)) {
       const focused =
         name === "value" && node.ownerDocument.activeElement === node;
@@ -201,6 +201,7 @@ export function applyProperty(node, prepared, initial) {
         end = focused ? node.selectionEnd : null;
       const direction = focused ? node.selectionDirection : null;
       node[name] = value;
+      wrote("property", name);
       if (typeof start === "number" && typeof end === "number")
         node.setSelectionRange(
           Math.min(start, value.length),
@@ -209,8 +210,8 @@ export function applyProperty(node, prepared, initial) {
         );
     }
   } else if (kind === "style") {
-    if (node.style.cssText !== value) node.style.cssText = value;
+    if (node.style.cssText !== value) { node.style.cssText = value; wrote("style", "style"); }
   } else if (value === null) {
-    if (node.hasAttribute(name)) node.removeAttribute(name);
-  } else if (node.getAttribute(name) !== value) node.setAttribute(name, value);
+    if (node.hasAttribute(name)) { node.removeAttribute(name); wrote("remove-attribute", name); }
+  } else if (node.getAttribute(name) !== value) { node.setAttribute(name, value); wrote("attribute", name); }
 }

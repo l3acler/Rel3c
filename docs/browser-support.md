@@ -70,4 +70,15 @@ History changes, explicit branch URL restoration and seeded fixed-clock continua
 The public history example seeks, undoes/redoes and continues a new branch.
 [The report](reports/task-D.1-D.2-history-branching.md) lists exact source/command
 evidence. Native browser, IME/system clipboard/mobile and heap/performance boundaries
-above remain unchanged. Inspector and performance tooling are unimplemented.
+above remain unchanged. D.3/D.4 diagnostics/inspector are implemented; D.5/D.6 performance qualification remains planned.
+
+
+D.3/D.4 add native Chrome fixtures for automatic visual-frame timing, exact
+coalesced binding/write attribution, focused keyed reorders/form-property writes,
+inspector native select/refresh/export and explicit history buttons. The public
+example also receives trusted CDP Enter activation. Runtime fixtures verify
+bounded capture/truncation/eviction, FIFO/rollback, identical recording bytes and
+checkpoint hashes, disposal and independent panel ownership. See
+[report](reports/task-D.3-D.4-diagnostics-inspector.md) for environment, source
+fingerprints and commands. Timings are observations, not benchmark or overhead
+claims; owned-resource counts remain distinct from heap/GC proof.

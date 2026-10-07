@@ -34,6 +34,7 @@ export function createDispatcher(
     executing = false,
     postCommit = null,
     currentId = null;
+  let traceSequence = 0, currentTraceId = null;
   let admitted = 0,
     usage = null;
 
@@ -87,7 +88,7 @@ export function createDispatcher(
       }
       admitted++;
       usage = nextUsage;
-      return { spec, payload };
+      return { spec, payload, name, traceId: ++traceSequence };
     } finally {
       preparing = false;
     }
@@ -123,11 +124,13 @@ export function createDispatcher(
           entry.spec.input === "none" ? [] : [entry.payload],
           currentId,
         );
+        hooks.trace?.("queued", entry.name, entry.traceId, currentTraceId, entry.spec.input === "none" ? [] : [entry.payload], store.getVersion());
         children.push(entry);
         return;
       }
       running = true;
       admitted = 0;
+      traceSequence = 0;
       usage = zeroUsage();
       const queue = [],
         failures = [];
@@ -141,14 +144,17 @@ export function createDispatcher(
         };
         const drain = () => {
           initial.recordId = hooks.queued?.(name, packet.args, null);
+          hooks.trace?.("queued", initial.name, initial.traceId, null, packet.args, store.getVersion());
           queue.push(initial);
           // Release consumed entries rather than retaining the complete batch.
           while (queue.length) {
-            const { spec, payload, recordId } = queue.shift();
+            const { spec, payload, recordId, name, traceId } = queue.shift();
             currentId = recordId;
             children = [];
+            currentTraceId = traceId;
             postCommit = [];
             let result, serviceTransaction;
+            hooks.trace?.("dispatched", name, traceId, null, null, store.getVersion());
             hooks.action?.(recordId, "dispatched", store.getVersion());
             try {
               const { run } = spec;
@@ -174,14 +180,18 @@ export function createDispatcher(
                 }
               });
               serviceTransaction?.commit();
+              hooks.trace?.("committed", name, traceId, null, null, store.getVersion());
               hooks.action?.(recordId, "committed", store.getVersion());
               queue.push(...children);
             } catch (error) {
               serviceTransaction?.abort();
               failures.push(error);
+              hooks.trace?.("failed", name, traceId, null, null, store.getVersion(), error);
               hooks.action?.(recordId, "failed", store.getVersion(), error);
-              for (const child of children)
+              for (const child of children) {
+                hooks.trace?.("discarded", child.name, child.traceId, traceId, null, store.getVersion());
                 hooks.action?.(child.recordId, "discarded", store.getVersion());
+              }
             }
             // Successful actions retain queued children and operations even if a
             // notification or native History write fails after publication.
@@ -214,6 +224,7 @@ export function createDispatcher(
         postCommit = null;
         executing = false;
         currentId = null;
+        currentTraceId = null;
         usage = null;
         admitted = 0;
         running = false;

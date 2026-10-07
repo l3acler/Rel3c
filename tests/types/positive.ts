@@ -225,3 +225,11 @@ const history=createHistory({recording:roundTripRecording,schema:controlledSchem
 type HistoryStateInference=Expect<Equal<typeof history.app.state.n,number>>;
 const historyStatus:HistoryStatus=history.seek(3);history.undo();history.redo();
 const branch=history.branch();branch.actions.scale(2);history.dispose();void historyStatus;
+
+// D.3/D.4 optional diagnostics and a separate owned developer panel.
+import { createDiagnostics, createInspector, type DiagnosticsSnapshot } from 'mini-framework';
+const diagnostics=createDiagnostics(app,{maxEntries:16,maxBytes:64000});
+const diagnosticSnapshot:DiagnosticsSnapshot=diagnostics.snapshot();
+const panel=createInspector({diagnostics,target:document.body,onExport:(text,kind)=>{const wire:string=text;const format:'diagnostics'|'recording'=kind;void [wire,format];}});
+panel.select(1);panel.refresh();panel.export('recording');panel.dispose();diagnostics.dispose();void diagnosticSnapshot;
+createInspector({diagnostics:createDiagnostics(history.app),history});

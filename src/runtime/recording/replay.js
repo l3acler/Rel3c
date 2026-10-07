@@ -283,31 +283,33 @@ export function createReplayController(raw, frameworkVersion, history = null) {
     driving = true;
     const root = record.root;
     try {
-      if (root.kind === "dispatch")
-        port.dispatch(root.packet.name, ...root.packet.args);
-      else if (root.kind === "input") port.input(root.input, root.queued);
-      else if (root.kind === "time") port.time(root.time);
-      else
-        port.tick(() => {
-          const errors = [];
-          for (const event of record.events)
-            if (
-              event.type === "input" &&
-              event.phase === "dispatched" &&
-              event.parent === null &&
-              !event.input.derived
-            ) {
-              try {
-                port.input(event.input, event.queued);
-              } catch (error) {
-                errors.push(error);
+      port.diagnose(root, () => {
+        if (root.kind === "dispatch")
+          port.dispatch(root.packet.name, ...root.packet.args);
+        else if (root.kind === "input") port.input(root.input, root.queued);
+        else if (root.kind === "time") port.time(root.time);
+        else
+          port.tick(() => {
+            const errors = [];
+            for (const event of record.events)
+              if (
+                event.type === "input" &&
+                event.phase === "dispatched" &&
+                event.parent === null &&
+                !event.input.derived
+              ) {
+                try {
+                  port.input(event.input, event.queued);
+                } catch (error) {
+                  errors.push(error);
+                }
               }
-            }
-          if (errors.length)
-            throw errors.length === 1
-              ? errors[0]
-              : new AggregateError(errors, "Recorded tick inputs failed.");
-        });
+            if (errors.length)
+              throw errors.length === 1
+                ? errors[0]
+                : new AggregateError(errors, "Recorded tick inputs failed.");
+          });
+      });
     } catch (error) {
       // Transaction failures are evidenced by action traces. Runtime/presentation
       // failures with matching state are not rethrown through live error hooks.

@@ -6,7 +6,7 @@
 
 **Source:** [Framework_PRD.md](Framework_PRD.md), version 2.20, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** D.1/D.2 retained history, seeking/undo/redo and branching. Qualification passed; next D.3/D.4 instrumentation and inspector. Broad native qualification remains open.
+**Current milestone:** D.3/D.4 optional instrumentation and development inspector. Qualification passed; next D.5/D.6 benchmarks and report. Broad native qualification remains open.
 
 ## 1. Purpose and scope
 
@@ -194,8 +194,8 @@ Deliver the tick runtime, controlled services, input adapters, optional interpol
 
 - [x] **D.1 — Define history and reversible-action policy.** Dependencies: Phase C. Specify seek versus undo, action grouping, irreversible external effects, navigation/persistence during inspection, expired history, and branching after undo. Acceptance: an ADR explains which actions can be undone and what happens to the discarded future; no claim implies reversal of completed network/storage side effects.
 - [x] **D.2 — Implement seek and undo/redo.** Dependencies: D.1. Restore the nearest preceding keyframe and replay to the requested retained transition. Keep live input/effects paused during inspection and restore clock/PRNG/input bookkeeping for continued execution. Acceptance: retained seeks match hashes within the configured replay interval plus restoration cost; undo/redo and branching are predictable; expired states fail clearly; resumed actions remain deterministic.
-- [ ] **D.3 — Add development instrumentation.** Dependencies: C.10. Expose tick/version/action/input origins, payloads, state changes, dirty dependencies, binding evaluations, DOM write/listener counts, simulation/render duration, and frame timing. Bound diagnostic storage and make instrumentation optional. Acceptance: metrics describe actual work, do not change action ordering/hashes, and do not retain disposed resources or grow indefinitely.
-- [ ] **D.4 — Build the development inspector.** Dependencies: D.2, D.3. Display transition selection, inputs, state changes, dependency-to-binding relationships, scheduling, resource counts, and performance. Show included recording values and explicit export controls. Acceptance: a developer can select a transition and explain its inputs and affected bindings; inspector cleanup works and its controls are keyboard accessible.
+- [x] **D.3 — Add development instrumentation.** Dependencies: C.10. Expose tick/version/action/input origins, payloads, state changes, dirty dependencies, binding evaluations, DOM write/listener counts, simulation/render duration, and frame timing. Bound diagnostic storage and make instrumentation optional. Acceptance: metrics describe actual work, do not change action ordering/hashes, and do not retain disposed resources or grow indefinitely.
+- [x] **D.4 — Build the development inspector.** Dependencies: D.2, D.3. Display transition selection, inputs, state changes, dependency-to-binding relationships, scheduling, resource counts, and performance. Show included recording values and explicit export controls. Acceptance: a developer can select a transition and explain its inputs and affected bindings; inspector cleanup works and its controls are keyboard accessible.
 - [ ] **D.5 — Establish reproducible benchmark workloads.** Dependencies: D.3. Measure independent bindings, pre-frame bursts, keyed-list edits, moving elements, repeated mount/unmount, transaction churn, and replay throughput. Preserve equivalent-work reference baselines and deterministic workload seeds. Acceptance: scripts record environment, browser/version, machine, warmup, run count, workload source, raw samples, and checkpoint results.
 - [ ] **D.6 — Measure and publish the technical report.** Dependencies: D.4, D.5. Report DOM writes, listeners, median/p95 frame scripting and update time, memory/GC observations, replay throughput, and hash correctness. Compare instrumented/uninstrumented runs where relevant. Choose numeric regression budgets only after measured baselines. Acceptance: every performance claim links to reproducible evidence; unavailable metrics, variance, strengths, and limitations are explicit.
 - [ ] **D.7 — Complete product acceptance and release review.** Dependencies: D.6. Re-run all feature gates and the clean-checkout walkthrough. Review PRD coverage, API/docs/declarations, migrations, dependency disclosure, browser/input support, and resource cleanup. Acceptance: all required features have passing evidence; release notes list completed phases and remaining limitations without presenting future work as shipped.
@@ -717,7 +717,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [x] Implemented frontend capabilities are independent; development dependencies and limitations are disclosed (B.11).
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** D.1/D.2 complete and verified; Batch 10 remains uncommitted. Batch 9 committed as 3bc1163 at user request; no push. Next: D.3/D.4. Frontend/native browser qualification remains limited.
+**Current batch:** Batch 10 committed as 16305d8 at user request; no push. Batch 11 D.3/D.4 complete and verified; remains uncommitted. Next: D.5/D.6. Frontend/native browser qualification remains limited.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -972,4 +972,26 @@ negative lines; 143 Chrome checks, root startup, README walkthrough and empty ru
 dependencies. All 166 final source fingerprints match. See
 [report](docs/reports/task-D.1-D.2-history-branching.md) for raw artifact, commands,
 environment, limits and preserved formatting-only edits.
-Batch 10 remains uncommitted; no push. Next: D.3/D.4 instrumentation and inspector.
+Batch 10 committed as 16305d8 at user request; no push. Next: D.3/D.4 instrumentation and inspector.
+
+
+### D.3/D.4 diagnostics and inspector — complete (7 October 2026)
+
+Owner: Codex. Baseline: Batch 10 commit 16305d8, committed at user request before
+this batch. ADR 0022 specifies optional single-session bounded transition capture,
+owned lossy descriptor previews, exact change/dependency/binding/write details and
+observed simulation/render/RAF timing outside authoritative execution. The separate
+framework-owned inspector provides native keyboard selection/refresh, work/resource
+views, included-value disclosure, explicit diagnostic/full-recording exports and
+optional explicit history seek/undo/redo controls. Session/panel/app disposal clears
+owned data/resources/source references without taking caller ownership. Guide,
+README, public declarations/examples/API, PRD v2.21 and browser qualification updated.
+Final clean-copy audit passes: 660 runtime tests (16 new cases), 292 spike and 15
+benchmark correctness tests, positive TS/checked JS and 174 rejected independent
+negative lines, 148 Chrome checks, root startup and README walkthrough, empty runtime
+dependencies. All 174 final source fingerprints match. Public guide/README inspector
+snippets, local Markdown links, visual example review and diff checks pass. See
+[report](docs/reports/task-D.3-D.4-diagnostics-inspector.md) for raw evidence/limits.
+Batch 11 remains uncommitted; no push. Next: D.5/D.6 reproducible workloads and the
+technical performance report. No instrumentation overhead, speed, heap/GC or broad
+browser qualification claim is made.

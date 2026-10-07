@@ -12,6 +12,8 @@
 import { createApplication } from "./runtime/app.js";
 import { createHistoryController } from "./runtime/history/controller.js";
 import { createReplayController } from "./runtime/recording/replay.js";
+export { createDiagnostics } from "./runtime/inspector/instrumentation.js";
+export { createInspector } from "./runtime/inspector/panel.js";
 export { createActionSchema } from "./runtime/actions/schema.js";
 export {
   element,
@@ -49,7 +51,7 @@ export const VERSION = "0.1.0";
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "D.1–D.2 - Retained History, Undo/Redo and Branching",
+  phase: "D.3–D.4 - Bounded Diagnostics and Development Inspector",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
     "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
@@ -72,6 +74,7 @@ export const FRAMEWORK_INFO = Object.freeze({
     "C.5: Owned semantic key/text/navigation/location/hydration packets and execution observation",
     "C.6: Optional display interpolation from frozen tick states; authoritative checkpoints unchanged",
     "RECORD-1: Ordered root/action/input traces, explicit versioned export/import and bounded baseline/keyframe retention (implemented C.7/C.8)",
+    "INSPECT-1: Optional bounded transition diagnostics and declarative keyboard-accessible inspector (implemented D.3/D.4)",
     "HISTORY-1: Retained root seeking, declared reversible groups, undo/redo and explicit live branching (implemented D.1/D.2)",
     "REPLAY-1: Isolated root replay, first divergence and live-source suppression (implemented C.9/C.10; ambient globals remain application responsibility)",
   ]),

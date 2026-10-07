@@ -315,13 +315,32 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
   })()`);
   if(!historyExample)throw Error('Public history/branch example failed');
   tests.results.push({name:'D.1/D.2 public history example seeks/undoes/redoes and branches deterministic state',passed:true});tests.passed++;
-  const paths = ['src/index.js' , 'src/index.d.ts', 'src/runtime/app.js', 'src/runtime/errors.js', 'src/runtime/records.js',
+  const inspectorPage=await open('examples/inspector/');
+  await inspectorPage.waitFor('document.querySelector("[data-inspector-refresh]") !== null');
+  await inspectorPage.evaluate(`(async()=>{const {app}=await import('/examples/inspector/main.js');app.actions.increment();app.flush();document.querySelector('[data-inspector-refresh]').focus();return true;})()`);
+  for(const type of ['keyDown','keyUp']) await inspectorPage.command('Input.dispatchKeyEvent',{type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:type==='keyDown'?'\r':''});
+  await inspectorPage.waitFor('document.querySelector("[data-inspector-transitions]")?.options.length >= 3');
+  const inspectorExample=await inspectorPage.evaluate(`(async()=>{
+    const {app,diagnostics,inspector}=await import('/examples/inspector/main.js');
+    document.getElementById('burst').click();app.flush();
+    document.querySelector('[data-inspector-refresh]').click();inspector.app.flush();
+    const render=diagnostics.snapshot().entries.at(-1);
+    const exact=render.counts['dom-write']===1&&render.causes.length===3;
+    const original=app.snapshot();document.querySelector('[data-inspector-recording]').click();inspector.app.flush();
+    const exported=document.querySelector('[data-inspector-output]').value===app.exportRecording();
+    const version=app.snapshot()===original;app.dispose();
+    return exact&&exported&&version&&inspector.app.status==='disposed'&&diagnostics.snapshot().status==='disposed';
+  })()`);
+  if(!inspectorExample)throw Error('Public diagnostic inspector example failed');
+  tests.results.push({name:'D.4 native Enter activates the public inspector; burst attribution, explicit full export and cleanup pass',passed:true});tests.passed++;
+  const paths = ['src/index.js'  , 'src/index.d.ts', 'src/runtime/app.js', 'src/runtime/errors.js', 'src/runtime/records.js',
     'src/runtime/state/initial-state.js', 'src/runtime/state/transactions.js', 'src/runtime/state/data.js',
     'src/runtime/state/draft.js', 'src/runtime/state/graph.js', 'src/runtime/reactivity/tracking.js', 'src/runtime/dom/bindings.js', 'src/runtime/dom/nodes.js', 'src/runtime/dom/properties.js', 'src/runtime/dom/renderer.js', 'src/runtime/dom/queue.js', 'src/runtime/dom/events.js', 'src/runtime/diagnostics.js', 'src/runtime/actions/schema.js', 'src/runtime/actions/dispatch.js', 'examples/basic/main.js', 'examples/basic/index.html',
     'tests/browser/app-lifecycle.js', 'tests/browser/reactivity.js', 'tests/browser/click.js', 'tests/browser/keyed.js', 'tests/browser/dom.js', 'tests/browser/render-queue.js', 'examples/dom/main.js', 'examples/dom/index.html', 'examples/keyed/main.js', 'examples/keyed/index.html', 'tests/browser/app-lifecycle.html', 'scripts/check-app-lifecycle.js',
     'scripts/local-browser.js', 'scripts/dev-server.js', 'tests/browser/core-slice.js', 'tests/helpers/core-probe.js',
     'tests/core-slice.test.js', 'examples/core/app.js', 'examples/core/main.js', 'examples/core/index.html',
     'src/runtime/dom/inputs.js', 'tests/events-input.test.js', 'tests/browser/events-input.js', 'examples/inputs/main.js', 'examples/inputs/index.html', 'src/runtime/scheduler.js', 'src/runtime/routing/router.js', 'tests/scheduler.test.js', 'tests/router.test.js', 'tests/helpers/fake-browser.js', 'tests/browser/routing-scheduler.js', 'examples/routes/main.js', 'examples/routes/index.html', 'src/runtime/persistence/codec.js', 'src/runtime/persistence/locations.js', 'tests/persistence-codec.test.js', 'tests/persistence.test.js', 'tests/browser/persistence.js', 'examples/persistence/main.js', 'examples/persistence/index.html'];
+  paths.push('src/runtime/inspector/instrumentation.js','src/runtime/inspector/panel.js','tests/inspector.test.js','tests/browser/inspector.js','examples/inspector/main.js','examples/inspector/index.html');
   paths.push('scripts/check-auditor-browser.js', 'examples/auditor/main.js', 'examples/auditor/index.html', 'tests/public-contract.test.js');
   paths.push('src/runtime/determinism/controls.js', 'src/runtime/serialization/graph.js',
     'src/runtime/serialization/checkpoint.js', 'src/runtime/serialization/sha256.js',
@@ -340,7 +359,7 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
   const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'D.1–D.2', formatVersion: 1, recordedAt: new Date().toISOString(),
     browserVersion, flags, machine: { cpu: os.cpus()[0]?.model, cpuCount: os.cpus().length,
       platform: os.platform(), release: os.release(), arch: os.arch(), node: process.version },
-    sourceFiles, example, tests, nativeInputs, limitations: 'Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. History/hash routing and cooperative priorities covered; memory/session/local/URL hydration and writes covered; controlled manual time/draws, checkpoints and restored continuation covered; fixed ticks, scoped external measurements/timers/network and cancellation covered; semantic packet forwarding and display interpolation covered; ordered bounded recording/export/import covered; isolated replay, first divergence, live-source suppression and replay checkpoint/render fixtures covered; retained seek/undo/redo, stable inspection/focus and explicit live branching covered. Resource counters are not a heap-leak proof.' };
+    sourceFiles, example, tests, nativeInputs, limitations: 'Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. History/hash routing and cooperative priorities covered; memory/session/local/URL hydration and writes covered; controlled manual time/draws, checkpoints and restored continuation covered; fixed ticks, scoped external measurements/timers/network and cancellation covered; semantic packet forwarding and display interpolation covered; ordered bounded recording/export/import covered; isolated replay, first divergence, live-source suppression and replay checkpoint/render fixtures covered; retained seek/undo/redo, stable inspection/focus and explicit live branching, bounded optional diagnostics and native inspector controls/exports covered. Resource counters are not a heap-leak proof.' };
   const directory = path.join(root, 'tests/results'); await mkdir(directory, { recursive: true });
   const file = path.join(directory, 'app-lifecycle-' + Date.now() + '-' + randomUUID().slice(0, 8) + '.json');
   await writeFile(file, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });

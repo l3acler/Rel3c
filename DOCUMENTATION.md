@@ -5,6 +5,7 @@ every framework addition or change. Current functionality is experimental:
 application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.8 add native events, semantic keyboard/text inputs, cooperative priority lanes and History/hash routing with one shared application store, plus guarded memory/session/local/URL state locations. APIs remain experimental and browser qualification is limited.
 B.9–B.11 refine the public declarations and root auditor walkthrough. C.1–C.10 add versioned checkpoints, controlled services, fixed ticks, semantic inputs, optional display interpolation, bounded recording and isolated replay.
 D.1/D.2 add retained history, declared reversible undo/redo and explicit live branching.
+D.3/D.4 add optional bounded diagnostics and a separate development inspector.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -27,6 +28,7 @@ Import from `src/index.js`; applications do not need runtime internals.
 | State locations       | Guarded startup hydration, post-commit session/local writes and URL-backed fields             |
 | Error reporting       | Readable framework error codes and a synchronous application error hook                        |
 | TypeScript            | Inferred action names/payloads and read-only state declarations                                |
+| Diagnostics/inspector | Optional bounded transitions, dependency/work details, explicit refresh/export and keyboard controls |
 | Bounded recording     | Opt-in executed roots/traces, versioned export/import and usable recent/session baselines     |
 | Retained history      | Keyframe seeking, declared reversible root groups, undo/redo and live branching |
 | Isolated replay       | Whole-root step/run, checkpoint/trace comparison, first divergence and live-source suppression |
@@ -107,6 +109,7 @@ explicit bindings below for updates.
 | `hashSnapshot(text)`                                | Validate and hash canonical state/control checkpoint text             |
 | `readRecording(text, options?)` / `serializeRecording(recording)` | Validate/decode immutable recordings and return canonical wire |
 | `createReplay(config)` | Restore a separate app and control verified replay with live sources suppressed |
+| `createDiagnostics(app, options?)` / `createInspector(config)` | Capture bounded work summaries and display a separate developer panel |
 | `createHistory(config)` | Inspect retained root endpoints, undo/redo declared groups and create a live branch |
 | `FrameworkError`                                     | Framework error class with a readable message and`code`             |
 | `VERSION`                                            | Package version string                                                |
@@ -1403,7 +1406,7 @@ dispatched action name (or null), optional eventIndex, reason (`trace`, `state`,
 the completed root. Action rollback/failure/discard/version order must match.
 Input admission sequence/queued flags and notification/native presentation error
 messages are not authoritative state; those errors need not recur. Repeated step/
-run returns the divergence unchanged. Restart with a new replay controller; the history API below adds seek/undo/redo. The inspector remains unimplemented.
+run returns the divergence unchanged. Restart with a new replay controller; the history API below adds seek/undo/redo. The development inspector below explains captured work.
 
 `dispose()` is idempotent and releases imported history, comparison scratch and
 owned app/view resources. Direct `replay.app.dispose()` also closes the controller.
@@ -1555,6 +1558,123 @@ are not sandboxed. Inspector and performance qualification remain future work.
 Run `/examples/history/` after `npm run dev` for public seek/undo/redo/branch controls.
 See [API](docs/api/history.md), [ADR 0021](docs/adr/0021-retained-history-and-branching.md)
 and [verification](docs/reports/task-D.1-D.2-history-branching.md).
+
+## Development diagnostics and inspector
+
+Attach `createDiagnostics(app)` before mounting to capture construction and later
+transitions, or attach it to an existing live app for subsequent work. Capture is
+off by default and never starts recording or exports data automatically. The
+inspector is a separate framework app with native keyboard controls; refresh and
+transition selection read the source without dispatching source actions.
+
+In a browser page containing `<div id="app"></div>` and
+`<aside id="debug" aria-label="Development inspector"></aside>`, this root module
+creates a counter and its inspector using public imports:
+
+```js
+import {
+  createApp, createActionSchema, createDiagnostics, createInspector, div, p, button,
+} from './src/index.js';
+
+const schema=createActionSchema({version:'diagnostic-counter/1'})(({action})=>({
+  increment:action(draft=>{draft.count++;}),
+}));
+const app=createApp({schema,initialState:{count:0,other:'Unrelated'},
+  view:({bind,actions})=>div(
+    p({id:'counter'},bind.count),p(bind.other),
+    button({onClick:actions.increment},'Increment'),
+  )});
+const diagnostics=createDiagnostics(app,{maxEntries:64,maxBytes:256000});
+app.mount();
+app.startRecording({maxActions:64,maxBytes:256000,keyframeInterval:8});
+const inspector=createInspector({diagnostics,target:document.getElementById('debug')});
+app.actions.increment();app.actions.increment();app.actions.increment();
+app.flush(); // one dependent text write for this three-commit burst
+inspector.refresh();
+const captured=diagnostics.snapshot();
+const render=captured.entries.at(-1);
+console.log(render.causes,render.counts['binding-evaluation'],render.counts['dom-write']);
+// Explicit developer action only: inspect what is included before exporting.
+console.log(captured.included);
+const diagnosticJSON=inspector.export(); // truncated payload/value previews + metrics
+const recordingJSON=inspector.export('recording'); // full recording values/checkpoints
+// Later, when removing the developer tool and application:
+inspector.dispose();diagnostics.dispose();app.dispose();
+```
+
+Select a `dispatch`/`input`/`tick` entry to read action/input origins and payload
+previews, version/tick/logical time, transaction changes and dirty resource IDs.
+Select its `render` entry to read actual evaluations, dependency-to-binding edges
+and successful DOM writes. `causes` links the render to preceding dirty diagnostic
+transition sequences; several commits can share a single evaluation/write. Changes
+include logical object ID, canonical path and old/new value previews. Property
+dependencies encode `[objectId,readKind,key]`; computed/cell edges reference resource
+IDs. Native listeners and frame/tick/input/effect/persistence queues appear in owned
+resource counts. The panel displays these details in labeled read-only textareas;
+the select supports arrow keys and buttons support Enter/Space.
+
+Diagnostic sequences include render/restoration entries and differ from recording
+root sequences and state versions. Refresh is explicit. With a supplied compatible
+`history` (`createInspector({diagnostics,history,...})`), separate history buttons
+explicitly seek the retained baseline/end or apply its undo/redo policy. Selection
+alone never seeks state. History restore bulk-invalidates the graph; later replay
+records ordinary changes. Branching creates a new app: dispose/recreate the panel
+and diagnostics on the new `history.app`.
+
+The default recent window holds at most **256 entries / 1,048,576 bytes**; options
+allow integers **1–4096 entries / 16,384–16,777,216 bytes**. Bytes measure retained
+entry JSON UTF-8, excluding envelope/current summaries and JS object overhead.
+Oldest entries are evicted; `evicted` reports the count. Each working entry retains
+at most 256 detail events within its byte allowance; actual event counters continue
+and `omittedEvents` reports truncation. Capture failures increment `dropped` without
+changing application results/errors. One active session per app is allowed; attaching
+a second throws `DIAGNOSTICS_ACTIVE`. Invalid options/accessors/apps throw
+`DIAGNOSTICS_INVALID`; lifecycle operations during active runtime work throw
+`DIAGNOSTICS_REENTRANT`. Disposed apps reject attachment with `APP_DISPOSED`.
+
+Previews read descriptors and keep at most 128 values, four object levels, 32
+properties per object and 256 UTF-16 units per key/string. Arrays use numeric keys
+and `[array length]`; aliases/undefined/negative zero and truncation have display
+markers. These are lossy views, not replay data. Retained summaries own no state
+graph, DOM node, callback or application Error. The current dependency graph is
+also bounded (32 resources/32 edges per resource before preview limits); edge details include full dependency/source counts.
+
+`durationMs` observes synchronous work with `performance.now()` when available
+(otherwise null): ticks include input/simulation action/notifications; dispatches
+include commit/notifications; render includes binding work and frame callbacks.
+`simulationDurationMs` separately measures the configured tick action dispatch (including FIFO children/commit/notifications), excluding other queued inputs; `renderDurationMs` repeats the render region duration. Automatic visual frames include native RAF timestamp/interval; explicit flush and
+mount do not have frame timing. These measurements never enter action services,
+simulation controls, hashes or recording bytes. DOM-write counts include actual
+renderer text/attribute/style/form-property and tree operations, including detached
+construction; selection restoration/listener operations/allocation/browser internals
+are excluded. Timing is not a performance claim; owned-resource counts are not a
+heap/GC proof. D.5/D.6 benchmarks and overhead qualification remain planned.
+
+`diagnostics.snapshot()` returns frozen nonreactive completed summaries and current
+counts; `diagnostics.export()` returns their JSON. `exportRecording()` delegates to
+the existing explicit recording export and throws `RECORDING_MISSING` if none
+exists. The panel's `export(kind)` returns the complete string and optional
+synchronous `onExport(text,kind)` receives it only after an explicit export. Its
+details/export preview is capped at 65,536 characters; the native selector shows
+the latest 256 rows. `inspector.select(sequence)` can read older retained entries;
+missing/evicted entries fall back to the latest. Invalid selection/export/config
+throws `INSPECTOR_INVALID`; Promise-returning export callbacks reject with
+`INSPECTOR_ASYNC`. Button failures appear in its status region; direct API failures
+throw. Exports can contain sensitive application values, including full recording
+snapshots/payloads: the panel displays what is included before either export button.
+
+`inspector.dispose()` releases its own UI and source references, while the supplied
+diagnostics/history/app remain caller-owned. Later active methods throw
+`INSPECTOR_DISPOSED`. `diagnostics.dispose()` stops capture and clears retained
+data/source references; snapshot/export then return an empty disposed session,
+while recording export throws `DIAGNOSTICS_DISPOSED`. App disposal automatically
+closes its session. Both disposal methods are idempotent; previously returned
+snapshots remain caller-owned and valid. Manual reads/scheduled work outside traced
+roots are reflected by current resources/dependencies, not separate transitions.
+
+Run `/examples/inspector/` after `npm run dev`. See [API](docs/api/inspector.md),
+[ADR 0022](docs/adr/0022-bounded-diagnostics-inspector.md) and
+[verification](docs/reports/task-D.3-D.4-diagnostics-inspector.md).
 
 ## State and named actions
 

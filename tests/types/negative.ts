@@ -309,3 +309,28 @@ createHistory({recording:''}).undo('one');
 createHistory({recording:'',schema}).branch().actions.rename(2);
 // @ts-expect-error History views must be synchronous.
 createHistory({recording:'',view:async()=>div()});
+
+import {createDiagnostics,createInspector} from 'mini-framework';
+// @ts-expect-error Requires a framework application.
+createDiagnostics({});
+// @ts-expect-error Numeric retention budget.
+createDiagnostics(app,{maxEntries:'all'});
+// @ts-expect-error Unknown diagnostic option.
+createDiagnostics(app,{poll:true});
+const diagnostics=createDiagnostics(app);
+// @ts-expect-error Snapshot is deeply readonly.
+diagnostics.snapshot().entries.push({});
+// @ts-expect-error Snapshot counts are readonly.
+diagnostics.snapshot().bytes=0;
+// @ts-expect-error Requires a diagnostic session.
+createInspector({diagnostics:app});
+// @ts-expect-error No source mutable state option.
+createInspector({diagnostics,initialState:{}});
+// @ts-expect-error Native element target.
+createInspector({diagnostics,target:'#inspector'});
+// @ts-expect-error Export kind is constrained.
+createInspector({diagnostics}).export('state');
+// @ts-expect-error Numeric transition sequence.
+createInspector({diagnostics}).select('last');
+// @ts-expect-error Export callback must be synchronous.
+createInspector({diagnostics,onExport:async()=>{}});

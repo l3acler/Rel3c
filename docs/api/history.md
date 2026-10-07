@@ -103,3 +103,5 @@ snapshots and status reports remain caller-owned after disposal.
 
 Inspector, automatic live-history attachment/group labeling, custom effect
 compensation, cross-tab merges and performance qualification remain future work.
+
+D.3/D.4 [diagnostics and inspector](inspector.md) can attach to `history.app` before mounting/seeking. Diagnostic selection reads summaries; separate inspector history controls explicitly seek/undo/redo. Branching disposes the old diagnostics; attach a new session/panel to the new app.

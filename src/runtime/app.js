@@ -7,6 +7,8 @@ import { createTracking } from "./reactivity/tracking.js";
 import { createBindings, derive as binding } from "./dom/bindings.js";
 import { when, keyed, outlet, a } from "./dom/nodes.js";
 import { registerDiagnostics } from "./diagnostics.js";
+import { errorSummary } from "./recording/format.js";
+import { createDiagnosticHub } from "./inspector/instrumentation.js";
 import { createEvents } from "./dom/events.js";
 import { createRenderer } from "./dom/renderer.js";
 import { createScheduler } from "./scheduler.js";
@@ -165,11 +167,12 @@ export function createApplication(
   let rendering = false;
   let mountCleanups = [];
   const appCleanups = [];
-  const tracking = createTracking(store);
+  const diagnostics = createDiagnosticHub();
+  const tracking = createTracking(store, diagnostics);
   let interpolation = null;
   let recorder = null;
   const recordRun = (root, run) =>
-    recorder?.active ? recorder.run(root, run) : run();
+    diagnostics.run(root.kind, root, () => recorder?.active ? recorder.run(root, run) : run());
   const captureRecording = () => ({
     snapshot: encodeCheckpoint(
       store.getState(),
@@ -234,6 +237,8 @@ export function createApplication(
     const errors = [];
     try {
       tracking.batch(() => {
+        if (diagnostics.enabled) diagnostics.emit("commit", { version: result.version, isNoop: result.isNoop });
+        if (diagnostics.enabled) for (const change of result.changes) diagnostics.emit("change", change);
         tracking.publish(result);
         interpolation?.committed();
       });
@@ -310,6 +315,10 @@ export function createApplication(
       const errors = [];
       try {
         tracking.batch(() => {
+          if (diagnostics.enabled) {
+            diagnostics.emit("commit", { version: result.version, isNoop: result.isNoop });
+            for (const change of result.changes) diagnostics.emit("change", change);
+          }
           tracking.publish(result);
           interpolation?.committed();
           persistence?.committed();
@@ -333,21 +342,23 @@ export function createApplication(
     controls,
     {
       batch: (packet, run) => recordRun({ kind: "dispatch", packet }, run),
-      queued: (name, args, parent) =>
-        replay
-          ? replay.queued(name, args, parent)
-          : recorder?.queued(name, args, parent),
+      queued: (name, args, parent) => {
+        return replay ? replay.queued(name, args, parent) : recorder?.queued(name, args, parent);
+      },
+      trace: (phase, name, id, parent, args, stateVersion, error) => {
+        if (diagnostics.enabled) diagnostics.emit("action", { phase, name, id, parent, args, stateVersion, error: error === undefined ? null : errorSummary(error) });
+      },
       action: (...args) => {
         recorder?.action(...args);
         replay?.action(...args);
       },
     },
   );
-  function render(run) {
+  function render(run, frame = { source: "flush" }) {
     const previous = rendering;
     rendering = true;
     try {
-      return run();
+      return diagnostics.run("render", frame, run);
     } finally {
       rendering = previous;
     }
@@ -536,6 +547,7 @@ export function createApplication(
     (run) => checkpointOperation(run, "control"),
     (error) => report(error, "control"),
     {
+      simulate: (run) => diagnostics.simulate(run),
       tick: () => interpolation?.tick(),
       frame: () => interpolation?.frame(),
       runTick: (tick, action, run) =>
@@ -654,9 +666,12 @@ export function createApplication(
     {
       root: (input, queued, run) =>
         recordRun({ kind: "input", input, queued }, run),
-      input: (input, queued) =>
-        replay ? replay.input(input, queued) : recorder?.input(input, queued),
+      input: (input, queued) => {
+        if (diagnostics.enabled) diagnostics.emit("input", { ...input, queued });
+        return replay ? replay.input(input, queued) : recorder?.input(input, queued);
+      },
       end: (id, error, failed) => {
+        if (diagnostics.enabled) diagnostics.emit("input-end", { id: id ?? null, failed, stateVersion: store.getVersion() });
         recorder?.inputEnd(id, store.getVersion(), error, failed);
         replay?.inputEnd(id, store.getVersion(), error, failed);
       },
@@ -1286,6 +1301,7 @@ export function createApplication(
           events,
           scheduler,
           router,
+          diagnostics,
         );
         scheduler.connect(target.ownerDocument.defaultView, () =>
           renderer?.schedule(),
@@ -1294,7 +1310,7 @@ export function createApplication(
           const output = view(context);
           observePromise(output);
           renderer.mount(output, target);
-        });
+        }, { source: "mount" });
         status = "mounted";
         if (!replay)
           ticks.connect(target.ownerDocument.defaultView, target.ownerDocument);
@@ -1368,6 +1384,7 @@ export function createApplication(
           "dispose",
         );
       status = "disposing";
+      diagnostics.dispose();
       // Stop the complete graph before scoped/user cleanup can dispose sources
       // and accidentally notify other resources in this closing application.
       const errors = [];
@@ -1451,7 +1468,8 @@ export function createApplication(
       }
     },
   });
-  registerDiagnostics(app, () => ({
+  const resources = () => ({
+    ...diagnostics.counts(),
     ...tracking.counts(),
     ...ticks.counts(),
     ...inputs.counts(),
@@ -1473,7 +1491,17 @@ export function createApplication(
       frames: 0,
     }),
     ...(events?.counts() ?? { handlers: 0, listeners: 0 }),
-  }));
+  });
+  registerDiagnostics(app, resources, {
+    hub: diagnostics,
+    resources,
+    dependencies: () => tracking.dependencies(),
+    check() {
+      live();
+      if (status === "mounting" || ticks.busy || inputBusy || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
+        fail("DIAGNOSTICS_REENTRANT", "Diagnostics lifecycle operations require an idle boundary.");
+    },
+  });
   if (replay)
     replay.connect(
       Object.freeze({
@@ -1494,6 +1522,7 @@ export function createApplication(
               "Replay controller requires an idle boundary.",
             );
         },
+        diagnose: (root, run) => diagnostics.run(root.kind, root, run),
         preparePacket: (value) => normalizePacket(value, true),
         prepareRoute(value) {
           if (value && !router)
@@ -1501,33 +1530,35 @@ export function createApplication(
           if (value) router.prepareInput(value);
         },
         restore(point) {
-          const restored = decodeCheckpoint(point.snapshot, schemaVersion);
-          store.restore(restored.state, restored.stateVersion);
-          controls.restore(restored.controls);
-          ticks.restore();
-          inputBoundary.restore();
-          // Complete authoritative replacement before notifying any presentation read.
-          const errors = [];
-          try {
-            tracking.batch(() => {
-              tracking.restore();
-              router?.restoreReplay(point.route);
-              interpolation?.restore();
-            });
-          } catch (error) {
-            errors.push(error);
-          }
-          try {
-            renderer?.schedule();
-          } catch (error) {
-            errors.push(error);
-          }
-          if (errors.length === 1) throw errors[0];
-          if (errors.length)
-            throw new AggregateError(
-              errors,
-              "History restored; notifications failed.",
-            );
+          return diagnostics.run("restore", { sequence: point.sequence }, () => {
+            const restored = decodeCheckpoint(point.snapshot, schemaVersion);
+            store.restore(restored.state, restored.stateVersion);
+            controls.restore(restored.controls);
+            ticks.restore();
+            inputBoundary.restore();
+            // Complete authoritative replacement before notifying any presentation read.
+            const errors = [];
+            try {
+              tracking.batch(() => {
+                tracking.restore();
+                router?.restoreReplay(point.route);
+                interpolation?.restore();
+              });
+            } catch (error) {
+              errors.push(error);
+            }
+            try {
+              renderer?.schedule();
+            } catch (error) {
+              errors.push(error);
+            }
+            if (errors.length === 1) throw errors[0];
+            if (errors.length)
+              throw new AggregateError(
+                errors,
+                "History restored; notifications failed.",
+              );
+          });
         },
         restoreRoute: (value) => {
           if (value && !router)

@@ -66,11 +66,11 @@ export function createRenderQueue(window, render, report, scheduler) {
       if (frame !== null || typeof window?.requestAnimationFrame !== "function")
         return;
       const expected = ++generation;
-      frame = window.requestAnimationFrame(() => {
+      frame = window.requestAnimationFrame((timestamp) => {
         if (disposed || expected !== generation) return;
         frame = null;
         try {
-          render(flush);
+          render(flush, { source: "frame", timestampMs: timestamp });
         } catch (error) {
           report(error);
         }

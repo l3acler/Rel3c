@@ -171,7 +171,8 @@ export function createTicks(
           }
           if (config.action !== undefined)
             try {
-              dispatch(config.action);
+              if (hooks.simulate) hooks.simulate(() => dispatch(config.action));
+              else dispatch(config.action);
             } catch (error) {
               errors.push(error);
             }
@@ -293,7 +294,8 @@ export function createTicks(
         }
         if (config.action !== undefined)
           try {
-            dispatch(config.action);
+            if (hooks.simulate) hooks.simulate(() => dispatch(config.action));
+            else dispatch(config.action);
           } catch (error) {
             errors.push(error);
           }

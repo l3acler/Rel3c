@@ -5,7 +5,7 @@ synchronous declarative mounting, cleanup and disposal. A.2/A.3 add production C
 transactions, payload ownership/guards and bounded FIFO named dispatch.
 A.4/A.5 add exact observers and lazy computed values.
 Declarative elements, exact bindings and frame batching are implemented in A.6/A.7; see [DOM API](dom.md).
-A.8/A.9 add keyed collections and scoped click callbacks. B.1–B.3 add [native events and semantic keyboard/text inputs](events.md); B.4–B.6 add [priority work](scheduling.md) and [shared-state routing](routing.md); B.7/B.8 add [state locations and hydration](persistence.md); [isolated replay](replay.md) is implemented. This document describes what actually runs today.
+A.8/A.9 add keyed collections and scoped click callbacks. B.1–B.3 add [native events and semantic keyboard/text inputs](events.md); B.4–B.6 add [priority work](scheduling.md) and [shared-state routing](routing.md); B.7/B.8 add [state locations and hydration](persistence.md); [isolated replay](replay.md) is implemented. [Optional diagnostics and inspector](inspector.md) explain transition work without changing authoritative state. This document describes what actually runs today.
 
 B.9 aligns the declarations with the existing synchronous `onError` contract:
 statically visible Promise-returning hooks reject during checking. Synchronous
