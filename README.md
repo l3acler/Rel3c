@@ -2,7 +2,7 @@
 
 A JavaScript frontend framework built here, with no third-party runtime dependencies.
 It provides transactional state, precise DOM bindings, native events, keyed lists,
-routing, priorities and selected state persistence. C.1–C.10 also provide checkpoints, controlled services, fixed ticks, semantic inputs, optional interpolation, bounded recording and isolated replay. D.1/D.2 add retained history, reversible undo/redo and explicit branching. D.3/D.4 add optional bounded diagnostics and a keyboard-accessible development inspector. Reproducible benchmarks and performance qualification remain planned.
+routing, priorities and selected state persistence. C.1–C.10 also provide checkpoints, controlled services, fixed ticks, semantic inputs, optional interpolation, bounded recording and isolated replay. D.1/D.2 add retained history, reversible undo/redo and explicit branching. D.3/D.4 add optional bounded diagnostics and a keyboard-accessible development inspector. D.5/D.6 add reproducible Node/Chrome benchmarks and a measured performance report.
 
 The public API is experimental (`0.1.0`). The Phase B frontend walkthrough is
 qualified in desktop Chrome; OS IMEs, system clipboard paste, mobile and other
@@ -391,6 +391,7 @@ for schema/runtime versions, supported data, import limits, errors and cleanup.
 | Bounded recording/export/import | C.7/C.8; see `/examples/recording/` and the guide |
 | Isolated replay, retained history/undo/branching | C.9/C.10 and D.1/D.2; explicit policy and ambient-source limits |
 | Bounded diagnostics and separate development inspector | D.3/D.4; lossy previews, explicit refresh/export, no performance claim |
+| Reproducible workloads and technical report | D.5/D.6; measured costs, exact write/hash checks and explicit memory limits |
 
 [Compatibility and versioning](docs/adr/0015-public-frontend-compatibility.md)
 explain how the experimental frontend can evolve into Phase C without treating
@@ -439,11 +440,20 @@ Benchmarks are separate from the acceptance suite:
 npm run bench:spikes
 npm run bench:spikes:browser
 npm run bench:runtime
+npm run bench:tooling:node
+npm run bench:tooling:browser
 ```
 
-See [methodology](benchmarks/README.md). Architecture spikes selected copy-on-write
-using equivalent correctness/workloads. No universal speedup or leak guarantee
-is claimed, and no final renderer/replay benchmark is implemented.
+Run campaigns sequentially with other tests/benchmarks stopped. The tooling suite
+uses seeded fixtures, three rotated trials and diagnostics on/off comparisons;
+`-- --quick` only verifies the harness. It retains unique raw JSON artifacts,
+environment/source fingerprints and matching checkpoint hashes. Chrome timings
+measure callback scripting; native-write probes and heap/GC observations run
+separately. See the [public guide](DOCUMENTATION.md#reproducible-benchmarks),
+[methodology](benchmarks/runtime/README.md) and
+[measured report](docs/reports/task-D.5-D.6-performance.md). Architecture spike
+comparisons remain [separate](benchmarks/README.md). No universal speedup or leak
+guarantee is claimed; product acceptance/release review remains D.7.
 
 ## Folder map and tooling
 

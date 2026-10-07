@@ -70,7 +70,8 @@ History changes, explicit branch URL restoration and seeded fixed-clock continua
 The public history example seeks, undoes/redoes and continues a new branch.
 [The report](reports/task-D.1-D.2-history-branching.md) lists exact source/command
 evidence. Native browser, IME/system clipboard/mobile and heap/performance boundaries
-above remain unchanged. D.3/D.4 diagnostics/inspector are implemented; D.5/D.6 performance qualification remains planned.
+above remain unchanged. D.3/D.4 diagnostics/inspector and D.5/D.6 benchmark tooling
+are implemented; measured performance applies only to the recorded fixture/environment.
 
 
 D.3/D.4 add native Chrome fixtures for automatic visual-frame timing, exact
@@ -82,3 +83,12 @@ checkpoint hashes, disposal and independent panel ownership. See
 [report](reports/task-D.3-D.4-diagnostics-inspector.md) for environment, source
 fingerprints and commands. Timings are observations, not benchmark or overhead
 claims; owned-resource counts remain distinct from heap/GC proof.
+
+D.5/D.6 add seeded native-RAF workloads in headless foreground Chrome, separate
+native setter/tree probes and CDP heap/DOM/listener profiles. Full campaigns compare
+reference/runtime/diagnostics at sizes 64/256 and verify checkpoint hashes, visible
+output, keyed identity and owned disposal. This is callback scripting evidence,
+not paint/input latency or a browser support matrix. Natural browser GC pauses and
+allocated bytes are unavailable; detached nodes may remain in CDP counts after
+owned cleanup. See the [technical report](reports/task-D.5-D.6-performance.md) and
+[commands](api/benchmarks.md). D.7 release review remains next.

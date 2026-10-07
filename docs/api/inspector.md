@@ -148,5 +148,6 @@ Completed external effects are never undone. Branching stays on the history API;
 dispose/recreate diagnostics/panel around the new app after branching.
 
 See [ADR 0022](../adr/0022-bounded-diagnostics-inspector.md) and
-[verification](../reports/task-D.3-D.4-diagnostics-inspector.md). D.5/D.6 reproducible
-benchmarks and overhead/heap/performance qualification remain planned.
+[verification](../reports/task-D.3-D.4-diagnostics-inspector.md). The
+[D.5/D.6 report](../reports/task-D.5-D.6-performance.md) measures bounded capture
+overhead and heap/GC observations separately; it does not measure an open panel.

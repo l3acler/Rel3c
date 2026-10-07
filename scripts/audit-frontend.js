@@ -66,7 +66,7 @@ try {
   checks.push('Fresh copy without .git, node_modules or old results; app reconstructed from README.');
   // Fingerprint executable sources, declarations, examples and public docs. Reports
   // are evidence outputs and deliberately excluded from this candidate manifest.
-  for (const folder of ['src', 'scripts', 'tests', 'examples', 'docs/api']) {
+  for (const folder of ['src', 'scripts', 'tests', 'examples', 'benchmarks', 'docs/api']) {
     for (const file of await files(path.join(temporary, folder))) {
       sourceFiles.push({ file: path.relative(temporary, file), sha256: hash(await readFile(file)) });
     }
@@ -123,10 +123,10 @@ try {
   await rm(temporary, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
   const directory = path.join(root, 'tests/results'); await mkdir(directory, { recursive: true });
   const file = path.join(directory, 'auditor-' + Date.now() + '-' + randomUUID().slice(0, 8) + '.json');
-  await writeFile(file, JSON.stringify({ kind: 'clean-candidate-frontend-auditor', task: 'D.3–D.4', formatVersion: 1,
+  await writeFile(file, JSON.stringify({ kind: 'clean-candidate-frontend-auditor', task: 'D.5–D.6', formatVersion: 1,
     recordedAt: new Date().toISOString(), passed, offline, checks, sourceFiles, commands, browser, failure,
     machine: { node: process.version, platform: os.platform(), release: os.release(), arch: os.arch(), cpu: os.cpus()[0]?.model },
-    limitations: 'Temporary candidate copy, not a committed Git checkout. Chrome desktop automation only; OS IME, system clipboard, mobile and cross-browser qualification remain open. Controlled checkpoint/service continuation covered, fixed ticks/external inputs, semantic packets and display interpolation covered; ordered bounded recording, isolated replay, first divergence and live-source suppression, retained seeking/undo/redo and explicit branching, bounded optional diagnostics, inspector and explicit exports covered; no performance or heap-leak claim.' }, null, 2) + '\n', { flag: 'wx' });
+    limitations: 'Temporary candidate copy, not a committed Git checkout. Chrome desktop automation only; OS IME, system clipboard, mobile and cross-browser qualification remain open. Controlled checkpoint/service continuation covered, fixed ticks/external inputs, semantic packets and display interpolation covered; ordered bounded recording, isolated replay, first divergence and live-source suppression, retained seeking/undo/redo and explicit branching, bounded optional diagnostics, inspector and explicit exports, seeded benchmark correctness/native-write/hash/cleanup probes covered. Full timing/GC campaigns are separate linked artifacts; this audit makes no performance or heap-leak claim.' }, null, 2) + '\n', { flag: 'wx' });
   console.log('[auditor] RESULT ' + path.relative(root, file));
   if (passed) console.log('[auditor] CLEAN-CANDIDATE WALKTHROUGH PASSED.');
 }

@@ -24,7 +24,9 @@
     "check:view-syntax": "node scripts/check-view-syntax.js",
     "test:types": "node scripts/check-action-types.js",
     "smoke": "node scripts/smoke.js",
-    "audit:frontend": "node scripts/audit-frontend.js"
+    "audit:frontend": "node scripts/audit-frontend.js",
+    "bench:tooling:node": "node scripts/bench-tooling-node.js",
+    "bench:tooling:browser": "node scripts/bench-tooling-browser.js"
   },
   "devDependencies": {
     "typescript": "5.9.3"

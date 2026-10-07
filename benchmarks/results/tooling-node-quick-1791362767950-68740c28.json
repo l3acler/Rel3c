@@ -1,0 +1,3957 @@
+{
+  "kind": "node-runtime-tooling",
+  "formatVersion": 1,
+  "recordedAt": "2026-10-07T08:46:07.949Z",
+  "quick": true,
+  "workloadVersion": 1,
+  "seed": 1592594996,
+  "config": {
+    "sizes": [
+      16,
+      64
+    ],
+    "warmup": 2,
+    "samples": 6,
+    "rounds": 1,
+    "batch": 4,
+    "replayRoots": 16,
+    "memorySamples": 8
+  },
+  "environment": {
+    "node": "v26.3.0",
+    "v8": "14.6.202.34-node.20",
+    "platform": "darwin",
+    "release": "24.6.0",
+    "arch": "arm64",
+    "cpu": "Apple M4",
+    "cpuCount": 10,
+    "totalMemoryBytes": 17179869184
+  },
+  "sourceFiles": [
+    {
+      "file": "benchmarks/runtime/browser.js",
+      "sha256": "ab1747b7bcae150ec24710a5dc57dcaf8fb06935aa743c30909568d5a6dc96cb"
+    },
+    {
+      "file": "benchmarks/runtime/index.html",
+      "sha256": "054dee61d3af66059ddd01fb772fd188ac8d5ebd2c039226025828fef30b290e"
+    },
+    {
+      "file": "benchmarks/runtime/workloads.js",
+      "sha256": "5dda9f2e436731afee1efed38297b1bdc6af4ac6fef34976aed2827741f2ac96"
+    },
+    {
+      "file": "benchmarks/transactions/workloads.js",
+      "sha256": "63cbbf6aeb2f53c5eeed93462bbca23a90185f8b8c6891df46da689dae8552a0"
+    },
+    {
+      "file": "scripts/bench-tooling-node.js",
+      "sha256": "692ad6b3dbe1aa2e956b05e1d86df59aa6194a331b8fa7452eb371712a9108a3"
+    },
+    {
+      "file": "scripts/bench-tooling-worker.js",
+      "sha256": "c53395a7f423f85017c7be14941cdbddf74ce7b0747182e91c5d776e74680a6f"
+    },
+    {
+      "file": "src/index.d.ts",
+      "sha256": "21e0ad4a555c4b6a4da40ce8e7ceb860498e0b2f855f5ef7d83409405ce00796"
+    },
+    {
+      "file": "src/index.js",
+      "sha256": "26267025d963baa9287477af709243fa58ce79a826f849da08b368e7066b38ce"
+    },
+    {
+      "file": "src/runtime/actions/dispatch.js",
+      "sha256": "f5762c43f5a5ba5399d6d587634fb3e80c46b5e5b564a95bedab0e197a4c891f"
+    },
+    {
+      "file": "src/runtime/actions/schema.js",
+      "sha256": "be68fea174ad25646b8611ca5a88bce7e9703631511b86179f087a1b1301bfe1"
+    },
+    {
+      "file": "src/runtime/app.js",
+      "sha256": "8040514f04b580e5060b28a15de8f1ea0893b19cb805d0f2a40c029c623f3a62"
+    },
+    {
+      "file": "src/runtime/determinism/controls.js",
+      "sha256": "c5e7135379702f941d59ad4a9458766aa1400f72e0f7c63faad2a282340a6822"
+    },
+    {
+      "file": "src/runtime/determinism/interpolation.js",
+      "sha256": "3d7e724a0f1fd81a9f91853385c25f809e488da0e88d12951b2c83162eb85a78"
+    },
+    {
+      "file": "src/runtime/determinism/ticks.js",
+      "sha256": "977f4c592b4e3fb9c91722a106f518ef1ecb8fa2b925483d45543e689144cb5f"
+    },
+    {
+      "file": "src/runtime/diagnostics.js",
+      "sha256": "deb0400265ad0f8f07d295892c3fa63d4613552f768ad27ae742a41d98773c09"
+    },
+    {
+      "file": "src/runtime/dom/bindings.js",
+      "sha256": "e2fe508b0836172b48de86902e822cb54e16c8f5c2823463cf6583496e299fb8"
+    },
+    {
+      "file": "src/runtime/dom/events.js",
+      "sha256": "9410752167e1a015bfbe977eb87205eef9a96cc8c39c909ca1f5f10d411aed2a"
+    },
+    {
+      "file": "src/runtime/dom/inputs.js",
+      "sha256": "cb0fdcec5d298b8eb9ed08c1c528a9b61b6be7da69f168bd7f7d6e355b296181"
+    },
+    {
+      "file": "src/runtime/dom/nodes.js",
+      "sha256": "1a290cf4eb32a6d8b271601d58eaa6c239debd71b9f022b733850acccebc0f57"
+    },
+    {
+      "file": "src/runtime/dom/properties.js",
+      "sha256": "c01f301f475b32d80c83906e98cfca2b99487a0db9d7e97cea2f8828cef247c9"
+    },
+    {
+      "file": "src/runtime/dom/queue.js",
+      "sha256": "8b0a9f43af06b8a55490c5308f14c47cc2ea231ebfe6fa7f265e7bdcfaf6a1fd"
+    },
+    {
+      "file": "src/runtime/dom/renderer.js",
+      "sha256": "51bc3bdd22d17b598e3be7a20802b4d46cd6da2118fd5cb20523eee6c52461dd"
+    },
+    {
+      "file": "src/runtime/errors.js",
+      "sha256": "28a0d3509157c62f5c731d2d5b49611a2ee678fdd31ab931e5a9b1bc71681da0"
+    },
+    {
+      "file": "src/runtime/history/controller.js",
+      "sha256": "660fb44d680d052903a6a2544e0425a06d200d4ebe8b47c12e431f9be8c8ea67"
+    },
+    {
+      "file": "src/runtime/inputs/adapters.js",
+      "sha256": "57350f5c10d75aca432302e831f2d6efd4e791964993aec35e85fe819dc728bc"
+    },
+    {
+      "file": "src/runtime/inputs/boundary.js",
+      "sha256": "71ad9eeab466b0b732a058b994d12ef2650fef8ae1ae4280b963b728f323bf80"
+    },
+    {
+      "file": "src/runtime/inputs/ownership.js",
+      "sha256": "4ffaef16d8dfa82a02c7310ef5ccb16c0530de17c71095fe1fae46241fc0cd0d"
+    },
+    {
+      "file": "src/runtime/inspector/instrumentation.js",
+      "sha256": "3662d82eff167ce2651e4fce52e2697664e0055049a5841b7ddd30ac23235190"
+    },
+    {
+      "file": "src/runtime/inspector/panel.js",
+      "sha256": "cf935bd9640b9ae29659b8bfb5939452579f7ea021c033a0e158c8678f2c0cb8"
+    },
+    {
+      "file": "src/runtime/persistence/codec.js",
+      "sha256": "15a2c2cc85e14cf94d245d076ebf08af738c293564ac241c9c1ca11ab7e23e3f"
+    },
+    {
+      "file": "src/runtime/persistence/locations.js",
+      "sha256": "9a1ecda61ab8c06958e6b7f16aadb8fef8964b2d33cd5de7dbe00dd7408e9dfa"
+    },
+    {
+      "file": "src/runtime/reactivity/tracking.js",
+      "sha256": "5520a1c03c57328475c018584e8df002308c33faad21f9fd4ca1363f8643dd57"
+    },
+    {
+      "file": "src/runtime/recording/format.js",
+      "sha256": "f3154bff03e2215643939ac0e2e007192f885d9f12925d5343d92fc50cb6e0a6"
+    },
+    {
+      "file": "src/runtime/recording/recorder.js",
+      "sha256": "e1ff46e034189ae1aa2e553e9aa1439a7683a712be0d8b40ab6bde2b7d53a0fc"
+    },
+    {
+      "file": "src/runtime/recording/replay.js",
+      "sha256": "49ab7569003f5e9cd10a451d48e567ecc8f4e88efab083a8c71f02bbc23cab50"
+    },
+    {
+      "file": "src/runtime/records.js",
+      "sha256": "2ab1fdc349a55e10b2042626e01c9209dc52dfbfdcfc7b776d6d757e6b3434a8"
+    },
+    {
+      "file": "src/runtime/routing/router.js",
+      "sha256": "3938ba0f5b554744fd4d935ea94c1eaf15a05253df8930ea8d02774ef8a056ab"
+    },
+    {
+      "file": "src/runtime/scheduler.js",
+      "sha256": "ef36dd3a38d2bdede6b1dc0c4f7d7d501d62f7de9b083ff7d2f0a26002987492"
+    },
+    {
+      "file": "src/runtime/serialization/checkpoint.js",
+      "sha256": "a3ad72b514dd88aff09e25a748ede99161b3feebdf46272bf51ce805bd6b71ed"
+    },
+    {
+      "file": "src/runtime/serialization/graph.js",
+      "sha256": "f71dc694079448591590fef308e25d839e7bfa70b10aa382dfb64802beae3782"
+    },
+    {
+      "file": "src/runtime/serialization/sha256.js",
+      "sha256": "33ebba2604709a7ddfb0dd5e772667314defdd6292fbb82ec343f841eeb01e26"
+    },
+    {
+      "file": "src/runtime/state/data.js",
+      "sha256": "0d3cc0f69f05e93c2ce60546ac41c29dccd7f971d534325b141d2276bcb6661a"
+    },
+    {
+      "file": "src/runtime/state/draft.js",
+      "sha256": "4132704ac792c9a2a775a74cfe7cb6f83a45ae4b0c2fcd5534b917d006da6497"
+    },
+    {
+      "file": "src/runtime/state/graph.js",
+      "sha256": "921f9e7a201a258bf8aa42b38d303c7f20b15f5e934298feb66cd9dabb7223b3"
+    },
+    {
+      "file": "src/runtime/state/initial-state.js",
+      "sha256": "691661ed37ad32a78c7bf66fdb26df8b427383ab5cb3ac6b0ad8529d0a84b724"
+    },
+    {
+      "file": "src/runtime/state/transactions.js",
+      "sha256": "64e656e893d630b41bf3eea77da09b377c8dc6cf3ef290cd97756221c404bfa7"
+    }
+  ],
+  "methodology": {
+    "timing": "Fresh child per variant/workload/size/round. No explicit GC or memory observer. Churn sample contains batch attempted actions including rollback; final hash/dispose outside timing. Replay sample includes import/preflight/create/run/per-root hashes/final hash/dispose; source recording built outside timing.",
+    "reference": "Benchmark-only eager structuredClone/freeze state reference; replay supports only valid flat one-action logs and verifies every endpoint hash. It omits general runtime guards, nested FIFO, input/effect/routing/reactivity features. Same fixture effects/versions/alias graph and endpoint hashes; not a frontend-framework comparison.",
+    "memory": "Separate fresh --expose-gc process for round 0, samples include harness/observer/JIT overhead. Natural GC events restricted to work interval; forced collections separately labeled. Heap high water is sampled, not allocated bytes/true peak; post-disposal deltas are trends, not leak proof.",
+    "ordering": "Rotate variant order each round; cases run sequentially; do not run other test/benchmark jobs concurrently."
+  },
+  "summaries": [
+    {
+      "size": 16,
+      "workload": "transaction-churn",
+      "variant": "reference",
+      "timingMs": {
+        "count": 6,
+        "median": 0.04920800000000014,
+        "p95": 0.06791700000000134,
+        "min": 0.03958399999999784,
+        "max": 0.06791700000000134
+      },
+      "roundMediansMs": [
+        0.04920800000000014
+      ],
+      "perAttemptedActionMs": {
+        "count": 6,
+        "median": 0.012302000000000035,
+        "p95": 0.016979250000000334,
+        "min": 0.00989599999999946,
+        "max": 0.016979250000000334
+      },
+      "equivalentHash": "f24bfe26cf87d4c61b2f65030171d0a046a8c275b3c9a1d34ba2e7823cfc666a"
+    },
+    {
+      "size": 16,
+      "workload": "transaction-churn",
+      "variant": "runtime",
+      "timingMs": {
+        "count": 6,
+        "median": 0.7011045000000031,
+        "p95": 0.8802499999999966,
+        "min": 0.5055410000000009,
+        "max": 0.8802499999999966
+      },
+      "roundMediansMs": [
+        0.7011045000000031
+      ],
+      "perAttemptedActionMs": {
+        "count": 6,
+        "median": 0.17527612500000078,
+        "p95": 0.22006249999999916,
+        "min": 0.12638525000000023,
+        "max": 0.22006249999999916
+      },
+      "equivalentHash": "f24bfe26cf87d4c61b2f65030171d0a046a8c275b3c9a1d34ba2e7823cfc666a"
+    },
+    {
+      "size": 16,
+      "workload": "transaction-churn",
+      "variant": "diagnostics",
+      "timingMs": {
+        "count": 6,
+        "median": 0.9714165000000001,
+        "p95": 1.213000000000001,
+        "min": 0.7914999999999992,
+        "max": 1.213000000000001
+      },
+      "roundMediansMs": [
+        0.9714165000000001
+      ],
+      "perAttemptedActionMs": {
+        "count": 6,
+        "median": 0.24285412500000003,
+        "p95": 0.30325000000000024,
+        "min": 0.1978749999999998,
+        "max": 0.30325000000000024
+      },
+      "equivalentHash": "f24bfe26cf87d4c61b2f65030171d0a046a8c275b3c9a1d34ba2e7823cfc666a"
+    },
+    {
+      "size": 16,
+      "workload": "replay-throughput",
+      "variant": "reference",
+      "timingMs": {
+        "count": 6,
+        "median": 5.515917000000002,
+        "p95": 5.822624999999995,
+        "min": 5.250250000000008,
+        "max": 5.822624999999995
+      },
+      "roundMediansMs": [
+        5.515917000000002
+      ],
+      "rootsPerSecond": {
+        "count": 6,
+        "median": 2901.418088193388,
+        "p95": 3047.473929812861,
+        "min": 2747.901504905436,
+        "max": 3047.473929812861
+      },
+      "equivalentHash": "323ca5e2b1fc7ffcc2131d498d75a8507ab03ca16bec6c3fbba0e1cf3b4dfd35"
+    },
+    {
+      "size": 16,
+      "workload": "replay-throughput",
+      "variant": "runtime",
+      "timingMs": {
+        "count": 6,
+        "median": 5.413958499999996,
+        "p95": 5.855582999999996,
+        "min": 5.2217919999999935,
+        "max": 5.855582999999996
+      },
+      "roundMediansMs": [
+        5.413958499999996
+      ],
+      "rootsPerSecond": {
+        "count": 6,
+        "median": 2955.466151205449,
+        "p95": 3064.0822154540087,
+        "min": 2732.435011167976,
+        "max": 3064.0822154540087
+      },
+      "equivalentHash": "323ca5e2b1fc7ffcc2131d498d75a8507ab03ca16bec6c3fbba0e1cf3b4dfd35"
+    },
+    {
+      "size": 16,
+      "workload": "replay-throughput",
+      "variant": "diagnostics",
+      "timingMs": {
+        "count": 6,
+        "median": 5.783603999999997,
+        "p95": 6.884167000000005,
+        "min": 5.524332999999999,
+        "max": 6.884167000000005
+      },
+      "roundMediansMs": [
+        5.783603999999997
+      ],
+      "rootsPerSecond": {
+        "count": 6,
+        "median": 2766.469120789511,
+        "p95": 2896.2772519324963,
+        "min": 2324.173716297119,
+        "max": 2896.2772519324963
+      },
+      "equivalentHash": "323ca5e2b1fc7ffcc2131d498d75a8507ab03ca16bec6c3fbba0e1cf3b4dfd35"
+    },
+    {
+      "size": 64,
+      "workload": "transaction-churn",
+      "variant": "reference",
+      "timingMs": {
+        "count": 6,
+        "median": 0.12445800000000062,
+        "p95": 0.13358300000000156,
+        "min": 0.12095800000000168,
+        "max": 0.13358300000000156
+      },
+      "roundMediansMs": [
+        0.12445800000000062
+      ],
+      "perAttemptedActionMs": {
+        "count": 6,
+        "median": 0.031114500000000156,
+        "p95": 0.03339575000000039,
+        "min": 0.03023950000000042,
+        "max": 0.03339575000000039
+      },
+      "equivalentHash": "a2f5296b7d38819893954ca602852a4d8bdb0e38b4b901c851e67661ceede320"
+    },
+    {
+      "size": 64,
+      "workload": "transaction-churn",
+      "variant": "runtime",
+      "timingMs": {
+        "count": 6,
+        "median": 1.5037710000000004,
+        "p95": 1.7170829999999953,
+        "min": 1.4460420000000056,
+        "max": 1.7170829999999953
+      },
+      "roundMediansMs": [
+        1.5037710000000004
+      ],
+      "perAttemptedActionMs": {
+        "count": 6,
+        "median": 0.3759427500000001,
+        "p95": 0.4292707499999988,
+        "min": 0.3615105000000014,
+        "max": 0.4292707499999988
+      },
+      "equivalentHash": "a2f5296b7d38819893954ca602852a4d8bdb0e38b4b901c851e67661ceede320"
+    },
+    {
+      "size": 64,
+      "workload": "transaction-churn",
+      "variant": "diagnostics",
+      "timingMs": {
+        "count": 6,
+        "median": 2.484854500000001,
+        "p95": 2.790791999999996,
+        "min": 2.321542000000001,
+        "max": 2.790791999999996
+      },
+      "roundMediansMs": [
+        2.484854500000001
+      ],
+      "perAttemptedActionMs": {
+        "count": 6,
+        "median": 0.6212136250000002,
+        "p95": 0.697697999999999,
+        "min": 0.5803855000000002,
+        "max": 0.697697999999999
+      },
+      "equivalentHash": "a2f5296b7d38819893954ca602852a4d8bdb0e38b4b901c851e67661ceede320"
+    },
+    {
+      "size": 64,
+      "workload": "replay-throughput",
+      "variant": "reference",
+      "timingMs": {
+        "count": 6,
+        "median": 17.284583500000004,
+        "p95": 20.251583999999994,
+        "min": 16.43829199999999,
+        "max": 20.251583999999994
+      },
+      "roundMediansMs": [
+        17.284583500000004
+      ],
+      "rootsPerSecond": {
+        "count": 6,
+        "median": 925.7683270092602,
+        "p95": 973.3371325926081,
+        "min": 790.0616564116666,
+        "max": 973.3371325926081
+      },
+      "equivalentHash": "5ddf4ed3fc59d1f1c44513fc750ec386afd38d10c2166df5ee5832c5e06f771d"
+    },
+    {
+      "size": 64,
+      "workload": "replay-throughput",
+      "variant": "runtime",
+      "timingMs": {
+        "count": 6,
+        "median": 15.795562500000003,
+        "p95": 16.344583000000014,
+        "min": 15.274124999999998,
+        "max": 16.344583000000014
+      },
+      "roundMediansMs": [
+        15.795562500000003
+      ],
+      "rootsPerSecond": {
+        "count": 6,
+        "median": 1013.6853034502524,
+        "p95": 1047.523180542257,
+        "min": 978.9176022416715,
+        "max": 1047.523180542257
+      },
+      "equivalentHash": "5ddf4ed3fc59d1f1c44513fc750ec386afd38d10c2166df5ee5832c5e06f771d"
+    },
+    {
+      "size": 64,
+      "workload": "replay-throughput",
+      "variant": "diagnostics",
+      "timingMs": {
+        "count": 6,
+        "median": 15.839291499999995,
+        "p95": 17.883291000000014,
+        "min": 15.46875,
+        "max": 17.883291000000014
+      },
+      "roundMediansMs": [
+        15.839291499999995
+      ],
+      "rootsPerSecond": {
+        "count": 6,
+        "median": 1010.1463255591251,
+        "p95": 1034.3434343434344,
+        "min": 894.6899091447982,
+        "max": 1034.3434343434344
+      },
+      "equivalentHash": "5ddf4ed3fc59d1f1c44513fc750ec386afd38d10c2166df5ee5832c5e06f771d"
+    }
+  ],
+  "results": [
+    {
+      "round": 0,
+      "size": 16,
+      "workload": "transaction-churn",
+      "variant": "reference",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "transaction-churn",
+        "variant": "reference",
+        "mode": "timing",
+        "samplesMs": [
+          0.06233299999999531,
+          0.06791700000000134,
+          0.047291000000001304,
+          0.05112499999999898,
+          0.04183400000000148,
+          0.03958399999999784
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 0.04920800000000014,
+          "p95": 0.06791700000000134,
+          "min": 0.03958399999999784,
+          "max": 0.06791700000000134
+        },
+        "hash": "f24bfe26cf87d4c61b2f65030171d0a046a8c275b3c9a1d34ba2e7823cfc666a",
+        "attemptedActions": 32,
+        "roots": null
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "transaction-churn",
+        "variant": "reference",
+        "mode": "memory",
+        "baseline": {
+          "rss": 55672832,
+          "heapTotal": 9060352,
+          "heapUsed": 4184896,
+          "external": 1626626,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 55672832,
+            "heapTotal": 9060352,
+            "heapUsed": 4228456,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 2,
+            "rss": 55689216,
+            "heapTotal": 9060352,
+            "heapUsed": 4269096,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 3,
+            "rss": 55689216,
+            "heapTotal": 9060352,
+            "heapUsed": 4308552,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 4,
+            "rss": 55689216,
+            "heapTotal": 9060352,
+            "heapUsed": 4355864,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 5,
+            "rss": 55705600,
+            "heapTotal": 9060352,
+            "heapUsed": 4401472,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 6,
+            "rss": 55705600,
+            "heapTotal": 9060352,
+            "heapUsed": 4441976,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 7,
+            "rss": 55705600,
+            "heapTotal": 9060352,
+            "heapUsed": 4481544,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 8,
+            "rss": 55705600,
+            "heapTotal": 9060352,
+            "heapUsed": 4521032,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          }
+        ],
+        "beforeGc": {
+          "rss": 55721984,
+          "heapTotal": 9060352,
+          "heapUsed": 4599304,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "retainedLive": {
+          "rss": 55738368,
+          "heapTotal": 9060352,
+          "heapUsed": 4254040,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 56770560,
+          "heapTotal": 9846784,
+          "heapUsed": 4355360,
+          "external": 1653054,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 1.2974999999999994
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 0.7538750000000007
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 0.7397500000000008
+          }
+        ],
+        "naturalGcEvents": [],
+        "naturalGcDurationMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "sampledHeapHighWaterDeltaBytes": 336136,
+        "retainedLiveDeltaBytes": 69144,
+        "retainedDisposedDeltaBytes": 170464,
+        "hash": "cb050b111e919d2345d553b01085de1675145c97d021f78030cceff2643a0264",
+        "attemptedActions": 40,
+        "roots": null
+      }
+    },
+    {
+      "round": 0,
+      "size": 16,
+      "workload": "transaction-churn",
+      "variant": "runtime",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "transaction-churn",
+        "variant": "runtime",
+        "mode": "timing",
+        "samplesMs": [
+          0.8802499999999966,
+          0.7849170000000001,
+          0.6172920000000062,
+          0.8504999999999967,
+          0.5663750000000007,
+          0.5055410000000009
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 0.7011045000000031,
+          "p95": 0.8802499999999966,
+          "min": 0.5055410000000009,
+          "max": 0.8802499999999966
+        },
+        "hash": "f24bfe26cf87d4c61b2f65030171d0a046a8c275b3c9a1d34ba2e7823cfc666a",
+        "attemptedActions": 32,
+        "roots": null
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "transaction-churn",
+        "variant": "runtime",
+        "mode": "memory",
+        "baseline": {
+          "rss": 57622528,
+          "heapTotal": 11157504,
+          "heapUsed": 4552608,
+          "external": 1626626,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 58146816,
+            "heapTotal": 11157504,
+            "heapUsed": 6141416,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 2,
+            "rss": 59179008,
+            "heapTotal": 12206080,
+            "heapUsed": 7711408,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 3,
+            "rss": 60456960,
+            "heapTotal": 13254656,
+            "heapUsed": 5171680,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 4,
+            "rss": 60473344,
+            "heapTotal": 13254656,
+            "heapUsed": 6959336,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 5,
+            "rss": 62078976,
+            "heapTotal": 14827520,
+            "heapUsed": 8490256,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 6,
+            "rss": 62078976,
+            "heapTotal": 14827520,
+            "heapUsed": 6065704,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 7,
+            "rss": 62898176,
+            "heapTotal": 14827520,
+            "heapUsed": 7304736,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 8,
+            "rss": 63127552,
+            "heapTotal": 14827520,
+            "heapUsed": 8544496,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          }
+        ],
+        "beforeGc": {
+          "rss": 63225856,
+          "heapTotal": 14827520,
+          "heapUsed": 4887112,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "retainedLive": {
+          "rss": 63275008,
+          "heapTotal": 14303232,
+          "heapUsed": 4936248,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 63537152,
+          "heapTotal": 14303232,
+          "heapUsed": 4663408,
+          "external": 1653054,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 1.0378749999999997
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 1.236333000000002
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 0.9723340000000036
+          }
+        ],
+        "naturalGcEvents": [
+          {
+            "startTimeMs": 43.199125,
+            "durationMs": 0.09625005722045898,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 46.514041,
+            "durationMs": 0.08575010299682617,
+            "kind": "minor"
+          }
+        ],
+        "naturalGcDurationMs": {
+          "count": 2,
+          "median": 0.09100008010864258,
+          "p95": 0.09625005722045898,
+          "min": 0.08575010299682617,
+          "max": 0.09625005722045898
+        },
+        "sampledHeapHighWaterDeltaBytes": 3991888,
+        "retainedLiveDeltaBytes": 383640,
+        "retainedDisposedDeltaBytes": 110800,
+        "hash": "cb050b111e919d2345d553b01085de1675145c97d021f78030cceff2643a0264",
+        "attemptedActions": 40,
+        "roots": null
+      }
+    },
+    {
+      "round": 0,
+      "size": 16,
+      "workload": "transaction-churn",
+      "variant": "diagnostics",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "transaction-churn",
+        "variant": "diagnostics",
+        "mode": "timing",
+        "samplesMs": [
+          1.213000000000001,
+          1.1427499999999995,
+          0.9253750000000025,
+          1.0174579999999978,
+          0.819625000000002,
+          0.7914999999999992
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 0.9714165000000001,
+          "p95": 1.213000000000001,
+          "min": 0.7914999999999992,
+          "max": 1.213000000000001
+        },
+        "hash": "f24bfe26cf87d4c61b2f65030171d0a046a8c275b3c9a1d34ba2e7823cfc666a",
+        "attemptedActions": 32,
+        "roots": null
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "transaction-churn",
+        "variant": "diagnostics",
+        "mode": "memory",
+        "baseline": {
+          "rss": 59408384,
+          "heapTotal": 12730368,
+          "heapUsed": 4768120,
+          "external": 1674246,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 59572224,
+            "heapTotal": 12992512,
+            "heapUsed": 7016568,
+            "external": 1652785,
+            "arrayBuffers": 163842
+          },
+          {
+            "sample": 2,
+            "rss": 61669376,
+            "heapTotal": 14827520,
+            "heapUsed": 5246592,
+            "external": 1631204,
+            "arrayBuffers": 142261
+          },
+          {
+            "sample": 3,
+            "rss": 61734912,
+            "heapTotal": 14827520,
+            "heapUsed": 7393904,
+            "external": 1657352,
+            "arrayBuffers": 168409
+          },
+          {
+            "sample": 4,
+            "rss": 62324736,
+            "heapTotal": 15089664,
+            "heapUsed": 5951840,
+            "external": 1639277,
+            "arrayBuffers": 150334
+          },
+          {
+            "sample": 5,
+            "rss": 62341120,
+            "heapTotal": 15089664,
+            "heapUsed": 7813704,
+            "external": 1665445,
+            "arrayBuffers": 176502
+          },
+          {
+            "sample": 6,
+            "rss": 63438848,
+            "heapTotal": 15089664,
+            "heapUsed": 5783336,
+            "external": 1634471,
+            "arrayBuffers": 145528
+          },
+          {
+            "sample": 7,
+            "rss": 63832064,
+            "heapTotal": 15089664,
+            "heapUsed": 7682048,
+            "external": 1660642,
+            "arrayBuffers": 171699
+          },
+          {
+            "sample": 8,
+            "rss": 63864832,
+            "heapTotal": 15089664,
+            "heapUsed": 5608152,
+            "external": 1628593,
+            "arrayBuffers": 139650
+          }
+        ],
+        "beforeGc": {
+          "rss": 63913984,
+          "heapTotal": 15089664,
+          "heapUsed": 6011256,
+          "external": 1628593,
+          "arrayBuffers": 139650
+        },
+        "retainedLive": {
+          "rss": 64028672,
+          "heapTotal": 14827520,
+          "heapUsed": 5074744,
+          "external": 1628593,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 65208320,
+          "heapTotal": 14827520,
+          "heapUsed": 4740128,
+          "external": 1653054,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 0.9667919999999981
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 1.0777079999999941
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 0.7392500000000055
+          }
+        ],
+        "naturalGcEvents": [
+          {
+            "startTimeMs": 44.0365,
+            "durationMs": 0.08795809745788574,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 46.109375,
+            "durationMs": 0.11683297157287598,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 48.373541,
+            "durationMs": 0.10962486267089844,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 50.561458,
+            "durationMs": 0.08899998664855957,
+            "kind": "minor"
+          }
+        ],
+        "naturalGcDurationMs": {
+          "count": 4,
+          "median": 0.099312424659729,
+          "p95": 0.11683297157287598,
+          "min": 0.08795809745788574,
+          "max": 0.11683297157287598
+        },
+        "sampledHeapHighWaterDeltaBytes": 3045584,
+        "retainedLiveDeltaBytes": 306624,
+        "retainedDisposedDeltaBytes": -27992,
+        "hash": "cb050b111e919d2345d553b01085de1675145c97d021f78030cceff2643a0264",
+        "attemptedActions": 40,
+        "roots": null
+      }
+    },
+    {
+      "round": 0,
+      "size": 16,
+      "workload": "replay-throughput",
+      "variant": "reference",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "replay-throughput",
+        "variant": "reference",
+        "mode": "timing",
+        "samplesMs": [
+          5.822624999999995,
+          5.428916999999998,
+          5.339832999999999,
+          5.250250000000008,
+          5.602917000000005,
+          5.79008300000001
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 5.515917000000002,
+          "p95": 5.822624999999995,
+          "min": 5.250250000000008,
+          "max": 5.822624999999995
+        },
+        "hash": "323ca5e2b1fc7ffcc2131d498d75a8507ab03ca16bec6c3fbba0e1cf3b4dfd35",
+        "attemptedActions": 0,
+        "roots": 16
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "replay-throughput",
+        "variant": "reference",
+        "mode": "memory",
+        "baseline": {
+          "rss": 69976064,
+          "heapTotal": 15613952,
+          "heapUsed": 4921888,
+          "external": 1662424,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 70057984,
+            "heapTotal": 15613952,
+            "heapUsed": 6354904,
+            "external": 1667876,
+            "arrayBuffers": 178933
+          },
+          {
+            "sample": 2,
+            "rss": 70107136,
+            "heapTotal": 15613952,
+            "heapUsed": 7632120,
+            "external": 1717898,
+            "arrayBuffers": 228955
+          },
+          {
+            "sample": 3,
+            "rss": 70139904,
+            "heapTotal": 15613952,
+            "heapUsed": 8864480,
+            "external": 1746968,
+            "arrayBuffers": 258025
+          },
+          {
+            "sample": 4,
+            "rss": 70172672,
+            "heapTotal": 15613952,
+            "heapUsed": 5643528,
+            "external": 1641512,
+            "arrayBuffers": 152569
+          },
+          {
+            "sample": 5,
+            "rss": 70189056,
+            "heapTotal": 15613952,
+            "heapUsed": 9158888,
+            "external": 1773332,
+            "arrayBuffers": 284389
+          },
+          {
+            "sample": 6,
+            "rss": 70189056,
+            "heapTotal": 15613952,
+            "heapUsed": 8635504,
+            "external": 1755780,
+            "arrayBuffers": 266837
+          },
+          {
+            "sample": 7,
+            "rss": 70189056,
+            "heapTotal": 15613952,
+            "heapUsed": 7910904,
+            "external": 1720604,
+            "arrayBuffers": 231661
+          },
+          {
+            "sample": 8,
+            "rss": 70189056,
+            "heapTotal": 15613952,
+            "heapUsed": 7123920,
+            "external": 1691534,
+            "arrayBuffers": 202591
+          }
+        ],
+        "beforeGc": {
+          "rss": 70205440,
+          "heapTotal": 15613952,
+          "heapUsed": 7170456,
+          "external": 1691534,
+          "arrayBuffers": 202591
+        },
+        "retainedLive": {
+          "rss": 70074368,
+          "heapTotal": 15089664,
+          "heapUsed": 5074640,
+          "external": 1691534,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 70074368,
+          "heapTotal": 15089664,
+          "heapUsed": 5009360,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 0.981583999999998
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 0.886209000000008
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 0.9959999999999951
+          }
+        ],
+        "naturalGcEvents": [
+          {
+            "startTimeMs": 65.73325,
+            "durationMs": 0.05904197692871094,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 67.71175,
+            "durationMs": 0.06616711616516113,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 69.721709,
+            "durationMs": 0.03949999809265137,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 71.582667,
+            "durationMs": 0.04504203796386719,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 73.390459,
+            "durationMs": 0.04675006866455078,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 75.173334,
+            "durationMs": 0.06908297538757324,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 76.903584,
+            "durationMs": 0.04537510871887207,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 78.691584,
+            "durationMs": 0.034208059310913086,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 80.46475,
+            "durationMs": 0.03616690635681152,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 82.125917,
+            "durationMs": 0.04737520217895508,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 83.920584,
+            "durationMs": 0.038041114807128906,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 85.590875,
+            "durationMs": 0.02487492561340332,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 87.334375,
+            "durationMs": 0.04024982452392578,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 88.969167,
+            "durationMs": 0.06483316421508789,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 90.750625,
+            "durationMs": 0.06412482261657715,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 92.675334,
+            "durationMs": 0.04437518119812012,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 94.649042,
+            "durationMs": 0.056874990463256836,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 96.371459,
+            "durationMs": 0.06474995613098145,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 98.032375,
+            "durationMs": 0.05766701698303223,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 99.634542,
+            "durationMs": 0.03983306884765625,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 101.18375,
+            "durationMs": 0.022291898727416992,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 102.928084,
+            "durationMs": 0.04595804214477539,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 104.554417,
+            "durationMs": 0.0505828857421875,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 106.238792,
+            "durationMs": 0.02708292007446289,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 107.8595,
+            "durationMs": 0.03816699981689453,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 109.405167,
+            "durationMs": 0.054791927337646484,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 111.004417,
+            "durationMs": 0.04187488555908203,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 112.507667,
+            "durationMs": 0.03508305549621582,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 114.05725,
+            "durationMs": 0.03816699981689453,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 115.511459,
+            "durationMs": 0.04679083824157715,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 116.99,
+            "durationMs": 0.05158400535583496,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 118.491625,
+            "durationMs": 0.030167102813720703,
+            "kind": "minor"
+          }
+        ],
+        "naturalGcDurationMs": {
+          "count": 32,
+          "median": 0.04520857334136963,
+          "p95": 0.06616711616516113,
+          "min": 0.022291898727416992,
+          "max": 0.06908297538757324
+        },
+        "sampledHeapHighWaterDeltaBytes": 4237000,
+        "retainedLiveDeltaBytes": 152752,
+        "retainedDisposedDeltaBytes": 87472,
+        "hash": "323ca5e2b1fc7ffcc2131d498d75a8507ab03ca16bec6c3fbba0e1cf3b4dfd35",
+        "attemptedActions": 0,
+        "roots": 16
+      }
+    },
+    {
+      "round": 0,
+      "size": 16,
+      "workload": "replay-throughput",
+      "variant": "runtime",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "replay-throughput",
+        "variant": "runtime",
+        "mode": "timing",
+        "samplesMs": [
+          5.451541999999996,
+          5.639250000000004,
+          5.267499999999998,
+          5.2217919999999935,
+          5.376374999999996,
+          5.855582999999996
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 5.413958499999996,
+          "p95": 5.855582999999996,
+          "min": 5.2217919999999935,
+          "max": 5.855582999999996
+        },
+        "hash": "323ca5e2b1fc7ffcc2131d498d75a8507ab03ca16bec6c3fbba0e1cf3b4dfd35",
+        "attemptedActions": 0,
+        "roots": 16
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "replay-throughput",
+        "variant": "runtime",
+        "mode": "memory",
+        "baseline": {
+          "rss": 70451200,
+          "heapTotal": 15876096,
+          "heapUsed": 5030032,
+          "external": 1693854,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 70467584,
+            "heapTotal": 15876096,
+            "heapUsed": 5383584,
+            "external": 1638806,
+            "arrayBuffers": 149863
+          },
+          {
+            "sample": 2,
+            "rss": 70500352,
+            "heapTotal": 15876096,
+            "heapUsed": 5910120,
+            "external": 1638806,
+            "arrayBuffers": 149863
+          },
+          {
+            "sample": 3,
+            "rss": 70549504,
+            "heapTotal": 15876096,
+            "heapUsed": 5737856,
+            "external": 1638806,
+            "arrayBuffers": 149863
+          },
+          {
+            "sample": 4,
+            "rss": 70582272,
+            "heapTotal": 15876096,
+            "heapUsed": 5844904,
+            "external": 1638806,
+            "arrayBuffers": 149863
+          },
+          {
+            "sample": 5,
+            "rss": 70615040,
+            "heapTotal": 15876096,
+            "heapUsed": 5937664,
+            "external": 1638806,
+            "arrayBuffers": 149863
+          },
+          {
+            "sample": 6,
+            "rss": 70680576,
+            "heapTotal": 15876096,
+            "heapUsed": 6251504,
+            "external": 1638806,
+            "arrayBuffers": 149863
+          },
+          {
+            "sample": 7,
+            "rss": 70778880,
+            "heapTotal": 15876096,
+            "heapUsed": 9604112,
+            "external": 1722098,
+            "arrayBuffers": 233155
+          },
+          {
+            "sample": 8,
+            "rss": 70811648,
+            "heapTotal": 15876096,
+            "heapUsed": 8401928,
+            "external": 1693894,
+            "arrayBuffers": 204951
+          }
+        ],
+        "beforeGc": {
+          "rss": 70828032,
+          "heapTotal": 15876096,
+          "heapUsed": 8446104,
+          "external": 1693894,
+          "arrayBuffers": 204951
+        },
+        "retainedLive": {
+          "rss": 70926336,
+          "heapTotal": 15089664,
+          "heapUsed": 5379920,
+          "external": 1693894,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 70926336,
+          "heapTotal": 15089664,
+          "heapUsed": 5307784,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 0.9430420000000055
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 0.9139579999999938
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 0.7312499999999886
+          }
+        ],
+        "naturalGcEvents": [
+          {
+            "startTimeMs": 67.911792,
+            "durationMs": 0.07170796394348145,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 69.869792,
+            "durationMs": 0.0731661319732666,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 71.801708,
+            "durationMs": 0.06925010681152344,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 73.654792,
+            "durationMs": 0.055290937423706055,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 75.702958,
+            "durationMs": 0.06558394432067871,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 77.551583,
+            "durationMs": 0.06070899963378906,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 79.348375,
+            "durationMs": 0.05266690254211426,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 81.151375,
+            "durationMs": 0.046792030334472656,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 83.015333,
+            "durationMs": 0.06054210662841797,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 85.640958,
+            "durationMs": 0.06470894813537598,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 87.337583,
+            "durationMs": 0.0533750057220459,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 89.020708,
+            "durationMs": 0.04716682434082031,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 90.803167,
+            "durationMs": 0.050624847412109375,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 92.573667,
+            "durationMs": 0.05283308029174805,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 94.294292,
+            "durationMs": 0.06145811080932617,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 95.944708,
+            "durationMs": 0.048583984375,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 97.726042,
+            "durationMs": 0.048332929611206055,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 99.345833,
+            "durationMs": 0.057209014892578125,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 100.896875,
+            "durationMs": 0.05262494087219238,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 102.371875,
+            "durationMs": 0.03383302688598633,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 104.183625,
+            "durationMs": 0.05520796775817871,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 105.747375,
+            "durationMs": 0.06504201889038086,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 107.278417,
+            "durationMs": 0.05637502670288086,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 108.769917,
+            "durationMs": 0.04341602325439453,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 110.470458,
+            "durationMs": 0.04979205131530762,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 112.11325,
+            "durationMs": 0.06612491607666016,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 113.765083,
+            "durationMs": 0.06370902061462402,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 115.449208,
+            "durationMs": 0.05204200744628906,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 117.007917,
+            "durationMs": 0.05720806121826172,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 118.514042,
+            "durationMs": 0.05616593360900879,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 120.07425,
+            "durationMs": 0.051792144775390625,
+            "kind": "minor"
+          }
+        ],
+        "naturalGcDurationMs": {
+          "count": 31,
+          "median": 0.055290937423706055,
+          "p95": 0.07170796394348145,
+          "min": 0.03383302688598633,
+          "max": 0.0731661319732666
+        },
+        "sampledHeapHighWaterDeltaBytes": 4574080,
+        "retainedLiveDeltaBytes": 349888,
+        "retainedDisposedDeltaBytes": 277752,
+        "hash": "323ca5e2b1fc7ffcc2131d498d75a8507ab03ca16bec6c3fbba0e1cf3b4dfd35",
+        "attemptedActions": 0,
+        "roots": 16
+      }
+    },
+    {
+      "round": 0,
+      "size": 16,
+      "workload": "replay-throughput",
+      "variant": "diagnostics",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "replay-throughput",
+        "variant": "diagnostics",
+        "mode": "timing",
+        "samplesMs": [
+          6.884167000000005,
+          5.8019999999999925,
+          5.765208000000001,
+          5.524332999999999,
+          5.74033399999999,
+          6.4902079999999955
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 5.783603999999997,
+          "p95": 6.884167000000005,
+          "min": 5.524332999999999,
+          "max": 6.884167000000005
+        },
+        "hash": "323ca5e2b1fc7ffcc2131d498d75a8507ab03ca16bec6c3fbba0e1cf3b4dfd35",
+        "attemptedActions": 0,
+        "roots": 16
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 16,
+        "workload": "replay-throughput",
+        "variant": "diagnostics",
+        "mode": "memory",
+        "baseline": {
+          "rss": 70483968,
+          "heapTotal": 15613952,
+          "heapUsed": 5095480,
+          "external": 1732683,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 70500352,
+            "heapTotal": 15613952,
+            "heapUsed": 6238312,
+            "external": 1656358,
+            "arrayBuffers": 167415
+          },
+          {
+            "sample": 2,
+            "rss": 70500352,
+            "heapTotal": 15613952,
+            "heapUsed": 7173880,
+            "external": 1681450,
+            "arrayBuffers": 192507
+          },
+          {
+            "sample": 3,
+            "rss": 70500352,
+            "heapTotal": 15613952,
+            "heapUsed": 8163872,
+            "external": 1697736,
+            "arrayBuffers": 208793
+          },
+          {
+            "sample": 4,
+            "rss": 70516736,
+            "heapTotal": 15613952,
+            "heapUsed": 9061904,
+            "external": 1714021,
+            "arrayBuffers": 225078
+          },
+          {
+            "sample": 5,
+            "rss": 70598656,
+            "heapTotal": 15876096,
+            "heapUsed": 9924120,
+            "external": 1730301,
+            "arrayBuffers": 241358
+          },
+          {
+            "sample": 6,
+            "rss": 70647808,
+            "heapTotal": 15876096,
+            "heapUsed": 7298656,
+            "external": 1653030,
+            "arrayBuffers": 164087
+          },
+          {
+            "sample": 7,
+            "rss": 71204864,
+            "heapTotal": 16662528,
+            "heapUsed": 7349664,
+            "external": 1656358,
+            "arrayBuffers": 167415
+          },
+          {
+            "sample": 8,
+            "rss": 71286784,
+            "heapTotal": 17448960,
+            "heapUsed": 6903824,
+            "external": 1638806,
+            "arrayBuffers": 149863
+          }
+        ],
+        "beforeGc": {
+          "rss": 71319552,
+          "heapTotal": 17448960,
+          "heapUsed": 6952456,
+          "external": 1638806,
+          "arrayBuffers": 149863
+        },
+        "retainedLive": {
+          "rss": 71352320,
+          "heapTotal": 15876096,
+          "heapUsed": 5388728,
+          "external": 1638806,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 71237632,
+          "heapTotal": 15351808,
+          "heapUsed": 5376560,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 0.8990000000000009
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 0.8885830000000112
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 0.8827909999999974
+          }
+        ],
+        "naturalGcEvents": [
+          {
+            "startTimeMs": 71.366458,
+            "durationMs": 0.06154203414916992,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 73.455208,
+            "durationMs": 0.07599997520446777,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 75.354916,
+            "durationMs": 0.06275010108947754,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 77.255208,
+            "durationMs": 0.05612516403198242,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 79.188833,
+            "durationMs": 0.049957990646362305,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 81.16225,
+            "durationMs": 0.06891608238220215,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 83.087333,
+            "durationMs": 0.10074996948242188,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 84.884708,
+            "durationMs": 0.059332847595214844,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 86.829416,
+            "durationMs": 0.05254197120666504,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 88.643875,
+            "durationMs": 0.06625008583068848,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 90.510583,
+            "durationMs": 0.07999992370605469,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 92.239416,
+            "durationMs": 0.06145906448364258,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 94.081666,
+            "durationMs": 0.056166887283325195,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 95.840833,
+            "durationMs": 0.11908292770385742,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 97.782125,
+            "durationMs": 0.05441594123840332,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 99.646083,
+            "durationMs": 0.0685420036315918,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 101.392833,
+            "durationMs": 0.05749988555908203,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 103.071125,
+            "durationMs": 0.12150001525878906,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 104.879083,
+            "durationMs": 0.0663750171661377,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 106.475833,
+            "durationMs": 0.0533750057220459,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 108.027083,
+            "durationMs": 0.04312491416931152,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 109.877958,
+            "durationMs": 0.05837512016296387,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 111.449416,
+            "durationMs": 0.0748748779296875,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 113.072041,
+            "durationMs": 0.0739591121673584,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 114.705791,
+            "durationMs": 0.05462479591369629,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 116.464875,
+            "durationMs": 0.04866600036621094,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 118.09625,
+            "durationMs": 0.06170797348022461,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 119.764333,
+            "durationMs": 0.06975007057189941,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 121.3605,
+            "durationMs": 0.0527501106262207,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 123.047416,
+            "durationMs": 0.06424999237060547,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 124.615458,
+            "durationMs": 0.08220815658569336,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 126.135458,
+            "durationMs": 0.09083294868469238,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 127.714291,
+            "durationMs": 0.052124977111816406,
+            "kind": "minor"
+          }
+        ],
+        "naturalGcDurationMs": {
+          "count": 33,
+          "median": 0.06170797348022461,
+          "p95": 0.11908292770385742,
+          "min": 0.04312491416931152,
+          "max": 0.12150001525878906
+        },
+        "sampledHeapHighWaterDeltaBytes": 4828640,
+        "retainedLiveDeltaBytes": 293248,
+        "retainedDisposedDeltaBytes": 281080,
+        "hash": "323ca5e2b1fc7ffcc2131d498d75a8507ab03ca16bec6c3fbba0e1cf3b4dfd35",
+        "attemptedActions": 0,
+        "roots": 16
+      }
+    },
+    {
+      "round": 0,
+      "size": 64,
+      "workload": "transaction-churn",
+      "variant": "reference",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "transaction-churn",
+        "variant": "reference",
+        "mode": "timing",
+        "samplesMs": [
+          0.1335419999999985,
+          0.13358300000000156,
+          0.12120800000000287,
+          0.12741600000000375,
+          0.12095800000000168,
+          0.1214999999999975
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 0.12445800000000062,
+          "p95": 0.13358300000000156,
+          "min": 0.12095800000000168,
+          "max": 0.13358300000000156
+        },
+        "hash": "a2f5296b7d38819893954ca602852a4d8bdb0e38b4b901c851e67661ceede320",
+        "attemptedActions": 32,
+        "roots": null
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "transaction-churn",
+        "variant": "reference",
+        "mode": "memory",
+        "baseline": {
+          "rss": 55754752,
+          "heapTotal": 9060352,
+          "heapUsed": 4194352,
+          "external": 1626626,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 55754752,
+            "heapTotal": 9060352,
+            "heapUsed": 4334728,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 2,
+            "rss": 55754752,
+            "heapTotal": 9060352,
+            "heapUsed": 4472208,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 3,
+            "rss": 55754752,
+            "heapTotal": 9060352,
+            "heapUsed": 4608480,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 4,
+            "rss": 55754752,
+            "heapTotal": 9060352,
+            "heapUsed": 4773832,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 5,
+            "rss": 55754752,
+            "heapTotal": 9060352,
+            "heapUsed": 4910136,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 6,
+            "rss": 55754752,
+            "heapTotal": 9060352,
+            "heapUsed": 5047464,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 7,
+            "rss": 55754752,
+            "heapTotal": 9060352,
+            "heapUsed": 5183816,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 8,
+            "rss": 55754752,
+            "heapTotal": 9060352,
+            "heapUsed": 5320144,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          }
+        ],
+        "beforeGc": {
+          "rss": 55754752,
+          "heapTotal": 9060352,
+          "heapUsed": 5402352,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "retainedLive": {
+          "rss": 55836672,
+          "heapTotal": 9060352,
+          "heapUsed": 4378440,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 59965440,
+          "heapTotal": 12468224,
+          "heapUsed": 4361856,
+          "external": 1647843,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 0.869334000000002
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 0.6484999999999985
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 0.7794999999999987
+          }
+        ],
+        "naturalGcEvents": [],
+        "naturalGcDurationMs": {
+          "count": 0,
+          "median": null,
+          "p95": null,
+          "min": null,
+          "max": null
+        },
+        "sampledHeapHighWaterDeltaBytes": 1125792,
+        "retainedLiveDeltaBytes": 184088,
+        "retainedDisposedDeltaBytes": 167504,
+        "hash": "6cf1745296d10fedb245723d4180dc4f8f9ae0ccb8e26b055e17d05cf6278a61",
+        "attemptedActions": 40,
+        "roots": null
+      }
+    },
+    {
+      "round": 0,
+      "size": 64,
+      "workload": "transaction-churn",
+      "variant": "runtime",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "transaction-churn",
+        "variant": "runtime",
+        "mode": "timing",
+        "samplesMs": [
+          1.6639160000000004,
+          1.5066249999999997,
+          1.483708,
+          1.7170829999999953,
+          1.4460420000000056,
+          1.5009170000000012
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 1.5037710000000004,
+          "p95": 1.7170829999999953,
+          "min": 1.4460420000000056,
+          "max": 1.7170829999999953
+        },
+        "hash": "a2f5296b7d38819893954ca602852a4d8bdb0e38b4b901c851e67661ceede320",
+        "attemptedActions": 32,
+        "roots": null
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "transaction-churn",
+        "variant": "runtime",
+        "mode": "memory",
+        "baseline": {
+          "rss": 61915136,
+          "heapTotal": 14565376,
+          "heapUsed": 4528040,
+          "external": 1626626,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 61964288,
+            "heapTotal": 14565376,
+            "heapUsed": 4999384,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 2,
+            "rss": 62799872,
+            "heapTotal": 14565376,
+            "heapUsed": 5444504,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 3,
+            "rss": 62799872,
+            "heapTotal": 14565376,
+            "heapUsed": 5788432,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 4,
+            "rss": 62799872,
+            "heapTotal": 14565376,
+            "heapUsed": 6931912,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 5,
+            "rss": 62799872,
+            "heapTotal": 14565376,
+            "heapUsed": 7189680,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 6,
+            "rss": 62799872,
+            "heapTotal": 14565376,
+            "heapUsed": 7413680,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 7,
+            "rss": 62799872,
+            "heapTotal": 14565376,
+            "heapUsed": 7638984,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          },
+          {
+            "sample": 8,
+            "rss": 62947328,
+            "heapTotal": 14565376,
+            "heapUsed": 7865832,
+            "external": 1626666,
+            "arrayBuffers": 137723
+          }
+        ],
+        "beforeGc": {
+          "rss": 63045632,
+          "heapTotal": 14565376,
+          "heapUsed": 8005040,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "retainedLive": {
+          "rss": 63078400,
+          "heapTotal": 14565376,
+          "heapUsed": 4787608,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 63520768,
+          "heapTotal": 14565376,
+          "heapUsed": 4682280,
+          "external": 1718919,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 0.8234170000000063
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 0.9025829999999999
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 0.8885410000000036
+          }
+        ],
+        "naturalGcEvents": [
+          {
+            "startTimeMs": 45.768375,
+            "durationMs": 0.09137487411499023,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 47.70975,
+            "durationMs": 0.10533404350280762,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 49.487584,
+            "durationMs": 0.07554101943969727,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 51.200459,
+            "durationMs": 0.0634157657623291,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 52.9795,
+            "durationMs": 0.05295896530151367,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 54.778834,
+            "durationMs": 0.06524991989135742,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 56.447042,
+            "durationMs": 0.04862499237060547,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 58.120459,
+            "durationMs": 0.04824995994567871,
+            "kind": "minor"
+          }
+        ],
+        "naturalGcDurationMs": {
+          "count": 8,
+          "median": 0.06433284282684326,
+          "p95": 0.10533404350280762,
+          "min": 0.04824995994567871,
+          "max": 0.10533404350280762
+        },
+        "sampledHeapHighWaterDeltaBytes": 3337792,
+        "retainedLiveDeltaBytes": 259568,
+        "retainedDisposedDeltaBytes": 154240,
+        "hash": "6cf1745296d10fedb245723d4180dc4f8f9ae0ccb8e26b055e17d05cf6278a61",
+        "attemptedActions": 40,
+        "roots": null
+      }
+    },
+    {
+      "round": 0,
+      "size": 64,
+      "workload": "transaction-churn",
+      "variant": "diagnostics",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "transaction-churn",
+        "variant": "diagnostics",
+        "mode": "timing",
+        "samplesMs": [
+          2.790791999999996,
+          2.4425000000000026,
+          2.4711250000000007,
+          2.738374999999998,
+          2.498584000000001,
+          2.321542000000001
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 2.484854500000001,
+          "p95": 2.790791999999996,
+          "min": 2.321542000000001,
+          "max": 2.790791999999996
+        },
+        "hash": "a2f5296b7d38819893954ca602852a4d8bdb0e38b4b901c851e67661ceede320",
+        "attemptedActions": 32,
+        "roots": null
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "transaction-churn",
+        "variant": "diagnostics",
+        "mode": "memory",
+        "baseline": {
+          "rss": 63127552,
+          "heapTotal": 15089664,
+          "heapUsed": 5008120,
+          "external": 1678277,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 63864832,
+            "heapTotal": 15089664,
+            "heapUsed": 7492480,
+            "external": 1652644,
+            "arrayBuffers": 163701
+          },
+          {
+            "sample": 2,
+            "rss": 64847872,
+            "heapTotal": 15089664,
+            "heapUsed": 6359424,
+            "external": 1644779,
+            "arrayBuffers": 155836
+          },
+          {
+            "sample": 3,
+            "rss": 64962560,
+            "heapTotal": 15089664,
+            "heapUsed": 8908248,
+            "external": 1670266,
+            "arrayBuffers": 181323
+          },
+          {
+            "sample": 4,
+            "rss": 65306624,
+            "heapTotal": 15351808,
+            "heapUsed": 9306960,
+            "external": 1678343,
+            "arrayBuffers": 189400
+          },
+          {
+            "sample": 5,
+            "rss": 65847296,
+            "heapTotal": 16138240,
+            "heapUsed": 8264328,
+            "external": 1652373,
+            "arrayBuffers": 163430
+          },
+          {
+            "sample": 6,
+            "rss": 69582848,
+            "heapTotal": 19808256,
+            "heapUsed": 14487656,
+            "external": 1732253,
+            "arrayBuffers": 243310
+          },
+          {
+            "sample": 7,
+            "rss": 72204288,
+            "heapTotal": 22429696,
+            "heapUsed": 12908512,
+            "external": 1706270,
+            "arrayBuffers": 217327
+          },
+          {
+            "sample": 8,
+            "rss": 74727424,
+            "heapTotal": 24526848,
+            "heapUsed": 11531920,
+            "external": 1680285,
+            "arrayBuffers": 191342
+          }
+        ],
+        "beforeGc": {
+          "rss": 74776576,
+          "heapTotal": 24526848,
+          "heapUsed": 11550896,
+          "external": 1680285,
+          "arrayBuffers": 191342
+        },
+        "retainedLive": {
+          "rss": 74776576,
+          "heapTotal": 24526848,
+          "heapUsed": 5258192,
+          "external": 1680285,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 75825152,
+          "heapTotal": 23478272,
+          "heapUsed": 4771432,
+          "external": 1718919,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 0.9942089999999979
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 0.870750000000001
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 0.7824579999999912
+          }
+        ],
+        "naturalGcEvents": [
+          {
+            "startTimeMs": 50.751875,
+            "durationMs": 0.07587504386901855,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 52.734166,
+            "durationMs": 0.22287487983703613,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 54.889791,
+            "durationMs": 0.14429187774658203,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 56.882916,
+            "durationMs": 0.11341691017150879,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 58.839333,
+            "durationMs": 0.12679219245910645,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 60.665666,
+            "durationMs": 0.11995911598205566,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 62.592625,
+            "durationMs": 0.1480410099029541,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 64.371916,
+            "durationMs": 0.11504197120666504,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 68.238833,
+            "durationMs": 0.1653749942779541,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 71.9415,
+            "durationMs": 0.14770793914794922,
+            "kind": "minor"
+          }
+        ],
+        "naturalGcDurationMs": {
+          "count": 10,
+          "median": 0.13554203510284424,
+          "p95": 0.22287487983703613,
+          "min": 0.07587504386901855,
+          "max": 0.22287487983703613
+        },
+        "sampledHeapHighWaterDeltaBytes": 9479536,
+        "retainedLiveDeltaBytes": 250072,
+        "retainedDisposedDeltaBytes": -236688,
+        "hash": "6cf1745296d10fedb245723d4180dc4f8f9ae0ccb8e26b055e17d05cf6278a61",
+        "attemptedActions": 40,
+        "roots": null
+      }
+    },
+    {
+      "round": 0,
+      "size": 64,
+      "workload": "replay-throughput",
+      "variant": "reference",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "replay-throughput",
+        "variant": "reference",
+        "mode": "timing",
+        "samplesMs": [
+          20.251583999999994,
+          17.116124999999997,
+          18.570291999999995,
+          17.006042000000008,
+          17.45304200000001,
+          16.43829199999999
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 17.284583500000004,
+          "p95": 20.251583999999994,
+          "min": 16.43829199999999,
+          "max": 20.251583999999994
+        },
+        "hash": "5ddf4ed3fc59d1f1c44513fc750ec386afd38d10c2166df5ee5832c5e06f771d",
+        "attemptedActions": 0,
+        "roots": 16
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "replay-throughput",
+        "variant": "reference",
+        "mode": "memory",
+        "baseline": {
+          "rss": 70696960,
+          "heapTotal": 15351808,
+          "heapUsed": 5116880,
+          "external": 1770382,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 81690624,
+            "heapTotal": 23740416,
+            "heapUsed": 7315824,
+            "external": 1708893,
+            "arrayBuffers": 219950
+          },
+          {
+            "sample": 2,
+            "rss": 81723392,
+            "heapTotal": 23740416,
+            "heapUsed": 8039568,
+            "external": 1729519,
+            "arrayBuffers": 240576
+          },
+          {
+            "sample": 3,
+            "rss": 84852736,
+            "heapTotal": 24264704,
+            "heapUsed": 9225800,
+            "external": 1760219,
+            "arrayBuffers": 271276
+          },
+          {
+            "sample": 4,
+            "rss": 84852736,
+            "heapTotal": 24264704,
+            "heapUsed": 8806344,
+            "external": 1760420,
+            "arrayBuffers": 271477
+          },
+          {
+            "sample": 5,
+            "rss": 84934656,
+            "heapTotal": 24264704,
+            "heapUsed": 14157304,
+            "external": 1954880,
+            "arrayBuffers": 465937
+          },
+          {
+            "sample": 6,
+            "rss": 85999616,
+            "heapTotal": 24264704,
+            "heapUsed": 7185928,
+            "external": 1668191,
+            "arrayBuffers": 179248
+          },
+          {
+            "sample": 7,
+            "rss": 86081536,
+            "heapTotal": 24264704,
+            "heapUsed": 7293296,
+            "external": 1668191,
+            "arrayBuffers": 179248
+          },
+          {
+            "sample": 8,
+            "rss": 86130688,
+            "heapTotal": 24264704,
+            "heapUsed": 6382272,
+            "external": 2027105,
+            "arrayBuffers": 148548
+          }
+        ],
+        "beforeGc": {
+          "rss": 86147072,
+          "heapTotal": 24264704,
+          "heapUsed": 6440248,
+          "external": 2027105,
+          "arrayBuffers": 148548
+        },
+        "retainedLive": {
+          "rss": 86147072,
+          "heapTotal": 23740416,
+          "heapUsed": 5055408,
+          "external": 1637491,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 86147072,
+          "heapTotal": 23740416,
+          "heapUsed": 5050512,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 1.0954590000000053
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 0.8269999999999982
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 0.6786249999999825
+          }
+        ],
+        "naturalGcEvents": [
+          {
+            "startTimeMs": 108.812417,
+            "durationMs": 0.07258296012878418,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 112.894458,
+            "durationMs": 0.0911250114440918,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 116.396792,
+            "durationMs": 0.08608293533325195,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 119.529708,
+            "durationMs": 0.06874990463256836,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 122.677792,
+            "durationMs": 0.02408289909362793,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 125.878458,
+            "durationMs": 0.04250001907348633,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 129.207708,
+            "durationMs": 0.0898749828338623,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 132.01375,
+            "durationMs": 0.08212494850158691,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 135.013083,
+            "durationMs": 0.04437518119812012,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 138.103917,
+            "durationMs": 0.0728750228881836,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 140.84575,
+            "durationMs": 0.04879188537597656,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 143.652208,
+            "durationMs": 0.026000022888183594,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 146.5975,
+            "durationMs": 0.056999921798706055,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 149.429917,
+            "durationMs": 0.12987494468688965,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 152.544667,
+            "durationMs": 0.10716605186462402,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 155.884208,
+            "durationMs": 0.051541805267333984,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 158.962667,
+            "durationMs": 0.07433319091796875,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 162.113792,
+            "durationMs": 0.06037497520446777,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 164.994,
+            "durationMs": 0.05612492561340332,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 167.969042,
+            "durationMs": 0.07150006294250488,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 170.659875,
+            "durationMs": 0.0581669807434082,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 173.57475,
+            "durationMs": 0.026417016983032227,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 176.539375,
+            "durationMs": 0.08275008201599121,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 179.33475,
+            "durationMs": 0.10474991798400879,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 182.517333,
+            "durationMs": 0.05124998092651367,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 185.397833,
+            "durationMs": 0.08879208564758301,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 188.500458,
+            "durationMs": 0.10537505149841309,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 191.426042,
+            "durationMs": 0.09025001525878906,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 194.73125,
+            "durationMs": 0.11812496185302734,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 197.917333,
+            "durationMs": 0.06395888328552246,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 201.293667,
+            "durationMs": 0.0728750228881836,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 204.65,
+            "durationMs": 0.07074999809265137,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 207.811083,
+            "durationMs": 0.06041693687438965,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 211.037792,
+            "durationMs": 0.05833292007446289,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 214.108458,
+            "durationMs": 0.07362508773803711,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 217.402,
+            "durationMs": 0.18029189109802246,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 220.803417,
+            "durationMs": 0.06999993324279785,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 224.055625,
+            "durationMs": 0.0696249008178711,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 227.250875,
+            "durationMs": 0.08162498474121094,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 230.393333,
+            "durationMs": 0.04683399200439453,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 233.788542,
+            "durationMs": 0.07329106330871582,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 236.991667,
+            "durationMs": 0.06854104995727539,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 240.057083,
+            "durationMs": 0.06316685676574707,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 243.1175,
+            "durationMs": 0.05279207229614258,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 246.233333,
+            "durationMs": 0.03258395195007324,
+            "kind": "minor"
+          }
+        ],
+        "naturalGcDurationMs": {
+          "count": 45,
+          "median": 0.06999993324279785,
+          "p95": 0.11812496185302734,
+          "min": 0.02408289909362793,
+          "max": 0.18029189109802246
+        },
+        "sampledHeapHighWaterDeltaBytes": 9040424,
+        "retainedLiveDeltaBytes": -61472,
+        "retainedDisposedDeltaBytes": -66368,
+        "hash": "5ddf4ed3fc59d1f1c44513fc750ec386afd38d10c2166df5ee5832c5e06f771d",
+        "attemptedActions": 0,
+        "roots": 16
+      }
+    },
+    {
+      "round": 0,
+      "size": 64,
+      "workload": "replay-throughput",
+      "variant": "runtime",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "replay-throughput",
+        "variant": "runtime",
+        "mode": "timing",
+        "samplesMs": [
+          16.223083000000003,
+          16.344583000000014,
+          16.274583000000007,
+          15.360749999999996,
+          15.368042000000003,
+          15.274124999999998
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 15.795562500000003,
+          "p95": 16.344583000000014,
+          "min": 15.274124999999998,
+          "max": 16.344583000000014
+        },
+        "hash": "5ddf4ed3fc59d1f1c44513fc750ec386afd38d10c2166df5ee5832c5e06f771d",
+        "attemptedActions": 0,
+        "roots": 16
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "replay-throughput",
+        "variant": "runtime",
+        "mode": "memory",
+        "baseline": {
+          "rss": 71286784,
+          "heapTotal": 15876096,
+          "heapUsed": 5119696,
+          "external": 1760699,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 71876608,
+            "heapTotal": 15876096,
+            "heapUsed": 7374992,
+            "external": 1688195,
+            "arrayBuffers": 199252
+          },
+          {
+            "sample": 2,
+            "rss": 80166912,
+            "heapTotal": 24264704,
+            "heapUsed": 7686664,
+            "external": 1718895,
+            "arrayBuffers": 229952
+          },
+          {
+            "sample": 3,
+            "rss": 80986112,
+            "heapTotal": 24264704,
+            "heapUsed": 11070744,
+            "external": 1803505,
+            "arrayBuffers": 314562
+          },
+          {
+            "sample": 4,
+            "rss": 81018880,
+            "heapTotal": 24264704,
+            "heapUsed": 14096400,
+            "external": 1847311,
+            "arrayBuffers": 358368
+          },
+          {
+            "sample": 5,
+            "rss": 82116608,
+            "heapTotal": 24264704,
+            "heapUsed": 8107312,
+            "external": 1718895,
+            "arrayBuffers": 229952
+          },
+          {
+            "sample": 6,
+            "rss": 84459520,
+            "heapTotal": 24526848,
+            "heapUsed": 8429520,
+            "external": 1678193,
+            "arrayBuffers": 189250
+          },
+          {
+            "sample": 7,
+            "rss": 84525056,
+            "heapTotal": 24526848,
+            "heapUsed": 7082360,
+            "external": 1667990,
+            "arrayBuffers": 179047
+          },
+          {
+            "sample": 8,
+            "rss": 84656128,
+            "heapTotal": 25051136,
+            "heapUsed": 14446552,
+            "external": 1859377,
+            "arrayBuffers": 370434
+          }
+        ],
+        "beforeGc": {
+          "rss": 84688896,
+          "heapTotal": 25051136,
+          "heapUsed": 7201512,
+          "external": 1859377,
+          "arrayBuffers": 137723
+        },
+        "retainedLive": {
+          "rss": 84557824,
+          "heapTotal": 24002560,
+          "heapUsed": 5372768,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 84557824,
+          "heapTotal": 23478272,
+          "heapUsed": 5339544,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 0.9487079999999963
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 0.9238339999999994
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 0.8225419999999986
+          }
+        ],
+        "naturalGcEvents": [
+          {
+            "startTimeMs": 103.41425,
+            "durationMs": 0.057582855224609375,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 105.42575,
+            "durationMs": 0.06262493133544922,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 107.367041,
+            "durationMs": 0.08962488174438477,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 109.089166,
+            "durationMs": 0.06037497520446777,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 110.745583,
+            "durationMs": 0.04862499237060547,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 112.441541,
+            "durationMs": 0.03579211235046387,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 114.023375,
+            "durationMs": 0.04187512397766113,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 115.656333,
+            "durationMs": 0.03720808029174805,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 117.296708,
+            "durationMs": 0.041916847229003906,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 118.99075,
+            "durationMs": 0.04862499237060547,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 120.590666,
+            "durationMs": 0.04695892333984375,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 122.51975,
+            "durationMs": 0.07349991798400879,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 126.428583,
+            "durationMs": 0.061749935150146484,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 129.959,
+            "durationMs": 0.07741594314575195,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 132.918541,
+            "durationMs": 0.05116701126098633,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 135.846208,
+            "durationMs": 0.04900002479553223,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 138.791375,
+            "durationMs": 0.09554100036621094,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 142.365875,
+            "durationMs": 0.07500004768371582,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 145.333541,
+            "durationMs": 0.07566690444946289,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 148.555958,
+            "durationMs": 0.06345796585083008,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 151.59825,
+            "durationMs": 0.04674983024597168,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 154.443833,
+            "durationMs": 0.04341697692871094,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 157.635291,
+            "durationMs": 0.07620906829833984,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 160.792958,
+            "durationMs": 0.06975007057189941,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 163.700875,
+            "durationMs": 0.06487512588500977,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 166.528125,
+            "durationMs": 0.04212498664855957,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 169.398041,
+            "durationMs": 0.03891706466674805,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 172.481,
+            "durationMs": 0.03879117965698242,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 175.56,
+            "durationMs": 0.06625008583068848,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 178.483291,
+            "durationMs": 0.08237481117248535,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 181.372625,
+            "durationMs": 0.07508301734924316,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 184.378166,
+            "durationMs": 0.05170917510986328,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 187.702291,
+            "durationMs": 0.0963749885559082,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 191.39225,
+            "durationMs": 0.0898749828338623,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 194.474333,
+            "durationMs": 0.06379199028015137,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 197.657208,
+            "durationMs": 0.11233305931091309,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 200.868041,
+            "durationMs": 0.08279204368591309,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 204.024541,
+            "durationMs": 0.07954192161560059,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 207.411416,
+            "durationMs": 0.07341694831848145,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 210.531041,
+            "durationMs": 0.07674980163574219,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 213.472041,
+            "durationMs": 0.06166696548461914,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 216.612375,
+            "durationMs": 0.04483294486999512,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 219.659,
+            "durationMs": 0.06804084777832031,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 222.887958,
+            "durationMs": 0.08437490463256836,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 225.904416,
+            "durationMs": 0.06783390045166016,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 228.898833,
+            "durationMs": 0.08491706848144531,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 232.005083,
+            "durationMs": 0.06208300590515137,
+            "kind": "minor"
+          }
+        ],
+        "naturalGcDurationMs": {
+          "count": 47,
+          "median": 0.06379199028015137,
+          "p95": 0.09554100036621094,
+          "min": 0.03579211235046387,
+          "max": 0.11233305931091309
+        },
+        "sampledHeapHighWaterDeltaBytes": 9326856,
+        "retainedLiveDeltaBytes": 253072,
+        "retainedDisposedDeltaBytes": 219848,
+        "hash": "5ddf4ed3fc59d1f1c44513fc750ec386afd38d10c2166df5ee5832c5e06f771d",
+        "attemptedActions": 0,
+        "roots": 16
+      }
+    },
+    {
+      "round": 0,
+      "size": 64,
+      "workload": "replay-throughput",
+      "variant": "diagnostics",
+      "timing": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "replay-throughput",
+        "variant": "diagnostics",
+        "mode": "timing",
+        "samplesMs": [
+          17.15516699999999,
+          15.845040999999995,
+          17.883291000000014,
+          15.804291000000006,
+          15.833541999999994,
+          15.46875
+        ],
+        "timingMs": {
+          "count": 6,
+          "median": 15.839291499999995,
+          "p95": 17.883291000000014,
+          "min": 15.46875,
+          "max": 17.883291000000014
+        },
+        "hash": "5ddf4ed3fc59d1f1c44513fc750ec386afd38d10c2166df5ee5832c5e06f771d",
+        "attemptedActions": 0,
+        "roots": 16
+      },
+      "memory": {
+        "sizes": [
+          16,
+          64
+        ],
+        "warmup": 2,
+        "samples": 6,
+        "rounds": 1,
+        "batch": 4,
+        "replayRoots": 16,
+        "memorySamples": 8,
+        "round": 0,
+        "size": 64,
+        "workload": "replay-throughput",
+        "variant": "diagnostics",
+        "mode": "memory",
+        "baseline": {
+          "rss": 72204288,
+          "heapTotal": 16400384,
+          "heapUsed": 5186536,
+          "external": 1667950,
+          "arrayBuffers": 137723
+        },
+        "heapSamples": [
+          {
+            "sample": 1,
+            "rss": 81084416,
+            "heapTotal": 24788992,
+            "heapUsed": 7859232,
+            "external": 1718895,
+            "arrayBuffers": 229952
+          },
+          {
+            "sample": 2,
+            "rss": 81215488,
+            "heapTotal": 24788992,
+            "heapUsed": 13013104,
+            "external": 1851157,
+            "arrayBuffers": 362214
+          },
+          {
+            "sample": 3,
+            "rss": 81903616,
+            "heapTotal": 24788992,
+            "heapUsed": 9003312,
+            "external": 1750217,
+            "arrayBuffers": 261274
+          },
+          {
+            "sample": 4,
+            "rss": 81920000,
+            "heapTotal": 24788992,
+            "heapUsed": 12812392,
+            "external": 1808373,
+            "arrayBuffers": 319430
+          },
+          {
+            "sample": 5,
+            "rss": 83296256,
+            "heapTotal": 24788992,
+            "heapUsed": 7361800,
+            "external": 1667990,
+            "arrayBuffers": 179047
+          },
+          {
+            "sample": 6,
+            "rss": 85295104,
+            "heapTotal": 25313280,
+            "heapUsed": 7880744,
+            "external": 1667990,
+            "arrayBuffers": 179047
+          },
+          {
+            "sample": 7,
+            "rss": 85475328,
+            "heapTotal": 25313280,
+            "heapUsed": 7817592,
+            "external": 1667990,
+            "arrayBuffers": 179047
+          },
+          {
+            "sample": 8,
+            "rss": 85704704,
+            "heapTotal": 25313280,
+            "heapUsed": 7699280,
+            "external": 1896625,
+            "arrayBuffers": 148347
+          }
+        ],
+        "beforeGc": {
+          "rss": 85721088,
+          "heapTotal": 25313280,
+          "heapUsed": 7758216,
+          "external": 1896625,
+          "arrayBuffers": 148347
+        },
+        "retainedLive": {
+          "rss": 85721088,
+          "heapTotal": 25313280,
+          "heapUsed": 5455624,
+          "external": 1637290,
+          "arrayBuffers": 137723
+        },
+        "retainedDisposed": {
+          "rss": 85426176,
+          "heapTotal": 23216128,
+          "heapUsed": 5410416,
+          "external": 1626666,
+          "arrayBuffers": 137723
+        },
+        "forced": [
+          {
+            "label": "before-work",
+            "durationMs": 0.8956670000000031
+          },
+          {
+            "label": "after-work-live-subject",
+            "durationMs": 0.8262499999999875
+          },
+          {
+            "label": "after-disposal",
+            "durationMs": 1.1702919999999892
+          }
+        ],
+        "naturalGcEvents": [
+          {
+            "startTimeMs": 104.866208,
+            "durationMs": 0.057250022888183594,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 106.972333,
+            "durationMs": 0.07491707801818848,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 108.858,
+            "durationMs": 0.12816691398620605,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 110.733375,
+            "durationMs": 0.0635828971862793,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 112.456333,
+            "durationMs": 0.05008411407470703,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 116.300458,
+            "durationMs": 0.05416703224182129,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 119.955833,
+            "durationMs": 0.05520915985107422,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 123.395583,
+            "durationMs": 0.05845904350280762,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 127.223083,
+            "durationMs": 0.050750017166137695,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 130.456917,
+            "durationMs": 0.0774998664855957,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 133.728958,
+            "durationMs": 0.06937503814697266,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 136.800583,
+            "durationMs": 0.057084083557128906,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 139.924167,
+            "durationMs": 0.05425000190734863,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 143.574667,
+            "durationMs": 0.1226661205291748,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 146.945042,
+            "durationMs": 0.11083316802978516,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 150.156875,
+            "durationMs": 0.08854222297668457,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 153.377708,
+            "durationMs": 0.08954215049743652,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 156.314667,
+            "durationMs": 0.07145810127258301,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 159.182417,
+            "durationMs": 0.06345820426940918,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 162.460667,
+            "durationMs": 0.053208112716674805,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 165.479958,
+            "durationMs": 0.058583974838256836,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 168.251417,
+            "durationMs": 0.06508302688598633,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 171.202458,
+            "durationMs": 0.06429219245910645,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 174.266708,
+            "durationMs": 0.05762505531311035,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 177.260458,
+            "durationMs": 0.061875104904174805,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 180.354458,
+            "durationMs": 0.07845902442932129,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 183.311917,
+            "durationMs": 0.10237503051757812,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 186.237875,
+            "durationMs": 0.06504201889038086,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 189.404917,
+            "durationMs": 0.061415910720825195,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 192.532583,
+            "durationMs": 0.0991671085357666,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 196.202125,
+            "durationMs": 0.09441685676574707,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 199.374125,
+            "durationMs": 0.09241700172424316,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 202.475417,
+            "durationMs": 0.32050013542175293,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 206.235375,
+            "durationMs": 0.0533750057220459,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 209.314875,
+            "durationMs": 0.07025003433227539,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 212.781875,
+            "durationMs": 0.08862519264221191,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 215.870917,
+            "durationMs": 0.0625,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 219.050208,
+            "durationMs": 0.07145881652832031,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 222.000083,
+            "durationMs": 0.04583406448364258,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 225.084,
+            "durationMs": 0.08154177665710449,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 228.432333,
+            "durationMs": 0.09904193878173828,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 231.465958,
+            "durationMs": 0.06283378601074219,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 234.519667,
+            "durationMs": 0.06262516975402832,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 237.635125,
+            "durationMs": 0.04675006866455078,
+            "kind": "minor"
+          },
+          {
+            "startTimeMs": 240.729083,
+            "durationMs": 0.048874855041503906,
+            "kind": "minor"
+          }
+        ],
+        "naturalGcDurationMs": {
+          "count": 45,
+          "median": 0.06429219245910645,
+          "p95": 0.1226661205291748,
+          "min": 0.04583406448364258,
+          "max": 0.32050013542175293
+        },
+        "sampledHeapHighWaterDeltaBytes": 7826568,
+        "retainedLiveDeltaBytes": 269088,
+        "retainedDisposedDeltaBytes": 223880,
+        "hash": "5ddf4ed3fc59d1f1c44513fc750ec386afd38d10c2166df5ee5832c5e06f771d",
+        "attemptedActions": 0,
+        "roots": 16
+      }
+    }
+  ]
+}

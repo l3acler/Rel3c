@@ -6,6 +6,7 @@ application lifecycle, read-only state and synchronous named actions, exact obse
 B.9–B.11 refine the public declarations and root auditor walkthrough. C.1–C.10 add versioned checkpoints, controlled services, fixed ticks, semantic inputs, optional display interpolation, bounded recording and isolated replay.
 D.1/D.2 add retained history, declared reversible undo/redo and explicit live branching.
 D.3/D.4 add optional bounded diagnostics and a separate development inspector.
+D.5/D.6 add reproducible Node/Chrome workloads and a measured technical report.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -29,6 +30,7 @@ Import from `src/index.js`; applications do not need runtime internals.
 | Error reporting       | Readable framework error codes and a synchronous application error hook                        |
 | TypeScript            | Inferred action names/payloads and read-only state declarations                                |
 | Diagnostics/inspector | Optional bounded transitions, dependency/work details, explicit refresh/export and keyboard controls |
+| Benchmark tooling | Seeded Node/Chrome comparisons with raw timings, hashes, native writes and separate memory observations |
 | Bounded recording     | Opt-in executed roots/traces, versioned export/import and usable recent/session baselines     |
 | Retained history      | Keyframe seeking, declared reversible root groups, undo/redo and live branching |
 | Isolated replay       | Whole-root step/run, checkpoint/trace comparison, first divergence and live-source suppression |
@@ -1648,7 +1650,8 @@ simulation controls, hashes or recording bytes. DOM-write counts include actual
 renderer text/attribute/style/form-property and tree operations, including detached
 construction; selection restoration/listener operations/allocation/browser internals
 are excluded. Timing is not a performance claim; owned-resource counts are not a
-heap/GC proof. D.5/D.6 benchmarks and overhead qualification remain planned.
+heap/GC proof. The [benchmark report](docs/reports/task-D.5-D.6-performance.md)
+separately measures capture overhead for a specified retention policy.
 
 `diagnostics.snapshot()` returns frozen nonreactive completed summaries and current
 counts; `diagnostics.export()` returns their JSON. `exportRecording()` delegates to
@@ -1675,6 +1678,62 @@ roots are reflected by current resources/dependencies, not separate transitions.
 Run `/examples/inspector/` after `npm run dev`. See [API](docs/api/inspector.md),
 [ADR 0022](docs/adr/0022-bounded-diagnostics-inspector.md) and
 [verification](docs/reports/task-D.3-D.4-diagnostics-inspector.md).
+
+## Reproducible benchmarks
+
+Run the development workloads from the root, with other tests/benchmarks stopped:
+
+```sh
+npm run test:benchmarks
+npm run bench:tooling:node
+npm run bench:tooling:browser
+```
+
+These commands measure the public runtime without changing application APIs or
+adding dependencies. The browser command requires installed Chrome; optionally
+set `MINI_FRAMEWORK_CHROME_PATH`. Each runner accepts only `-- --quick` for harness
+verification. Other arguments fail before measurement. Quick runs use smaller
+fixtures and are not performance baselines. Startup remains `npm run dev`.
+
+Full runs use sizes 64/256, eight warmups, 30 measured samples and three rotated
+trials per case. Seven browser workloads cover independent bindings, eight-action
+bursts, keyed edits, moving elements, mount/unmount, transaction churn and replay.
+Node covers headless churn/replay in fresh children. The fixed fixture seed is
+`0x5eed1234`; action bodies, aliases, versions and checkpoint hashes must agree.
+Replay imports and verifies 128 flat action roots per sample; churn attempts eight
+transactions, including deterministic rollback. See the
+[workload specification](benchmarks/runtime/README.md) for exact boundaries.
+
+Compare the runtime with diagnostics off, the same runtime with
+`createDiagnostics(app,{maxEntries:8,maxBytes:65536})`, and a benchmark-only native
+cloning/full-view scanning reference. The reference preserves this fixture's
+state, keyed identity and visible output, but omits general runtime guards,
+reactive subscriptions and full replay trace validation. It is a limited work
+comparison. Capture overhead depends on the stated retention policy; the inspector
+panel is not mounted during these measurements.
+
+Browser timing measures synchronous work in native animation-frame callbacks,
+with separate dispatch and explicit flush/mount/dispose regions. It does not
+measure paint or input latency. Separate native probes verify text/tree/style
+writes, coalescing and keyed identity. Normal final checks and disposal are outside
+timing; replay verification/disposal and mount-cycle disposal are inside their
+samples. Sources changing during a campaign or mismatched hashes/UI/cleanup abort
+the run. Browser/server/profile cleanup runs even on failure.
+
+Memory profiles run separately from timing. Node reports natural GC events and
+labeled forced collections. Chrome reports CDP heap/DOM/listener samples and
+forced-collection command round trips, not pause durations; natural browser GC
+pauses and total allocated bytes are unavailable. Samples include harness/JIT
+overhead and do not prove leak freedom. All framework-owned resources must be zero
+after disposal even when the browser still reports detached nodes.
+
+Unique JSON files under `benchmarks/results/` retain configuration, environment,
+source fingerprints, raw samples, median/p95, trial medians, hashes and memory
+observations. Existing results are not overwritten. The
+[technical report](docs/reports/task-D.5-D.6-performance.md) states measured costs,
+strengths and provisional regression alerts; it makes no universal speed or stable
+latency promise. D.7 product acceptance/release review remains next. See also the
+[command reference](docs/api/benchmarks.md).
 
 ## State and named actions
 

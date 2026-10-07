@@ -333,6 +333,18 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
   })()`);
   if(!inspectorExample)throw Error('Public diagnostic inspector example failed');
   tests.results.push({name:'D.4 native Enter activates the public inspector; burst attribution, explicit full export and cleanup pass',passed:true});tests.passed++;
+  const benchmarkPage=await open('benchmarks/runtime/');
+  await benchmarkPage.waitFor('typeof window.probeRuntimeBenchmark === "function"');
+  const benchmarkSmoke=await benchmarkPage.evaluate(`(()=>{
+    const workloads=['independent-bindings','pre-frame-burst','keyed-list-edits','moving-elements','mount-unmount','transaction-churn','replay-throughput'];
+    for(const workload of workloads){
+      const hashes=['reference','runtime','diagnostics'].map(variant=>window.probeRuntimeBenchmark({size:8,workload,variant,batch:2,replayRoots:8}).hash);
+      if(new Set(hashes).size!==1)throw Error('Benchmark smoke hash mismatch: '+workload);
+    }
+    return document.getElementById('fixture').childNodes.length===0;
+  })()`);
+  if(!benchmarkSmoke)throw Error('D.5 native benchmark probes leaked DOM');
+  tests.results.push({name:'D.5 seven seeded benchmark fixtures match three-variant hashes, native writes/key identity and cleanup',passed:true});tests.passed++;
   const paths = ['src/index.js'  , 'src/index.d.ts', 'src/runtime/app.js', 'src/runtime/errors.js', 'src/runtime/records.js',
     'src/runtime/state/initial-state.js', 'src/runtime/state/transactions.js', 'src/runtime/state/data.js',
     'src/runtime/state/draft.js', 'src/runtime/state/graph.js', 'src/runtime/reactivity/tracking.js', 'src/runtime/dom/bindings.js', 'src/runtime/dom/nodes.js', 'src/runtime/dom/properties.js', 'src/runtime/dom/renderer.js', 'src/runtime/dom/queue.js', 'src/runtime/dom/events.js', 'src/runtime/diagnostics.js', 'src/runtime/actions/schema.js', 'src/runtime/actions/dispatch.js', 'examples/basic/main.js', 'examples/basic/index.html',
@@ -341,6 +353,7 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
     'tests/core-slice.test.js', 'examples/core/app.js', 'examples/core/main.js', 'examples/core/index.html',
     'src/runtime/dom/inputs.js', 'tests/events-input.test.js', 'tests/browser/events-input.js', 'examples/inputs/main.js', 'examples/inputs/index.html', 'src/runtime/scheduler.js', 'src/runtime/routing/router.js', 'tests/scheduler.test.js', 'tests/router.test.js', 'tests/helpers/fake-browser.js', 'tests/browser/routing-scheduler.js', 'examples/routes/main.js', 'examples/routes/index.html', 'src/runtime/persistence/codec.js', 'src/runtime/persistence/locations.js', 'tests/persistence-codec.test.js', 'tests/persistence.test.js', 'tests/browser/persistence.js', 'examples/persistence/main.js', 'examples/persistence/index.html'];
   paths.push('src/runtime/inspector/instrumentation.js','src/runtime/inspector/panel.js','tests/inspector.test.js','tests/browser/inspector.js','examples/inspector/main.js','examples/inspector/index.html');
+  paths.push('benchmarks/runtime/workloads.js','benchmarks/runtime/browser.js','benchmarks/runtime/index.html','benchmarks/runtime/workloads.test.js');
   paths.push('scripts/check-auditor-browser.js', 'examples/auditor/main.js', 'examples/auditor/index.html', 'tests/public-contract.test.js');
   paths.push('src/runtime/determinism/controls.js', 'src/runtime/serialization/graph.js',
     'src/runtime/serialization/checkpoint.js', 'src/runtime/serialization/sha256.js',

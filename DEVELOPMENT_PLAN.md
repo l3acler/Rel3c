@@ -1,12 +1,12 @@
 # Framework development plan
 
-**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C.1–C.10 are implemented and fixture-qualified. D.1/D.2 are implemented and verified. Remaining Phase D work is planned.
+**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C.1–C.10 are implemented and fixture-qualified. D.1–D.6 are implemented and verified. D.7 product acceptance/release review remains next.
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.20, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.22, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** D.3/D.4 optional instrumentation and development inspector. Qualification passed; next D.5/D.6 benchmarks and report. Broad native qualification remains open.
+**Current milestone:** D.5/D.6 reproducible benchmarks and technical report complete. Next: D.7 product acceptance/release review. Broad native qualification remains open.
 
 ## 1. Purpose and scope
 
@@ -196,8 +196,8 @@ Deliver the tick runtime, controlled services, input adapters, optional interpol
 - [x] **D.2 — Implement seek and undo/redo.** Dependencies: D.1. Restore the nearest preceding keyframe and replay to the requested retained transition. Keep live input/effects paused during inspection and restore clock/PRNG/input bookkeeping for continued execution. Acceptance: retained seeks match hashes within the configured replay interval plus restoration cost; undo/redo and branching are predictable; expired states fail clearly; resumed actions remain deterministic.
 - [x] **D.3 — Add development instrumentation.** Dependencies: C.10. Expose tick/version/action/input origins, payloads, state changes, dirty dependencies, binding evaluations, DOM write/listener counts, simulation/render duration, and frame timing. Bound diagnostic storage and make instrumentation optional. Acceptance: metrics describe actual work, do not change action ordering/hashes, and do not retain disposed resources or grow indefinitely.
 - [x] **D.4 — Build the development inspector.** Dependencies: D.2, D.3. Display transition selection, inputs, state changes, dependency-to-binding relationships, scheduling, resource counts, and performance. Show included recording values and explicit export controls. Acceptance: a developer can select a transition and explain its inputs and affected bindings; inspector cleanup works and its controls are keyboard accessible.
-- [ ] **D.5 — Establish reproducible benchmark workloads.** Dependencies: D.3. Measure independent bindings, pre-frame bursts, keyed-list edits, moving elements, repeated mount/unmount, transaction churn, and replay throughput. Preserve equivalent-work reference baselines and deterministic workload seeds. Acceptance: scripts record environment, browser/version, machine, warmup, run count, workload source, raw samples, and checkpoint results.
-- [ ] **D.6 — Measure and publish the technical report.** Dependencies: D.4, D.5. Report DOM writes, listeners, median/p95 frame scripting and update time, memory/GC observations, replay throughput, and hash correctness. Compare instrumented/uninstrumented runs where relevant. Choose numeric regression budgets only after measured baselines. Acceptance: every performance claim links to reproducible evidence; unavailable metrics, variance, strengths, and limitations are explicit.
+- [x] **D.5 — Establish reproducible benchmark workloads.** Dependencies: D.3. Measure independent bindings, pre-frame bursts, keyed-list edits, moving elements, repeated mount/unmount, transaction churn, and replay throughput. Preserve equivalent-work reference baselines and deterministic workload seeds. Acceptance: scripts record environment, browser/version, machine, warmup, run count, workload source, raw samples, and checkpoint results.
+- [x] **D.6 — Measure and publish the technical report.** Dependencies: D.4, D.5. Report DOM writes, listeners, median/p95 frame scripting and update time, memory/GC observations, replay throughput, and hash correctness. Compare instrumented/uninstrumented runs where relevant. Choose numeric regression budgets only after measured baselines. Acceptance: every performance claim links to reproducible evidence; unavailable metrics, variance, strengths, and limitations are explicit.
 - [ ] **D.7 — Complete product acceptance and release review.** Dependencies: D.6. Re-run all feature gates and the clean-checkout walkthrough. Review PRD coverage, API/docs/declarations, migrations, dependency disclosure, browser/input support, and resource cleanup. Acceptance: all required features have passing evidence; release notes list completed phases and remaining limitations without presenting future work as shipped.
 
 ### Exit gate and artifacts
@@ -280,9 +280,9 @@ Test tooling can supply a runner, browser automation, assertions, and serving. I
 
 ### Planned command contract
 
-The table below is the intended command contract. Root startup, smoke, spike tests/measurements, and type checks now exist; later browser/replay/final benchmark commands remain planned. The README publishes actual commands and prerequisites as they are implemented.
+Root startup, runtime/spike/benchmark correctness tests, browser fixtures, type checks and reproducible benchmark commands are implemented. Recording/replay correctness is included in `npm test`. The README publishes commands and prerequisites; there is no generic `bench` or separate `test:replay` alias.
 
-| Planned command | Purpose | Introduced |
+| Implemented command | Purpose | Introduced |
 | --- | --- | --- |
 | `npm run dev` | Start the root browser example and report its URL | 0 |
 | `npm run test:spikes` | Run identical transaction prototype fixtures | 0 |
@@ -290,8 +290,8 @@ The table below is the intended command contract. Root startup, smoke, spike tes
 | `npm test` | Run focused runtime correctness tests | A |
 | `npm run test:browser` | Run public-API browser integration fixtures | A/B |
 | `npm run test:types` | Check positive/negative declaration fixtures | 0/B |
-| `npm run test:replay` | Run determinism, input, retention, divergence fixtures | C |
-| `npm run bench` | Run documented final benchmark workloads | D |
+| `npm test` | Includes determinism, input, retention and divergence fixtures | C |
+| `npm run bench:tooling:node` / `npm run bench:tooling:browser` | Seeded runtime/capture/work/memory measurements | D |
 | `npm run smoke` | Verify documented root startup/public imports | 0, expanded B |
 
 Run relevant checks and the root startup smoke test after each milestone. Record exit codes, actual results, environment, and any browser/manual verification; a proposed command or screenshot alone is not proof of the full gate. Broaden regression checks when changes affect shared contracts.
@@ -717,7 +717,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [x] Implemented frontend capabilities are independent; development dependencies and limitations are disclosed (B.11).
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** Batch 10 committed as 16305d8 at user request; no push. Batch 11 D.3/D.4 complete and verified; remains uncommitted. Next: D.5/D.6. Frontend/native browser qualification remains limited.
+**Current batch:** Batch 11 committed as 0eb88ca at user request; no push. Batch 12 D.5/D.6 complete and uncommitted; no push. Next: D.7. Frontend/native browser qualification remains limited.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -992,6 +992,39 @@ negative lines, 148 Chrome checks, root startup and README walkthrough, empty ru
 dependencies. All 174 final source fingerprints match. Public guide/README inspector
 snippets, local Markdown links, visual example review and diff checks pass. See
 [report](docs/reports/task-D.3-D.4-diagnostics-inspector.md) for raw evidence/limits.
-Batch 11 remains uncommitted; no push. Next: D.5/D.6 reproducible workloads and the
+Batch 11 committed as 0eb88ca at user request; no push. Next: D.5/D.6 reproducible workloads and the
 technical performance report. No instrumentation overhead, speed, heap/GC or broad
 browser qualification claim is made.
+
+
+### D.5/D.6 reproducible benchmarks and technical report — complete (7 October 2026)
+
+Owner: Codex. Baseline: Batch 11 commit 0eb88ca, committed at user request before
+this batch. Added seven seeded fixture workloads, a limited eager-clone/full-scan
+reference, public runtime/capture variants, fresh-process Node measurements and
+native-RAF Chrome measurements with rotated trial order, raw samples, source hashes
+and checkpoint equivalence. Native setter/tree/key identity probes and heap/GC jobs
+run separately from timing. Capture is bounded to eight entries/65,536 bytes;
+no open-inspector overhead is claimed. The report publishes median/p95, update and
+replay throughput, native writes/listeners, memory trends and unavailable metrics,
+plus measured same-environment advisory +30% median/+50% p95 regression alerts.
+No public runtime semantics/dependencies changed. PRD v2.22, guide/README/API and
+browser qualification are current. Runtime metadata still identifies D.3/D.4,
+the latest public runtime API milestone; D.5/D.6 are development tooling.
+
+Both quick harness runs and sequential full campaigns pass. Full Node: 36 timing
+trials, 12 separate memory children. Full Chrome: 126 timing trials, 42 native
+probes, 42 memory profiles. Ninety samples per variant/case agree on final hashes;
+all executable measurement source fingerprints still match. Workload README signature
+clarification followed measurement and is disclosed in the report. Findings include
+exact one-binding/eight-action coalescing, retained keyed identity, guarded transaction
+and range-move costs, substantial transient capture allocation and fixture-specific
+replay results; no universal speed/paint/input-latency/leak guarantee is made.
+
+Final clean-copy audit passes all eight commands: 660 runtime, 292 spike and 24
+benchmark correctness tests, positive TS/checked JS and 174 rejected independent
+negative lines, 149 Chrome checks, root startup/README reconstruction and empty
+runtime dependencies. All 190 candidate fingerprints match; Markdown targets and
+diff checks pass. See [report](docs/reports/task-D.5-D.6-performance.md) for full
+measurement/audit artifacts and limitations. Batch 12 remains uncommitted; no push.
+Next: D.7 product acceptance/release review. Broad native/browser qualification is open.

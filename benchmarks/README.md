@@ -1,4 +1,8 @@
-# Architecture spike measurements
+# Benchmark suites
+
+D.5/D.6 add the [runtime tooling suite](runtime/README.md): public app/binding/keyed/lifecycle/replay workloads with seeded reference/runtime/diagnostics comparisons, native write probes and separate memory/GC observations. Run `npm run bench:tooling:node`, then `npm run bench:tooling:browser`; `-- --quick` verifies the harness only. See the [technical report](../docs/reports/task-D.5-D.6-performance.md) for full-run data and limits. Do not run measurement jobs concurrently.
+
+## Historical architecture spike measurements
 
 A.2 adds a separate `npm run bench:runtime` comparison of the selected COW spike
 and the bounded production engine. It reuses the same seven workloads/configuration
