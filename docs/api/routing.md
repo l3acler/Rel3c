@@ -80,7 +80,7 @@ report and rethrow rather than swallowing errors.
 
 Nested outlets, loaders, async guards and automatic focus/scroll policies remain
 unimplemented. URL-backed state fields and storage are implemented in B.7/B.8;
-replayed navigation remains unimplemented; opt-in [recording](recording.md) captures navigation/location roots. State
+[isolated replay](replay.md) restores virtual navigation; opt-in [recording](recording.md) captures navigation/location roots. State
 survives route changes; reload creates a fresh app with configured field hydration and memory defaults. Browser
 qualification remains Chrome-only. Decision: [ADR 0013](../adr/0013-routing-navigation.md).
 
@@ -90,4 +90,4 @@ assigned ticks; native URL changes are observed immediately and route cells catc
 up at the next tick. Bootstrap and post-commit/state-derived work remain immediate.
 Supplied location packets can update cells headlessly using the saved URL, without
 sampling/writing live History. See [semantic packets](semantic-interpolation.md)
-for compatibility and derived-input ownership. Full replay suppression is future work.
+for compatibility and derived-input ownership. [Isolated replay suppression](replay.md) is implemented.

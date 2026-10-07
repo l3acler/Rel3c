@@ -10,6 +10,7 @@
  */
 
 import { createApplication } from "./runtime/app.js";
+import { createReplayController } from './runtime/recording/replay.js';
 export { createActionSchema } from "./runtime/actions/schema.js";
 export { element, div, span, p, button, form, label, input, textarea, select, option,
   section, a, ul, li, when, keyed, outlet } from "./runtime/dom/nodes.js";
@@ -26,7 +27,7 @@ export const VERSION = "0.1.0";
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "C.1–C.8 - Controlled Continuation, Semantic Inputs and Bounded Recording",
+  phase: "C.1–C.10 - Deterministic Recording and Isolated Replay",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
     "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
@@ -40,16 +41,16 @@ export const FRAMEWORK_INFO = Object.freeze({
     "SCHED-2: Immediate/frame/normal/idle work with bounded cooperative turns (implemented B.4)",
     "PERSIST-1: Explicit memory/session/local/URL fields, guarded hydration and post-commit writes (implemented B.7/B.8)",
     "EVENT-1: Scoped native events, options and compatible zero-argument clicks (implemented B.1)",
-    "EVENT-2: Semantic keyboard/text inputs and composition-safe bindings (implemented B.2/B.3; OS/mobile/cross-browser qualification and replay remain open)",
+    "EVENT-2: Semantic keyboard/text inputs and composition-safe bindings (implemented B.2/B.3; OS/mobile/cross-browser qualification remains open)",
     "Phase A: Public click/action/binding/list/cleanup acceptance verified (A.10)",
     "Public declarations, root documentation and routed form/list walkthrough (B.9–B.11; browser qualification remains limited)",
     "C.1/C.2: Versioned checkpoints, SHA-256 comparison, manual logical clock and transactional seeded randomness",
     "TIME-1: Fixed simulation ticks, ordered inputs, pause/hidden policy and bounded catch-up (implemented C.3)",
-    "INPUT-1: Scoped serializable measurements, storage, timer and async effect results (implemented C.4; bounded recording C.7/C.8; replay planned)",
+    "INPUT-1: Scoped serializable measurements, storage, timer and async effect results (implemented C.4; bounded recording C.7/C.8; isolated replay C.9/C.10)",
     "C.5: Owned semantic key/text/navigation/location/hydration packets and execution observation",
     "C.6: Optional display interpolation from frozen tick states; authoritative checkpoints unchanged",
     "RECORD-1: Ordered root/action/input traces, explicit versioned export/import and bounded baseline/keyframe retention (implemented C.7/C.8)",
-    "REPLAY-1: Replay, divergence checks and live-effect suppression (planned C.9/C.10)",
+    "REPLAY-1: Isolated root replay, first divergence and live-source suppression (implemented C.9/C.10; ambient globals remain application responsibility)",
   ]),
 });
 
@@ -61,4 +62,7 @@ export const FRAMEWORK_INFO = Object.freeze({
  */
 export function createApp(config = {}) {
   return createApplication(config, VERSION);
+}
+export function createReplay(config) {
+  return createReplayController(config, VERSION);
 }

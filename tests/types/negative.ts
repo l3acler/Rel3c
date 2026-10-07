@@ -267,3 +267,23 @@ readRecording('').baseline.snapshot='changed';
 
 // @ts-expect-error Only recording values have the serialization shape.
 serializeRecording({});
+
+import { createReplay } from 'mini-framework';
+// @ts-expect-error A recording is required.
+createReplay({});
+// @ts-expect-error Replay creates its own app; an existing target is not configuration.
+createReplay({recording:'',target:document.body});
+// @ts-expect-error Replay does not accept live error hooks.
+createReplay({recording:'',onError:()=>{}});
+// @ts-expect-error Replay view must return synchronous public view nodes.
+createReplay({recording:'',view:async()=>div()});
+// @ts-expect-error Registered tick action must have zero payload.
+createReplay({recording:'',schema,simulation:{tickDuration:10,action:'rename'}});
+// @ts-expect-error Replay status is read-only.
+createReplay({recording:''}).status.position=2;
+// @ts-expect-error Replay step count is numeric.
+createReplay({recording:''}).step('one');
+// @ts-expect-error Replay infers the registered payload type.
+createReplay({recording:'',schema}).app.actions.rename(2);
+// @ts-expect-error Replay app state remains read-only.
+createReplay({recording:'',schema}).app.state.count=3;

@@ -38,7 +38,8 @@ roots, failed prefixes, restore and display fractions. The final audit required
 local server/browser access outside the filesystem sandbox after a sandboxed
 startup attempt returned `listen EPERM`; the authorized rerun passes.
 
-Batch 6 is committed as `6504d2b`; Batch 7 remains uncommitted. No push.
+Batch 6 is committed as `6504d2b`; Batch 7 and Batch 8 were later committed
+together as `eaa118b` at user request on 7 October 2026. No push.
 
 Boundaries: packet observation reports attempted execution, not durable outcomes.
 Direct dispatch/nested action ownership remains separate for C.7 recording.

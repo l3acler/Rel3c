@@ -8,7 +8,7 @@ const code = name => error => error instanceof FrameworkError && error.code === 
 
 test('B.9 package exports match the documented browser surface', () => {
   assert.deepEqual(Object.keys(framework).sort(), [
-    'VERSION', 'FRAMEWORK_INFO', 'FrameworkError', 'createApp', 'createActionSchema', 'hashSnapshot', 'readRecording', 'serializeRecording',
+    'VERSION', 'FRAMEWORK_INFO', 'FrameworkError', 'createApp', 'createActionSchema', 'hashSnapshot', 'readRecording', 'serializeRecording', 'createReplay',
     'element', 'div', 'span', 'p', 'button', 'form', 'label', 'input', 'textarea',
     'select', 'option', 'section', 'a', 'ul', 'li', 'when', 'keyed', 'outlet', 'derive',
   ].sort());

@@ -159,8 +159,8 @@ See [the public guide](../../DOCUMENTATION.md#native-events-keyboard-and-text-ed
 [inputs example](../../examples/inputs/README.md), and [batch evidence](../reports/task-B.1-B.3-inputs.md).
 Chrome fixtures and trusted keyboard/composition-engine automation do not qualify
 OS IMEs, real clipboard paste, Firefox/Safari, mobile keyboards or broad browser
-support. Recording/replay remains Phase C; these data shapes are recordable inputs,
-not an implemented recorder.
+support. [Recording](recording.md) and [isolated replay](replay.md) implement Phase C; these data shapes are recordable inputs
+owned by the opt-in recorder at execution.
 
 C.5 adds view-owned `inputs.keyboard(origin,action)` / `inputs.text(origin,action)`
 callbacks for these native snapshots. They dispatch/queue versioned external

@@ -119,6 +119,6 @@ promise to release application-owned closures. Runtime cleanup removes its owned
 resources; no heap-collection guarantee is made.
 
 This is an ordered serializable external-input boundary. C.7/C.8 provide opt-in [bounded executed-prefix recording](recording.md);
-full replay/suppression remain unimplemented. C.5/C.6 implement
+[isolated replay/suppression](replay.md) is implemented. C.5/C.6 implement
 [semantic event/router/persistence packets and display interpolation](semantic-interpolation.md). Manually forwarding a saved envelope through
 enqueue can demonstrate deterministic transitions without claiming public replay.

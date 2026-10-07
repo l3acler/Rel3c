@@ -118,7 +118,7 @@ Context-scheduled work cancels on unmount; see [routing](routing.md) and
 [scheduling](scheduling.md). Persistence inputs batch state/location invalidation so callbacks see synchronized
 values. Object projection hydration may replace configured identities to preserve
 within-area aliases; memory properties stay exact. See [persistence](persistence.md).
-[Bounded recording](recording.md) is available; full replay remains unimplemented. State/type/transaction
+[Bounded recording](recording.md) is available; [Isolated replay](replay.md) is implemented. State/type/transaction
 limits are unchanged. The coordinator indexes the current graph on commits and
 stores live subscriptions; this is correctness evidence, not a measured performance
 improvement or heap leak proof.

@@ -116,6 +116,19 @@ export function createTicks(config, controls, dispatch, operation, report, hooks
       return Object.freeze({ sequence: id, tick, time, cancel: () => remove(id) });
     },
     advance,
+    replayTick(runInputs) {
+      enabled(); busy = true;
+      const errors = [];
+      try {
+        controls.nextTick();
+        try { runInputs(); } catch (error) { errors.push(error); }
+        if (config.action !== undefined) try { dispatch(config.action); } catch (error) { errors.push(error); }
+        try { hooks.tick?.(); } catch (error) { errors.push(error); }
+      } finally { busy = false; }
+      try { hooks.frame?.(); } catch (error) { errors.push(error); }
+      if (errors.length === 1) throw errors[0];
+      if (errors.length) throw new AggregateError(errors, 'Replay tick contains failed work.');
+    },
     pause() { enabled(); paused = true; cancelFrame(); hooks.frame?.(); },
     resume() { enabled(); paused = false; hooks.frame?.(); request(); },
     connect(view, ownerDocument) {

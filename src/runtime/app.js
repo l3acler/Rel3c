@@ -24,7 +24,7 @@ import { createRecorder } from './recording/recorder.js';
 const targets = new WeakMap();
 const emptySchema = createActionSchema()(() => ({}));
 
-export function createApplication(config, frameworkVersion) {
+export function createApplication(config, frameworkVersion, replay = null) {
   let options = readRecord(config, "CONFIG_INVALID", "app", [
     "target",
     "initialState",
@@ -128,13 +128,13 @@ export function createApplication(config, frameworkVersion) {
   const bindingOwner = Object.freeze({});
   const bind = createBindings(bindingOwner, live);
   const router = routerConfig ? createRouter(routerConfig, tracking, () => renderer?.schedule(), runLocationInput,
-    route => persistence?.location(route, status === 'created'), packet => admitInternal(packet)) : null;
+    route => replay ? replay.location() : persistence?.location(route, status === 'created'), packet => admitInternal(packet), replay) : null;
   routerConfig = null;
   const scheduler = createScheduler(run => run(), error => {
     reported = new WeakSet(); report(error, error.code?.startsWith("PERSIST_") ? "persistence" : "schedule");
   });
   const persistence = persistenceConfig ? createPersistence(persistenceConfig, store, router, scheduler,
-    publishInput, withInput, packet => admitInternal(packet)) : null;
+    publishInput, withInput, packet => admitInternal(packet), !!replay) : null;
   persistenceConfig = null;
   function withInput(run) {
     const previous = inputBusy; inputBusy = true;
@@ -144,6 +144,7 @@ export function createApplication(config, frameworkVersion) {
     const errors = [];
     try { tracking.batch(() => { tracking.publish(result); interpolation?.committed(); }); } catch (error) { errors.push(error); }
     try { renderer?.schedule(); } catch (error) { errors.push(error); }
+    replay?.published();
     if (errors.length === 1) throw errors[0];
     if (errors.length) throw new AggregateError(errors, "External input notifications failed after commit.");
   }
@@ -194,12 +195,13 @@ export function createApplication(config, frameworkVersion) {
       persistence?.committed();
     }); } catch (error) { errors.push(error); }
     try { renderer?.schedule(); } catch (error) { errors.push(error); }
+    replay?.published();
     if (errors.length === 1) throw errors[0];
     if (errors.length) throw new AggregateError(errors, "Notifications/scheduling failed after commit.");
   }, controls, {
     batch: (packet, run) => recordRun({ kind: 'dispatch', packet }, run),
-    queued: (name, args, parent) => recorder?.queued(name, args, parent),
-    action: (...args) => recorder?.action(...args),
+    queued: (name, args, parent) => replay ? replay.queued(name, args, parent) : recorder?.queued(name, args, parent),
+    action: (...args) => { recorder?.action(...args); replay?.action(...args); },
   });
   function render(run) {
     const previous = rendering;
@@ -207,6 +209,7 @@ export function createApplication(config, frameworkVersion) {
     try { return run(); } finally { rendering = previous; }
   }
   function runEvent(run) {
+    if (replay) return;
     if (!handlingEvent && !reporting && !dispatcher?.isActive()) reported = new WeakSet();
     try {
       live();
@@ -275,6 +278,7 @@ export function createApplication(config, frameworkVersion) {
     if (!reporting && !dispatcher?.isActive() && !handlingEvent) reported = new WeakSet();
     try {
       live();
+      if (replay) fail('REPLAY_READONLY', 'Replay owns authoritative recording/control/input operations.');
       if (status === 'mounting' || ticks.busy || inputBusy || rendering || reporting || dispatcher.isActive() || tracking.isBusy() || recorder?.busy)
         fail('RECORDING_REENTRANT', 'Recording operations require an idle runtime boundary.');
       return run();
@@ -288,7 +292,7 @@ export function createApplication(config, frameworkVersion) {
     { tick: () => interpolation?.tick(), frame: () => interpolation?.frame(),
       runTick: (tick, action, run) => recordRun({ kind: 'tick', tick, action }, run) });
   simulationConfig = null;
-  function normalizePacket(value) {
+  function normalizePacket(value, preflight = false) {
     const record = readRecord(value, 'INPUT_INVALID', 'input packet');
     if (record.version !== 1) fail('INPUT_INCOMPATIBLE', 'Unsupported semantic input packet version.');
     if (record.kind === 'action') {
@@ -311,7 +315,7 @@ export function createApplication(config, frameworkVersion) {
       if (location && (!['native','mount','navigation','state'].includes(packet.cause) || typeof packet.hydrate !== 'boolean') ||
           !location && typeof packet.replace !== 'boolean') fail('INPUT_INVALID', 'Malformed route input policy.');
       const next = router.prepareInput(packet);
-      const request = location ? null : router.prepare(router.absolute(packet.url), { replace: packet.replace });
+      const request = location || preflight ? null : router.prepare(router.absolute(packet.url), { replace: packet.replace });
       return { packet, usage: owned.usage, execute: () => location
         ? router.applyPrepared(next, packet.hydrate && !(packet.cause === 'mount' && status === 'created')) : router.commit(request) };
     }
@@ -325,8 +329,8 @@ export function createApplication(config, frameworkVersion) {
   }
   const inputBoundary = createInputBoundary(() => controls.snapshot.clock, ticks, normalizePacket, withInput, {
     root: (input, queued, run) => recordRun({ kind: 'input', input, queued }, run),
-    input: (input, queued) => recorder?.input(input, queued),
-    end: (id, error, failed) => recorder?.inputEnd(id, store.getVersion(), error, failed),
+    input: (input, queued) => replay ? replay.input(input, queued) : recorder?.input(input, queued),
+    end: (id, error, failed) => { recorder?.inputEnd(id, store.getVersion(), error, failed); replay?.inputEnd(id, store.getVersion(), error, failed); },
   });
   function admitInternal(packet) {
     const derived = inputBoundary.executing || dispatcher.isActive() || packet.cause === 'state';
@@ -336,10 +340,11 @@ export function createApplication(config, frameworkVersion) {
     return inputBoundary.admit({ version: 1, kind: 'action', name, args: [payload] }, { active });
   }, run => inputOperation(run), (run, scopedConstruction) => inputOperation(run, scopedConstruction || status === 'mounting'), name => {
     if (registry.get(name)?.input !== 'payload') fail('INPUT_INVALID', 'External inputs require a registered payload action.');
-  }, () => target?.ownerDocument.defaultView ?? globalThis, withInput);
+  }, () => target?.ownerDocument.defaultView ?? globalThis, withInput, replay ? {clock:()=>controls.snapshot.clock} : null);
   const appInputs = inputs.scoped();
   function enqueue(tick, name, args) {
     return inputOperation(() => {
+      if (replay) fail('REPLAY_READONLY', 'Replay consumes recorded inputs through its controller.');
       if (!ticks.status.enabled) fail('TICK_MISSING', 'Configure simulation before enqueueing tick inputs.');
       const ticket = inputBoundary.admit({ version: 1, kind: 'action', name, args }, { tick });
       return Object.freeze({ ...ticket, cancel: () => inputOperation(ticket.cancel) });
@@ -347,6 +352,7 @@ export function createApplication(config, frameworkVersion) {
   }
   function receiveInput(packet, raw = {}) {
     return inputOperation(() => {
+      if (replay) fail('REPLAY_READONLY', 'Replay consumes recorded inputs through its controller.');
       const { tick } = readRecord(raw, 'INPUT_INVALID', 'input options', ['tick']);
       if (tick !== undefined && !ticks.status.enabled) fail('TICK_MISSING', 'Tick assignment requires fixed simulation.');
       const ticket = inputBoundary.admit(packet, { tick, bootstrap: status === 'created' && tick === undefined });
@@ -434,6 +440,7 @@ export function createApplication(config, frameworkVersion) {
       reported = new WeakSet();
     try {
       live();
+      if (replay && (!replay.driving || !dispatcher.isExecuting())) fail('REPLAY_READONLY', 'Only executing replay bodies can dispatch nested actions.');
       return dispatcher.dispatch(...args);
     } catch (error) {
       if (nested || handlingEvent) throw error;
@@ -447,6 +454,11 @@ export function createApplication(config, frameworkVersion) {
       if (inputBusy || dispatcher.isActive() || (rendering && lane === "immediate") || reporting || tracking.isBusy() ||
           (lane === "immediate" && status === "mounting"))
         fail("SCHEDULE_REENTRANT", "Cannot schedule during actions, rendering, reactive/error work or immediate view construction.");
+      if (replay) {
+        if (!['immediate','frame','normal','idle'].includes(lane)) fail('SCHEDULE_LANE_INVALID', 'Unknown scheduling lane.');
+        if (typeof callback !== 'function') fail('SCHEDULE_CALLBACK_INVALID', 'Scheduled work requires a callback.');
+        return () => {};
+      }
       return scheduler.schedule(lane, callback, active);
     } catch (error) {
       if (handlingEvent || dispatcher?.isActive()) throw error;
@@ -458,7 +470,8 @@ export function createApplication(config, frameworkVersion) {
     try {
       live();
       if (!router) fail("ROUTER_MISSING", "Configure a router before navigating.");
-      if (status !== "mounted" || inputBusy || rendering || reporting || tracking.isBusy() ||
+      if (replay && (!replay.driving || !dispatcher.isExecuting())) fail('REPLAY_READONLY', 'Only executing replay bodies can request derived navigation.');
+      if ((!replay && status !== "mounted") || inputBusy || rendering || reporting || tracking.isBusy() ||
           (dispatcher.isActive() && !dispatcher.isExecuting()))
         fail("NAVIGATION_REENTRANT", "Navigation requires a mounted app outside reactive/render/error work or payload admission.");
       const request = router.prepare(to, options);
@@ -502,6 +515,7 @@ export function createApplication(config, frameworkVersion) {
   Object.freeze(actions);
   const app = Object.freeze({
     version: frameworkVersion,
+    replaying: !!replay,
     schemaVersion,
     actionNames,
     actions,
@@ -513,6 +527,7 @@ export function createApplication(config, frameworkVersion) {
       return encodeCheckpoint(store.getState(), store.getVersion(), schemaVersion, controls.snapshot);
     }, 'snapshot'); },
     setLogicalTime(time) { return checkpointOperation(() => {
+      if (replay) fail('REPLAY_READONLY', 'Replay owns the logical clock.');
       // Validate before opening a recording root; invalid control calls have no transition.
       if (controls.snapshot.clock.mode !== 'manual' || !Number.isSafeInteger(time) || Object.is(time, -0) || time < controls.snapshot.clock.time)
         return controls.setTime(time);
@@ -540,9 +555,9 @@ export function createApplication(config, frameworkVersion) {
     observeInputs,
     enqueue(name, ...args) { return enqueue(undefined, name, args); },
     enqueueAt(tick, name, ...args) { return enqueue(tick, name, args); },
-    advanceTicks(elapsed) { return checkpointOperation(() => ticks.advance(elapsed), 'control'); },
-    pauseTicks() { return checkpointOperation(() => ticks.pause(), 'control'); },
-    resumeTicks() { return checkpointOperation(() => ticks.resume(), 'control'); },
+    advanceTicks(elapsed) { return checkpointOperation(() => { if(replay) fail('REPLAY_READONLY','Replay owns ticks.'); return ticks.advance(elapsed); }, 'control'); },
+    pauseTicks() { return checkpointOperation(() => { if(replay) fail('REPLAY_READONLY','Replay owns ticks.'); return ticks.pause(); }, 'control'); },
+    resumeTicks() { return checkpointOperation(() => { if(replay) fail('REPLAY_READONLY','Replay owns ticks.'); return ticks.resume(); }, 'control'); },
     get persistence() {
       live();
       return persistence?.status ?? Object.freeze({ active: false, pending: false, errors: Object.freeze([]) });
@@ -624,7 +639,7 @@ export function createApplication(config, frameworkVersion) {
           renderer.mount(output, target);
         });
         status = "mounted";
-        ticks.connect(target.ownerDocument.defaultView, target.ownerDocument);
+        if (!replay) ticks.connect(target.ownerDocument.defaultView, target.ownerDocument);
         return app;
       } catch (cause) {
         // Invalidate the failed view scope before running its cleanup hooks.
@@ -704,6 +719,7 @@ export function createApplication(config, frameworkVersion) {
       view = null;
       mountCleanups = [];
       status = "disposed";
+      replay?.closed();
       try {
         if (errors.length)
           report(
@@ -721,12 +737,24 @@ export function createApplication(config, frameworkVersion) {
   registerDiagnostics(app, () => ({ ...tracking.counts(),
     ...ticks.counts(), ...inputs.counts(),
     ...inputBoundary.counts(),
+    ...(replay?.counts() ?? { replayTrace: 0 }),
     ...(recorder?.counts() ?? { recordingRecords: 0, recordingBytes: 0, recordingScratch: 0 }),
     ...scheduler.counts(),
     ...(persistence?.counts() ?? { persistenceTasks: 0 }),
     ...(router?.counts() ?? { routeListeners: 0 }),
     ...(renderer?.counts() ?? { scopes: 0, bindings: 0, ownedNodes: 0, queuedBindings: 0, frames: 0 }),
     ...(events?.counts() ?? { handlers: 0, listeners: 0 }) }));
+  if (replay) replay.connect(Object.freeze({
+    capture: captureRecording,
+    check() { live(); if (status === 'mounting' || ticks.busy || inputBusy || rendering || reporting || dispatcher.isActive() || tracking.isBusy())
+      fail('REPLAY_REENTRANT','Replay controller requires an idle boundary.'); },
+    preparePacket: value => normalizePacket(value, true),
+    restoreRoute: value => { if (value && !router) fail('INPUT_INCOMPATIBLE','Recording baseline requires matching router configuration.'); router?.restoreReplay(value); },
+    input: (input, queued) => inputBoundary.replay(input, queued),
+    dispatch: (...args) => dispatcher.dispatch(...args),
+    time: value => controls.setTime(value),
+    tick: run => ticks.replayTick(run),
+  }));
   if (defaultTarget !== undefined) app.mount(defaultTarget);
   return app;
 }

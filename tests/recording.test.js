@@ -24,7 +24,7 @@ function make(options={}) {
   return app;
 }
 const imported=app=>readRecording(app.exportRecording(),{schemaVersion:'recording/1'});
-// Independent test harness for state-only fixtures. No public replay/effect suppression API.
+// Independent state-only reference harness; public replay is tested in replay.test.js.
 function reproduce(recording, options={}) {
   const app=make({initialState:undefined,controls:undefined,snapshot:recording.baseline.snapshot,...options});
   for(const record of recording.records) {

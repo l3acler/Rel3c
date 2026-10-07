@@ -47,7 +47,7 @@ export function ownPersistenceConfig(raw, state, schemaVersion, hasRouter) {
   return Object.freeze({ namespace: config.namespace, version, fields: Object.freeze(owned) });
 }
 
-export function createPersistence(config, store, router, scheduler, publish, guarded, admit = null) {
+export function createPersistence(config, store, router, scheduler, publish, guarded, admit = null, replay = false) {
   let host = null, cancel = null, dirty = false, disposed = false, flushing = false, dropped = 0;
   const reports = [], issues = [], written = new Map(), defaults = new Map();
   for (const field of config.fields) if (field.location === 'url') defaults.set(field.name, store.getState()[field.name]);
@@ -205,11 +205,13 @@ export function createPersistence(config, store, router, scheduler, publish, gua
     applyInput(input) { apply(this.prepareInput(input), true); },
     applyPrepared(groups) { apply(groups, true); },
     start(window) {
+      if (replay) return;
       host = window;
       guarded(() => apply([...areas.map(storageInput), router ? urlInput(router.route) : null]));
     },
     location(route, allowUnstarted = false) { if ((host || allowUnstarted) && !disposed) guarded(() => apply([urlInput(route)])); },
     committed() {
+      if (replay) return;
       if (!host || disposed) return;
       guarded(writeURL);
       if (areas.some(area => selected(area).length)) dirty = true;

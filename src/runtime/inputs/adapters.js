@@ -12,7 +12,7 @@ function errorValue(error) {
   } catch { return Object.freeze({ name: 'Error', message: 'External operation failed.' }); }
 }
 
-export function createInputs(deliver, operation, registration, validateAction, host, readExternal) {
+export function createInputs(deliver, operation, registration, validateAction, host, readExternal, replay = null) {
   const scopes = new Map(); let disposed = false, pending = 0;
   function scoped(active = () => true, addCleanup = null) {
     const resources = new Set(); let closed = false;
@@ -31,6 +31,8 @@ export function createInputs(deliver, operation, registration, validateAction, h
     scopes.set(close, resources); addCleanup?.(close);
     function admit(origin, action, status, value, error = null) {
       live(); originValue(origin); validateAction(action);
+      if (replay) return Object.freeze({ sequence:0, tick:replay.clock().tick, time:replay.clock().time,
+        input:Object.freeze({version:1,origin,status:'cancelled',value:null,error:null}),cancel:()=>{} });
       const input = ownValue({ version: 1, origin, status, value, error }).value;
       let stop;
       const ticket = deliver(action, input, () => {
@@ -50,6 +52,7 @@ export function createInputs(deliver, operation, registration, validateAction, h
       return operation(() => {
         live(); originValue(origin); validateAction(action);
         if (typeof read !== 'function') fail('INPUT_INVALID', 'sample requires a synchronous reader.');
+        if (replay) return admit(origin, action, 'cancelled', null);
         let value, error;
         try { value = readExternal(() => {
           const result = read(); requireSync(result, 'INPUT_ASYNC', 'Use effect for asynchronous external values.'); return result;
@@ -65,6 +68,7 @@ export function createInputs(deliver, operation, registration, validateAction, h
       return registration(() => {
         live(); originValue(origin); validateAction(action);
         if (typeof run !== 'function') fail('INPUT_INVALID', 'effect requires a callback receiving an AbortSignal.');
+        if (replay) return Object.freeze({ done:Promise.resolve(null), cancel:()=>{} });
         if (pending >= 1024) fail('INPUT_LIMIT', 'An app supports at most 1024 pending effects.');
         const controller = new AbortController(); let ended = false, resolve, reject;
         const done = new Promise((yes, no) => { resolve = yes; reject = no; });

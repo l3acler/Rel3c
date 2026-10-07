@@ -328,7 +328,7 @@ export interface PersistenceStatus {
 export interface AppInstance<S extends object, D extends Definitions<S> = {}> extends ViewContext<S, D> {
   readonly version: string; readonly stateVersion: number; readonly schemaVersion: string;
   readonly actionNames: readonly (keyof D & string)[];
-  readonly status: AppStatus; readonly mounted: boolean;
+  readonly status: AppStatus; readonly mounted: boolean; readonly replaying: boolean;
   /** Cancel the pending frame and apply latest dirty bindings synchronously. */
   flush(): void;
   flushPersistence(): void;
@@ -362,3 +362,37 @@ export function createApp<S extends object, D extends Definitions<S>, F extends 
 export function createApp<S extends object = Record<string, unknown>, F extends ErrorHandler = ErrorHandler>(
   config?: Omit<AppConfig<S>, 'onError'> & SyncErrorHook<F>
 ): AppInstance<S>;
+
+export interface ReplayConfig<S extends object, D extends Definitions<S> = {}> {
+  readonly recording: string | Recording;
+  readonly schema?: ActionSchema<S, D>;
+  readonly router?: RouterConfig<S, D>;
+  readonly persistence?: PersistenceConfig<S>;
+  readonly simulation?: SimulationConfig<D>;
+  readonly view?: (context: ViewContext<S, D>) => Child | void;
+}
+export interface ReplayDivergence {
+  readonly sequence:number; readonly tick:number; readonly time:number;
+  readonly action:string|null; readonly eventIndex:number|null;
+  readonly reason:'trace'|'state'|'route'|'root';
+  readonly expected:string; readonly actual:string;
+  readonly expectedHash:string|null; readonly actualHash:string;
+}
+export interface ReplayStatus {
+  readonly status:'ready'|'running'|'complete'|'diverged'|'disposed';
+  readonly position:number; readonly total:number; readonly sequence:number;
+  readonly divergence:ReplayDivergence|null;
+}
+export interface ReplayController<S extends object, D extends Definitions<S> = {}> {
+  readonly app:AppInstance<S,D>; readonly status:ReplayStatus;
+  step(count?:number):ReplayStatus;
+  run():ReplayStatus;
+  dispose():void;
+}
+/** Restore an isolated app, then re-execute complete roots with effects suppressed. */
+export function createReplay<S extends object,D extends Definitions<S>>(
+  config:Omit<ReplayConfig<NoInfer<S>,D>,'schema'> & {readonly schema:ActionSchema<S,D>}
+):ReplayController<S,D>;
+export function createReplay<S extends object=Record<string,unknown>>(
+  config:ReplayConfig<S>
+):ReplayController<S>;

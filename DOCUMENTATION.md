@@ -3,7 +3,7 @@
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
 application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.8 add native events, semantic keyboard/text inputs, cooperative priority lanes and History/hash routing with one shared application store, plus guarded memory/session/local/URL state locations. APIs remain experimental and browser qualification is limited.
-B.9–B.11 refine the public declarations and root auditor walkthrough. C.1–C.8 add versioned checkpoints, controlled services, fixed ticks, semantic inputs, optional display interpolation and bounded recording.
+B.9–B.11 refine the public declarations and root auditor walkthrough. C.1–C.10 add versioned checkpoints, controlled services, fixed ticks, semantic inputs, optional display interpolation, bounded recording and isolated replay.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -27,13 +27,14 @@ Import from `src/index.js`; applications do not need runtime internals.
 | Error reporting       | Readable framework error codes and a synchronous application error hook                        |
 | TypeScript            | Inferred action names/payloads and read-only state declarations                                |
 | Bounded recording     | Opt-in executed roots/traces, versioned export/import and usable recent/session baselines     |
+| Isolated replay       | Whole-root step/run, checkpoint/trace comparison, first divergence and live-source suppression |
 | Checkpoints           | Canonical versioned state/control exports, owned restoration and SHA-256 comparison           |
 | Controlled services   | Manual logical microseconds and transaction-scoped seeded simulation draws                    |
 
 Views construct their static tree once per mount; explicit bindings update affected
 text, attributes, classes and styles on render frames after committed actions. Conditional factories
 run when their selected boolean branch changes. Native events, keyboard and text editing
-are implemented alongside routing, priorities, state locations, controlled services, fixed ticks, semantic input adapters, optional display interpolation and bounded recording. Full replay remains unimplemented. Broad browser/OS IME qualification remains open.
+are implemented alongside routing, priorities, state locations, controlled services, fixed ticks, semantic input adapters, optional display interpolation and bounded recording. Isolated replay is available below. Broad browser/OS IME qualification remains open.
 
 ## Start from the project root
 
@@ -102,6 +103,8 @@ explicit bindings below for updates.
 | `derive(read)` and `when(condition, yes, no?)`     | Explicit derived bindings and scoped conditional children             |
 | `outlet()`                                         | Render the active route in a persistent app shell                      |
 | `hashSnapshot(text)`                                | Validate and hash canonical state/control checkpoint text             |
+| `readRecording(text, options?)` / `serializeRecording(recording)` | Validate/decode immutable recordings and return canonical wire |
+| `createReplay(config)` | Restore a separate app and control verified replay with live sources suppressed |
 | `FrameworkError`                                     | Framework error class with a readable message and`code`             |
 | `VERSION`                                            | Package version string                                                |
 | `FRAMEWORK_INFO`                                     | Frozen metadata describing implemented and planned capabilities       |
@@ -282,7 +285,7 @@ Open [http://localhost:3000/examples/keyed/](http://localhost:3000/examples/keye
 for a public-import list with clickable increment, add/remove/reorder, completion,
 visibility and rollback controls. Its text edits deliberately remain native/local;
 add `onText` to opt into action-based text synchronization. The [example guide](examples/keyed/README.md) describes focus and
-scope behavior. Routing and priorities are described below; replay remains unimplemented.
+scope behavior. Routing and priorities are described below; isolated replay is available below.
 
 ## Native events, keyboard and text editing
 
@@ -381,7 +384,7 @@ Chrome fixtures plus trusted keyboard/Unicode editing and its composition engine
 are checked. CDP's final compositionend is untrusted; this is browser automation,
 not an OS IME session. Real clipboard paste, Chinese/Japanese/Korean OS input
 methods, Firefox/Safari and mobile qualification remain open. Recordable input
-snapshots feed the opt-in bounded recorder below; full replay remains unimplemented. See the
+snapshots feed the opt-in bounded recorder below; full isolated replay is available below. See the
 [batch evidence](docs/reports/task-B.1-B.3-inputs.md).
 
 ## Verified core example
@@ -440,7 +443,7 @@ cleanup and disposal also pass. These are correctness observations, not a perfor
 or heap-collection claim. See [core acceptance evidence](docs/reports/task-A.10-core-slice.md).
 
 The API stays experimental. B.1–B.3 now add native events and keyboard/text
-synchronization. B.4–B.6 add priority work and shared-state routing. B.7/B.8 add guarded state locations. B.9–B.11 complete the public contracts and auditor walkthrough. C.1–C.8 add checkpoints, controlled services, fixed ticks, semantic inputs, interpolation and bounded recording; full replay remains future work.
+synchronization. B.4–B.6 add priority work and shared-state routing. B.7/B.8 add guarded state locations. B.9–B.11 complete the public contracts and auditor walkthrough. C.1–C.10 add checkpoints, controlled services, fixed ticks, semantic inputs, interpolation, bounded recording and isolated replay.
 
 ## Render frames and explicit flush
 
@@ -625,7 +628,7 @@ DOM for retry with `app.flush()` while URL/route stay committed. Cleanup errors
 report the completed replacement. One active outlet is supported
 (`ROUTE_OUTLET_DUPLICATE`); an outlet without configuration rejects `ROUTER_MISSING`.
 Nested/multiple outlets, loaders, async navigation guards, automatic focus/scroll
-policies and replayed navigation are not implemented. Semantic navigation/location recording is opt-in below. State-location configuration is described below.
+policies remain unimplemented. Isolated replay restores virtual navigation below. Semantic navigation/location recording is opt-in below. State-location configuration is described below.
 
 `context.link(to, props?, ...children)` or `app.link` creates a native anchor with
 owned href/click handling. Use it during mounted view construction; an unmounted
@@ -771,14 +774,13 @@ intact. It does not flush automatically: call `flushPersistence()` before explic
 disposal when its pending write must complete.
 
 Nested field paths, multi-location precedence chains, migration APIs, automatic
-unload flushing, live cross-tab merging and replayed persistence inputs
-remain unimplemented. Accepted hydration packets can be recorded by the opt-in recorder below. See [persistence reference](docs/api/persistence.md) and
+unload flushing and live cross-tab merging remain unimplemented. Recorded persistence inputs run in isolated replay below. Accepted hydration packets can be recorded by the opt-in recorder below. See [persistence reference](docs/api/persistence.md) and
 [ADR 0014](docs/adr/0014-state-locations-hydration.md).
 
 ## Checkpoints and controlled services
 
 C.1/C.2 make time and simulation draws explicit and restore their continuation
-with committed state. C.3/C.4 extend this foundation with fixed ticks and external-input adapters below. C.7/C.8 add bounded recording below; full replay is still unimplemented.
+with committed state. C.3/C.4 extend this foundation with fixed ticks and external-input adapters below. C.7/C.8 add bounded recording below; isolated replay is available below.
 
 ```js
 import { createApp, createActionSchema, hashSnapshot } from './src/index.js';
@@ -1001,7 +1003,7 @@ advance, viewport sampling, timers and a local network request using public
 imports. [ADR 0017](docs/adr/0017-fixed-ticks-external-inputs.md),
 [API reference](docs/api/ticks-inputs.md) and
 [verification report](docs/reports/task-C.3-C.4-ticks-inputs.md) specify the limits.
-These adapters make normalized values suitable for opt-in recording. C.5/C.6 add semantic event/router/persistence integration and display interpolation below. Bounded recording is opt-in below; public replay remains unimplemented and saved input injection tests do not implement it.
+These adapters make normalized values suitable for opt-in recording. C.5/C.6 add semantic event/router/persistence integration and display interpolation below. Bounded recording is opt-in below; isolated replay is available below; saved input injection alone does not suppress live sources.
 
 ## Semantic input packets
 
@@ -1009,8 +1011,7 @@ C.5 connects existing native semantic key/text snapshots, route observations,
 navigation requests and accepted hydration values to one owned packet boundary.
 The packet boundary itself retains no input log; C.7/C.8 recording is opt-in below. `observeInputs(callback)` reports execution
 attempts; `receiveInput(packet, {tick?})` validates and admits a supplied packet.
-These APIs support controlled input tests and the recorder below. Seek, full replay
-and suppression of all live effects remain unimplemented.
+These APIs support controlled input tests and the recorder below. Isolated replay suppresses runtime live sources as described below; seeking remains unimplemented.
 
 Use view-owned helpers to admit semantic browser values through payload actions:
 
@@ -1120,8 +1121,7 @@ parent discards it. State-to-URL writes remain derived, with hydration disabled.
 Supplying a location packet updates the route cell using its saved URL and leaves
 live browser History untouched; it can work headlessly. Supplying a navigation
 packet requires a mounted compatible router and performs History normally.
-Hydration application uses configured guards, not live reads. C.9 will handle
-whole-session replay suppression of navigation/storage/effects. Matching packets
+Hydration application uses configured guards, not live reads. The isolated replay controller below suppresses live navigation/storage/effects. Matching packets
 alone do not prove action-code/domain compatibility or reproduce unrelated
 browser presentation. Snapshots still exclude route cells and any pending inputs.
 
@@ -1179,8 +1179,7 @@ See the [API reference](docs/api/semantic-interpolation.md),
 C.7/C.8 add opt-in recording of executed transitions. The runtime keeps a usable
 baseline, ordered execution roots, action/input traces, checkpoint hashes and an
 end snapshot. Export is an explicit developer operation; nothing is automatically
-uploaded, downloaded or persisted. Full replay, live-effect suppression, seeking
-and divergence reports remain unimplemented.
+uploaded, downloaded or persisted. Isolated replay and divergence reports are described below; seeking remains unimplemented.
 
 ```js
 import {createApp,createActionSchema,readRecording,serializeRecording}
@@ -1263,7 +1262,7 @@ A record represents one complete execution root:
 A failed root can contain successful commits. Action events distinguish `queued`,
 `dispatched`, `committed`, `failed` and `discarded`; discarded children never ran.
 Nested action events are diagnostics attached to their root, not extra commands
-for a future replay engine. Direct invalid admission (unknown action, arity or
+for the replay controller. Direct invalid admission (unknown action, arity or
 payload guard) causes no executed root. A packet already admitted whose payload
 fails at execution has a failed input root with no admitted action. Error summaries
 are bounded inert strings; application Error objects/accessors/stacks are not retained.
@@ -1302,7 +1301,7 @@ constructing or spreading a recording object does not produce a trusted import.
 
 These checks establish structural compatibility, not application behavior or
 integrity/authenticity. Application schema versions must identify compatible
-bodies/guards; later replay will verify intermediate hashes against actual work.
+bodies/guards; isolated replay verifies intermediate hashes against actual work.
 No migration is automatic. Malformed/noncanonical data rejects `RECORDING_INVALID`,
 incompatible versions/schema reject `RECORDING_INCOMPATIBLE`, and import/baseline
 budgets reject `RECORDING_LIMIT`. App boundaries additionally use
@@ -1313,6 +1312,116 @@ Run `/examples/recording/` after `npm run dev` for a developer-controlled export
 example. See [recording API](docs/api/recording.md),
 [ADR 0019](docs/adr/0019-ordered-recording-retention.md) and
 [verification](docs/reports/task-C.7-C.8-recording-retention.md).
+
+## Isolated replay
+
+`createReplay` restores a separate app from a validated recording baseline and
+re-executes complete roots. It compares every root's state/control SHA-256, version,
+clock, PRNG continuation, action/input ordering and local route. The controller
+stops before the next root at the first divergence. Original application state is
+not a controller target.
+
+```js
+import {createApp,createActionSchema,createReplay,div} from './src/index.js';
+
+const schema=createActionSchema({version:'replay-samples/1'})(({action})=>({
+  sample:action((draft,services)=>{
+    draft.values.push({time:services.now(),value:services.random()});
+  }),
+}));
+const source=createApp({schema,initialState:{values:[]},controls:{seed:7}});
+source.startRecording();
+source.setLogicalTime(1000);
+source.actions.sample();
+source.actions.sample();
+source.stopRecording();
+const text=source.exportRecording();
+const replay=createReplay({recording:text,schema,
+  view:({derive})=>div(derive(state=>state.values.length))});
+// Optional: replay.app.mount(document.getElementById('replay-target'));
+console.log(replay.step()); // consume one whole root
+const result=replay.run(); // synchronous: consume remaining roots
+console.log(result.status, result.divergence); // 'complete', null
+console.log(replay.app.snapshot()===source.snapshot()); // true
+replay.dispose();
+source.dispose();
+```
+
+`recording` accepts a canonical string or frozen `readRecording` result. Register
+compatible action bodies/guards under its schema version. The entire import,
+registered names/arities, route mode/base, hydration configuration and tick role
+are checked before any transition or view invocation. Hydration preflight may call
+pure configured guards. Payload guards run at execution, so recorded failed inputs
+are supported. Invalid configuration rejects `REPLAY_INCOMPATIBLE` with its cause;
+recording format/version/budget errors keep their recording error codes.
+
+Optional `router`, `persistence`, `simulation` and `view` have the ordinary public
+configuration shapes. A fixed baseline restores duration/tick/time/random; omitted
+simulation infers duration and the configured action from retained tick roots.
+Explicit duration/role must match. Router baseline metadata initializes virtual
+location without hydration. A recording with route/hydration packets needs matching
+configuration. There is no `target` option or automatic mount; use `replay.app.mount`
+after successful preflight. There is no live `onError` hook. Typed schemas preserve
+state/action inference; `replay.app.replaying` is true (ordinary apps return false).
+
+`step(count=1)` accepts an integer from 1 to 1024, counting complete roots, including
+failed ticks/batches. `run()` processes the remaining prefix synchronously; use
+bounded steps for interactive control. Frozen, nonreactive `status` includes status
+(`ready`, `running`, `complete`, `diverged`, `disposed`), position, total, sequence
+and divergence. Empty recordings are already complete. Retained recent histories
+start at their advanced baseline. A limited/stopped log reproduces its captured
+end, which may be older than the source app's current state.
+
+Nested actions execute once through the normal FIFO dispatcher; their recorded
+traces are comparison evidence. Tick roots inject only their consumed inputs and
+run configured tick logic. Accepted derived hydration and state-to-URL locations
+execute at recorded publication points. Body-requested navigation produces compared
+packets and changes virtual routes only when its recorded location was published.
+Recorded native History failure therefore does not create a virtual route update.
+Local URL metadata omits browser origin; admitted absolute body navigation uses a
+matching recorded local destination. A source router and a replay view can coexist
+in one Window because replay does not acquire native URL ownership.
+
+Live app event callbacks, tick/location drivers, mount-time storage/URL hydration,
+History/storage writes, adapter readers/effects/timers and scheduled application
+callbacks are suppressed. Sync adapters return an inert canceled receipt with
+sequence 0; effects/timers resolve `done` to null. Registration validation, scope
+cleanup and reentrancy rules still apply. Recorded measurement/network/timer/key/
+text results arrive through saved packets, without resampling the browser/network.
+Outside executing replay action bodies, dispatch/navigation/input/control and
+recording mutations reject `REPLAY_READONLY`. Mount/flush/views/observers remain
+available for inspection. Calling step/run/dispose during a root or active
+mount/read/notification/render boundary rejects `REPLAY_REENTRANT`.
+
+On divergence, the current atomic root finishes so its successful commits remain
+inspectable. No later root executes. The report contains sequence, tick/time, last
+dispatched action name (or null), optional eventIndex, reason (`trace`, `state`,
+`route`, `root`), bounded expected/actual summaries and expectedHash/actualHash for
+the completed root. Action rollback/failure/discard/version order must match.
+Input admission sequence/queued flags and notification/native presentation error
+messages are not authoritative state; those errors need not recur. Repeated step/
+run returns the divergence unchanged. Restart with a new controller; seek, undo/
+redo and inspector remain Phase D work.
+
+`dispose()` is idempotent and releases imported history, comparison scratch and
+owned app/view resources. Direct `replay.app.dispose()` also closes the controller.
+Later stepping throws `REPLAY_DISPOSED`; invalid options/count use `REPLAY_INVALID`.
+Caller-held exports/imports/status snapshots remain caller-owned. Resource counters
+verify owned cleanup, not heap collection.
+
+Actions, guards, views, cleanup and Promise consumers remain ordinary JavaScript.
+They must use controlled services and recorded inputs; ambient globals and mutable
+closures are not sandboxed. If an action closes over an app for nested dispatch or
+navigation, create its schema in a factory and bind that closure to `replay.app`
+before stepping. Reusing a closure pointing at a live source can mutate that source
+and falls outside isolation. Native HTML defaults and paint timing are also outside
+state replay guarantees. Matching hashes verify the recorded fixture, not code
+identity, authenticity, every ambient read, performance or universal browser support.
+
+The [recording example](examples/recording/README.md) lets you export and replay the
+captured prefix in a second view. See [replay API](docs/api/replay.md),
+[ADR 0020](docs/adr/0020-isolated-replay-divergence.md) and
+[C.9/C.10 qualification](docs/reports/task-C.9-C.10-replay-determinism.md).
 
 ## State and named actions
 

@@ -50,7 +50,7 @@ export function ownRouterConfig(raw) {
   return Object.freeze({ mode, base, routes: Object.freeze(routes), notFound: config.notFound ?? (() => 'Not found') });
 }
 
-export function createRouter(config, tracking, schedule, receive, onLocation = () => {}, admit = null) {
+export function createRouter(config, tracking, schedule, receive, onLocation = () => {}, admit = null, replay = null) {
   const cell = tracking.cell(null);
   let view = null, origin = null, documentURL = null, disposed = false, listener = null, generation = 0;
   const withinBase = path => config.base === '/' || path === config.base || path.startsWith(config.base + '/');
@@ -98,7 +98,7 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
       url: next.route.url, cause, hydrate }, () => publish(next, hydrate));
     publish(next, hydrate);
   }
-  function mounted() { if (!view || disposed) fail('ROUTER_NOT_MOUNTED', 'Navigation requires a mounted router.'); }
+  function mounted() { if ((!view && !replay) || disposed) fail('ROUTER_NOT_MOUNTED', 'Navigation requires a mounted router.'); }
   function resolve(to) {
     mounted();
     if (typeof to !== 'string' || !to || to.length > MAX_URL || /[\u0000-\u0020\\]/.test(to))
@@ -113,6 +113,9 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
         url = config.mode === 'history' ? new URL((config.base === '/' ? '' : config.base) + path.pathname + path.search + path.hash, origin) :
           new URL(documentURL + '#' + path.pathname + path.search + path.hash, origin);
       }
+      if (replay && absolute && !url.username && !url.password && ['http:', 'https:'].includes(url.protocol) &&
+          replay.localNavigation(url.pathname + url.search + url.hash))
+        url = new URL(url.pathname + url.search + url.hash, origin);
       if (url.origin !== origin || url.username || url.password || !['http:', 'https:'].includes(url.protocol) ||
           (config.mode === 'history' && !withinBase(url.pathname)) ||
           (config.mode === 'hash' && url.pathname + url.search !== documentURL))
@@ -128,6 +131,7 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
   return Object.freeze({
     mode: config.mode, base: config.base,
     start(window) {
+      if (replay) { view = window; return; }
       if (!window?.location || !window.history?.pushState || !window.history?.replaceState || !window.addEventListener)
         fail('ROUTER_HOST_INVALID', 'Routing requires native location, History and event APIs.');
       if (owners.has(window)) fail('ROUTER_OWNED', 'Another mounted router owns this window URL.');
@@ -151,11 +155,11 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
       const window = view, ownedListener = listener;
       view = listener = null; generation++;
       const errors = [];
-      if (window) {
+      if (window && !replay) {
         owners.delete(window);
         for (const type of ['popstate', 'hashchange']) try { window.removeEventListener(type, ownedListener); } catch (error) { errors.push(error); }
       }
-      if (!disposed) try { tracking.updateCells([[cell, null]]); } catch (error) { errors.push(error); }
+      if (!disposed && !replay) try { tracking.updateCells([[cell, null]]); } catch (error) { errors.push(error); }
       // Stale native listeners are inert after a failed removal.
       if (errors.length === 1) throw errors[0];
       if (errors.length) throw new AggregateError(errors, 'Router listener cleanup failed.');
@@ -180,9 +184,21 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
     },
     applyInput(input) { publish(this.prepareInput(input), input.hydrate); },
     applyPrepared(next, hydrate) { publish(next, hydrate); },
+    restoreReplay(input) {
+      origin = 'https://mini-framework.invalid';
+      if (input) {
+        const next = this.prepareInput(input), url = new URL(input.url, origin);
+        documentURL = url.pathname + url.search;
+        publish(next, false);
+      } else documentURL = '/';
+    },
     commit(request, hydrate = true) {
       mounted();
       if (cell.value.route.url === request.url) return;
+      if (replay) {
+        if (replay.navigationLocation()) observed(request.next, hydrate ? 'navigation' : 'state', hydrate);
+        return;
+      }
       try { view.history[request.replace ? 'replaceState' : 'pushState'](view.history.state, '', request.url); }
       catch (cause) { throw new FrameworkError('ROUTE_HISTORY_FAILED', 'Native history write failed; route state remains unchanged.', { cause }); }
       observed(request.next, hydrate ? 'navigation' : 'state', hydrate);
@@ -207,7 +223,7 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
         // navigation stays strict. Other malformed URLs still reject.
         if (typeof to === 'string' && to && to.length <= MAX_URL && !/[\u0000-\u0020\\]/.test(to)) {
           let url;
-          try { url = new URL(to, view.location.href); } catch { throw error; }
+          try { url = new URL(to, replay ? origin + (cell.value?.route.url ?? documentURL) : view.location.href); } catch { throw error; }
           if (!url.username && !url.password && url.href.length <= MAX_URL &&
               ['http:', 'https:', 'mailto:', 'tel:'].includes(url.protocol) &&
               (url.origin !== origin || (config.mode === 'history' && !withinBase(url.pathname)))) return url.href;
@@ -225,7 +241,7 @@ export function createRouter(config, tracking, schedule, receive, onLocation = (
       return url.origin === origin && !url.username && !url.password &&
         (config.mode === 'hash' ? url.pathname + url.search === documentURL : withinBase(url.pathname));
     },
-    counts: () => ({ routeListeners: view ? 2 : 0 }),
+    counts: () => ({ routeListeners: view && !replay ? 2 : 0 }),
     dispose() {
       disposed = true;
       try { this.stop(); } finally { cell.dispose(); config = null; origin = documentURL = null; }

@@ -3,7 +3,7 @@
 See the [public guide](../../DOCUMENTATION.md#bounded-recording) for a complete
 public-import example, [ADR 0019](../adr/0019-ordered-recording-retention.md) for the
 design, and the [runnable example](../../examples/recording/README.md). Experimental
-version-1 format; full replay/suppression/seek are unimplemented.
+version-1 format; [isolated replay/suppression](replay.md) is implemented; seek remains unimplemented.
 
 | API | Contract |
 | --- | --- |
@@ -88,7 +88,7 @@ optional expected schema, data graphs, sequences/clock/version progression,
 FIFO action ownership/terminal outcomes, input nesting, keyframe hashes/control
 policy and final continuation. It does not run guards/bodies or validate behavior,
 authenticity, intermediate state hashes or ambient globals. No automatic migration.
-Later replay/divergence will verify state transitions against these endpoints.
+[Replay/divergence](replay.md) verifies state transitions against these endpoints.
 
 Errors: RECORDING_INVALID, RECORDING_INCOMPATIBLE, RECORDING_LIMIT,
 RECORDING_ACTIVE, RECORDING_PENDING, RECORDING_MISSING, RECORDING_REENTRANT,

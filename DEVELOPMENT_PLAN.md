@@ -1,12 +1,12 @@
 # Framework development plan
 
-**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C.1–C.8 are implemented; C.9/C.10 and Phase D remain planned.
+**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C.1–C.10 are implemented and fixture-qualified. Phase D remains planned.
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.18, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.19, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** C.1–C.8 implement checkpoints, controlled services, fixed ticks, semantic input packets, optional interpolation and bounded recording. The frontend candidate remains verified; broad native qualification stays open. Current batch: C.7/C.8 ordered recording and bounded retention; next C.9/C.10 replay and qualification.
+**Current milestone:** Phase C deterministic runtime is complete for its documented fixture scope. C.9/C.10 replay and qualification passed; next D.1/D.2 history policy and seek/undo. Broad native qualification remains open.
 
 ## 1. Purpose and scope
 
@@ -179,8 +179,8 @@ Before calling the general frontend API stable, resolve the applicable decisions
 - [x] **C.6 — Add optional render interpolation.** Dependencies: C.3, A.7. Expose previous/current committed tick values and display-only alpha for opt-in bindings. Define alpha behavior during overload, pause, and resume; avoid extrapolation by accident. Acceptance: position/transform visuals can differ across frame rates while tick hashes match; interpolation cannot mutate state and ordinary text/forms use committed values.
 - [x] **C.7 — Record ordered transitions.** Dependencies: C.1–C.5. Capture a baseline snapshot/reference, seed/PRNG state, versions, action/payload order, measured inputs, tick IDs, and checkpoint metadata. Distinguish queued/dispatched/committed/failed inputs so failed transitions and nested dispatches are not replayed twice. Acceptance: export/import round trips; recorded nested action fixtures reproduce version order; exports happen only through explicit developer action.
 - [x] **C.8 — Bound recording memory and preserve baselines.** Dependencies: C.7. Enforce configurable action/byte limits, baseline advancement, periodic keyframes, and coordinated eviction. Budget snapshots and metadata, reject budgets that cannot hold a usable baseline, and define oversized-entry handling. Add explicit full-session memory/export limits and a visible limit-reached result. Acceptance: long runs stay within the documented accounting policy; every retained suffix is replayable; no silent full-session data loss occurs.
-- [ ] **C.9 — Implement replay and divergence reports.** Dependencies: C.6–C.8. Restore baseline/control services, re-execute ordered inputs, suppress live effects/storage writes/navigation side effects, and compare committed checkpoint hashes. Define nested-dispatch replay ownership. Acceptance: first divergence identifies checkpoint/action/tick and expected/actual values or hashes; incompatible imports fail before partial replay; replay does not repeat live external effects.
-- [ ] **C.10 — Verify deterministic boundaries and document them.** Dependencies: C.9. Add randomized recording/replay tests and varied frame schedules, retention windows, measured-input, async-result, and interpolation fixtures. Document synchronous coding rules, controlled services, format/versioning, and the limits of detecting ambient global reads. Acceptance: every supported fixture matches hashes at corresponding checkpoints; unsupported inputs and deliberate divergence fail clearly; root startup and earlier acceptance suites still pass.
+- [x] **C.9 — Implement replay and divergence reports.** Dependencies: C.6–C.8. Restore baseline/control services, re-execute ordered inputs, suppress live effects/storage writes/navigation side effects, and compare committed checkpoint hashes. Define nested-dispatch replay ownership. Acceptance: first divergence identifies checkpoint/action/tick and expected/actual values or hashes; incompatible imports fail before partial replay; replay does not repeat live external effects.
+- [x] **C.10 — Verify deterministic boundaries and document them.** Dependencies: C.9. Add randomized recording/replay tests and varied frame schedules, retention windows, measured-input, async-result, and interpolation fixtures. Document synchronous coding rules, controlled services, format/versioning, and the limits of detecting ambient global reads. Acceptance: every supported fixture matches hashes at corresponding checkpoints; unsupported inputs and deliberate divergence fail clearly; root startup and earlier acceptance suites still pass.
 
 ### Exit gate and artifacts
 
@@ -717,7 +717,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [x] Implemented frontend capabilities are independent; development dependencies and limitations are disclosed (B.11).
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** C.7/C.8 complete and verified; preceding C.5/C.6 candidate verified but uncommitted. Last commit: Batch 6, 6504d2b. No push. Next: C.9/C.10. Frontend/native browser qualification remains limited.
+**Current batch:** C.9/C.10 complete and verified. Batch 7/8 committed as eaa118b at user request. Batch 9 remains uncommitted; no push. Next: D.1/D.2. Frontend/native browser qualification remains limited.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -913,7 +913,7 @@ checks, root smoke and empty runtime dependencies. Candidate source fingerprints
 match the final workspace. See the [batch report](docs/reports/task-C.5-C.6-semantic-interpolation.md)
 for raw evidence, commands, environment and limits. No retained recording,
 full replay/suppression, publication or performance claim is included.
-Next: C.7/C.8. Batch 7 remains uncommitted; no push.
+Next: C.7/C.8. Batch 7 later committed together with Batch 8 as eaa118b at user request; no push.
 
 ### C.7/C.8 ordered recording and bounded retention — complete (6 October 2026)
 
@@ -932,4 +932,25 @@ and empty runtime dependencies. All 155 candidate source hashes match the final
 workspace. See the [batch report](docs/reports/task-C.7-C.8-recording-retention.md)
 for raw evidence, exact commands, environment and limitations.
 No full replay, effect suppression, seek, publication or performance claim.
-This batch and preceding Batch 7 remain uncommitted; no push. Next: C.9/C.10.
+This batch and preceding Batch 7 are committed as eaa118b at user request; no push. Next: C.9/C.10.
+
+### C.9/C.10 isolated replay and deterministic qualification — complete (7 October 2026)
+
+Owner: Codex. Baseline: Batch 7/8 commit eaa118b. ADR 0020 preceded implementation.
+createReplay imports/restores a separate app after complete preflight, executes
+whole roots with nested FIFO ownership, suppresses native inputs and adapter/
+History/storage/scheduled effects, and reports first trace/state/route divergence.
+Every root compares authoritative state/control hashes; optional mounted views
+retain ordinary rendering/cleanup. Tests cover aliases/holes/randomized arrays,
+rollback/partial/tick failures, recent/session retained baselines, external results,
+route/URL hydration, varied render/interpolation schedules and deliberate changes.
+Guide/README/API/types/example/PRD v2.19 are updated together. Final clean-copy
+qualification passes: 613 runtime tests (32 new replay/qualification cases), 292
+spike and 15 benchmark correctness tests; strict positive TS/checked JS and 153
+independently rejected negative lines; 138 Chrome checks, root startup, README
+walkthrough and empty runtime dependencies. All 159 source fingerprints match the
+final workspace. See the [report](docs/reports/task-C.9-C.10-replay-determinism.md)
+for raw artifact, exact commands, environment and limits.
+Batch 9 remains uncommitted; no push. Next: D.1/D.2 history policy and seek/undo.
+Ambient globals/source closures, OS IME/system clipboard/mobile/other-browser,
+heap collection and performance remain outside this qualification.

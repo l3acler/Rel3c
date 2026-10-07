@@ -83,7 +83,7 @@ Derived location/hydration packets are labeled to avoid executing them again as
 independent roots in the opt-in recorder. Nested named dispatch stays dispatcher-
 owned. Direct dispatch is not observed here. No automatic log is retained; caller
 captures must be bounded by the caller. C.7/C.8 provide [outcome records and bounded baselines](recording.md);
-whole-session replay/live-effect suppression remains C.9 work.
+[isolated replay/live-source suppression](replay.md) is implemented in C.9/C.10.
 
 ## Interpolation
 

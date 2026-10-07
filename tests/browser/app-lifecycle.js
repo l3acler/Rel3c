@@ -9,6 +9,7 @@ import { runPersistenceTests } from './persistence.js';
 import { runDeterminismTests } from './determinism.js';
 import { runTickInputTests } from './ticks-inputs.js';
 import { runSemanticInterpolationTests } from './semantic-interpolation.js';
+import { runReplayTests } from './replay.js';
 import { runRecordingTests } from './recording.js';
 import { runClickTests } from './click.js';
 import { runKeyedTests } from './keyed.js';
@@ -313,5 +314,6 @@ window.runAppLifecycleTests = async () => {
   await runTickInputTests({ test, host, assert, throws });
   await runSemanticInterpolationTests({ test, host, assert, throws });
   await runRecordingTests({ test, host, assert, throws });
+  await runReplayTests({ test, host, assert, throws });
   return { passed: results.length, results, coreSlice };
 };

@@ -2,7 +2,7 @@
 
 Implemented: versioned state/control checkpoints, canonical SHA-256 comparison,
 manual logical time and transactional seeded simulation draws. C.3/C.4 add
-[fixed ticks and external-input adapters](ticks-inputs.md). C.7/C.8 add [bounded recording](recording.md). Full replay remains unimplemented. C.5/C.6 provide [semantic input packets and optional display interpolation](semantic-interpolation.md).
+[fixed ticks and external-input adapters](ticks-inputs.md). C.7/C.8 add [bounded recording](recording.md). [Isolated replay](replay.md) is implemented. C.5/C.6 provide [semantic input packets and optional display interpolation](semantic-interpolation.md).
 Public APIs are experimental; [ADR 0016](../adr/0016-deterministic-checkpoints-services.md)
 defines the exact format and compatibility contract.
 
@@ -103,7 +103,7 @@ Restore validates before view invocation or target ownership. It restores no
 DOM, subscriptions, handlers, queued work, URL/history, storage or external effects.
 If configured, ordinary mount hydration can later change restored fields and
 publish additional versions. Restoring a checkpoint is not replay and does not
-suppress live adapters; replay will provide that boundary in C.9.
+suppress live adapters; [createReplay](replay.md) provides that boundary.
 
 `hashSnapshot(text)` is a public standalone synchronous function returning 64
 lowercase SHA-256 hex digits. It first validates canonical checkpoint text,

@@ -42,7 +42,7 @@ metadata and only selected fields. The private production codec uses
 mini-framework-persistence-graph v1, preserving supported primitives, negative
 zero, undefined, holes/custom array properties, null prototypes and acyclic aliases.
 Aliases survive within one area, independently across locations. It is not the
-future replay checkpoint format. Each bucket/value supports at most 262,144 UTF-8
+versioned replay checkpoint format. Each bucket/value supports at most 262,144 UTF-8
 bytes, 10,000 nodes, 100,000 entries/aggregate array slots and 128 levels. Envelope/
 projection overhead counts. Decoder validates shape, references, cycles and bounds
 before graph allocation and rejects noncanonical wire.
@@ -88,7 +88,7 @@ PERSIST_FAILED and PERSIST_REENTRANT.
 Dispose cancels pending writes/reports and releases defaults, guards and browser
 references. Stored data remains. Flush before explicit disposal when the pending
 write is needed. Nested paths, multi-source fields, migration APIs, unload flush,
-distributed/live cross-tab merging and recorded persistence replay are unimplemented.
+distributed/live cross-tab merging are unimplemented. [Isolated replay](replay.md) applies recorded persistence inputs.
 Browser checks cover Chrome; resource counters do not prove heap collection.
 Decision: [ADR 0014](../adr/0014-state-locations-hydration.md).
 
@@ -97,4 +97,4 @@ hydration packets. Bootstrap still combines selected fields before the first vie
 URL changes derive values from normalized route input. Supplied hydration validates
 namespace/version/field location/guards without reading live Storage. Existing
 fallback/write behavior is retained. See [semantic packets](semantic-interpolation.md).
-No full replay/storage-write suppression is implemented by that boundary.
+That packet boundary alone does not suppress storage writes; [createReplay](replay.md) does.

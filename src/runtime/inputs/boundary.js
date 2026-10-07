@@ -26,6 +26,12 @@ export function createInputBoundary(clock, ticks, normalize, guarded, hooks = {}
   }
   return Object.freeze({
     get executing() { return depth > 0; },
+    replay(input, queued) {
+      live();
+      const { packet, execute } = normalize(input.packet);
+      sequence = Math.max(sequence, input.sequence);
+      return run(packet, execute, {sequence:input.sequence,tick:input.tick,time:input.time,derived:input.derived}, () => true, queued);
+    },
     admit(value, { immediate = false, bootstrap = false, derived = false, active = () => true, tick } = {}) {
       live();
       const { packet, usage, execute } = normalize(value);

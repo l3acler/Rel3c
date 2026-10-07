@@ -208,3 +208,12 @@ for(const record of recording.records) {
 app.stopRecording();app.clearRecording();void [recordingStatus,baselineText];
 
 const roundTripRecording:string=serializeRecording(recording);void roundTripRecording;
+
+// C.9 replay preserves schema state and action inference on its isolated app.
+import { createReplay, type ReplayStatus } from 'mini-framework';
+const replay=createReplay({recording:roundTripRecording,schema:controlledSchema,
+  view:({bind})=>div(bind.n)});
+type ReplayStateInference=Expect<Equal<typeof replay.app.state.n,number>>;
+type ReplayPayloadInference=Expect<Equal<Parameters<typeof replay.app.actions.scale>,[payload:number]>>;
+const replayStatus:ReplayStatus=replay.step(2);replay.run();replay.dispose();void replayStatus;
+createReplay({recording,view:()=>div('headless optional view')});

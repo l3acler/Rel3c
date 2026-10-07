@@ -1,8 +1,9 @@
 # C.7/C.8 — Ordered recording and bounded retention
 
 Baseline: verified uncommitted C.5/C.6 candidate, auditor artifact
-1791232680040-b641b70c. Last commit: Batch 6 `6504d2b`. Both Batch 7 and this
-batch remain uncommitted. ADR 0019 preceded implementation.
+1791232680040-b641b70c. At qualification the last commit was Batch 6 `6504d2b`. Both Batch 7 and this
+batch were committed together as `eaa118b` at user request on 7 October 2026.
+ADR 0019 preceded implementation.
 
 Opt-in recording captures complete dispatch/input/tick/manual-time roots with
 nested FIFO action and derived packet ownership, version/failure/discard traces,

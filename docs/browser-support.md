@@ -9,7 +9,7 @@ Chrome version or support parity elsewhere.
 | --- | --- | --- |
 | DOM, forms, keyed identity, focus/selection, cleanup | Real Chrome fixtures and README app | Native HTML subset in DOM reference |
 | Actions, reactivity, priorities | Node and Chrome integration | Cooperative work; no CPU preemption or heap-collection guarantee |
-| C.1/C.2 clock/draw rollback, checkpoints and restored continuation | Node/native browser hash oracles and varied manual render boundaries | Fixed ticks/adapters implemented in C.3/C.4; bounded recording implemented in C.7/C.8; full replay remains unimplemented |
+| C.1/C.2 clock/draw rollback, checkpoints and restored continuation | Node/native browser hash oracles and varied manual render boundaries | Fixed ticks/adapters implemented in C.3/C.4; bounded recording implemented in C.7/C.8; isolated replay is implemented in C.9/C.10 |
 | History/hash, direct loads, reload, back/forward | Real Chrome and scoped History fallback | One router per Window; hosts configure production fallback |
 | Local/session/URL hydration, failures and reload | Browser storage and injected failure fixtures | No cross-tab merging, migration or unload flush |
 | Enter/Space, shortcuts, held/repeat/release, keyboard scroll | Trusted Chrome automation and unit fixtures | Desktop automation only |
@@ -44,11 +44,22 @@ composition), native navigation packet checks, readonly interpolation and displa
 fraction comparisons with unchanged hashes/forms. The public example accepts
 trusted Chrome Unicode editing. Source packet tests cover headless History/hash
 locations, initial/URL hydration, tick assignment and derived work. OS IME,
-clipboard/mobile/other-browser and full replay gates remain open. See
+clipboard/mobile/other-browser gates remain open. See
 [verification](reports/task-C.5-C.6-semantic-interpolation.md).
 
 C.7/C.8 additionally verify native semantic text recording, nested tick failure
 traces, whole-keyframe recent eviction, visible session limits, route continuations
 and explicit export/import in `/examples/recording/`. These checks validate
-executed-prefix recording; full replay/live-source suppression, OS IME/system
+executed-prefix recording. C.9/C.10 replay checks are described below; OS IME/system
 clipboard/mobile/other-browser qualification and heap/latency claims remain open.
+
+C.9/C.10 add isolated replay in a second mounted app: synthetic native key/text/
+paste/composition packets, virtual routing alongside a live router, recorded
+measurement/async results without resampling or effects, fixed tick hashes under
+varied render schedules, display-only interpolation, first divergence and cleanup.
+Node qualification additionally covers rollback/discard/FIFO, failed inputs/ticks,
+URL/default hydration, History failures, aliases/holes, randomized array edits,
+retained recent/session baselines, compatibility preflight and readonly boundaries.
+[The report](reports/task-C.9-C.10-replay-determinism.md) records exact totals and
+versions. These replay fixtures do not qualify OS IME/system clipboard/mobile,
+other browsers, ambient-global sandboxing, heap collection or performance.

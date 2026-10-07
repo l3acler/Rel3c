@@ -5,7 +5,7 @@ synchronous declarative mounting, cleanup and disposal. A.2/A.3 add production C
 transactions, payload ownership/guards and bounded FIFO named dispatch.
 A.4/A.5 add exact observers and lazy computed values.
 Declarative elements, exact bindings and frame batching are implemented in A.6/A.7; see [DOM API](dom.md).
-A.8/A.9 add keyed collections and scoped click callbacks. B.1–B.3 add [native events and semantic keyboard/text inputs](events.md); B.4–B.6 add [priority work](scheduling.md) and [shared-state routing](routing.md); B.7/B.8 add [state locations and hydration](persistence.md); replay remains unimplemented. This document describes what actually runs today.
+A.8/A.9 add keyed collections and scoped click callbacks. B.1–B.3 add [native events and semantic keyboard/text inputs](events.md); B.4–B.6 add [priority work](scheduling.md) and [shared-state routing](routing.md); B.7/B.8 add [state locations and hydration](persistence.md); [isolated replay](replay.md) is implemented. This document describes what actually runs today.
 
 B.9 aligns the declarations with the existing synchronous `onError` contract:
 statically visible Promise-returning hooks reject during checking. Synchronous
@@ -140,7 +140,7 @@ and revokes it too. Action return values are ignored, and both dispatch forms
 return `undefined`. Keep async effects outside actions and dispatch their results
 as supported payloads. Do not read ambient layout/storage/time/random values
 inside actions. C.1/C.2 add [controlled services/checkpoints](determinism.md);
-[input adapters](ticks-inputs.md) and [bounded recording](recording.md) are implemented; full replay remains future work. Arbitrary external side effects cannot be undone.
+[input adapters](ticks-inputs.md) and [bounded recording](recording.md) are implemented; [isolated replay](replay.md) is implemented. Arbitrary external side effects cannot be undone.
 
 ## Nested dispatch and failures
 
@@ -304,7 +304,7 @@ metadata. `app.snapshot()` exports canonical state/version/control JSON;
 `createApp({snapshot,schema,...})` restores a new app without `initialState` or
 `controls`. `hashSnapshot(text)` validates and compares checkpoints with SHA-256.
 See [the full contract](determinism.md) for versions, limits, expiration, errors,
-ordinary mount hydration and the boundary between restoration and future replay.
+ordinary mount hydration and the boundary between restoration and isolated replay.
 
 ## Fixed ticks and owned external inputs (C.3/C.4)
 
@@ -314,7 +314,7 @@ and bounded catch-up. `enqueue`/`enqueueAt` admit future inputs; `resumeTicks`,
 `app.ticks` exposes frozen nonreactive status. `app.inputs` owns adapter work for
 the app; `context.inputs` owns it for that view. See [ticks/inputs](ticks-inputs.md)
 and the [guide](../../DOCUMENTATION.md#fixed-ticks-and-external-inputs) for arguments,
-errors, hidden policy, cancellation and fixed-checkpoint restoration. Bounded recording is available in C.7/C.8; full replay remains unimplemented.
+errors, hidden policy, cancellation and fixed-checkpoint restoration. Bounded recording is available in C.7/C.8; [Isolated replay](replay.md) is implemented.
 
 ## Semantic input packets and optional display interpolation (C.5/C.6)
 
@@ -326,7 +326,7 @@ Live navigation/location/hydration are integrated with boot/derived policies.
 roots and clamped alpha; ordinary forms/bindings stay committed. See
 [semantic/interpolation](semantic-interpolation.md) and the
 [guide](../../DOCUMENTATION.md#semantic-input-packets) for arguments, errors,
-compatibility and cleanup. Bounded recording is available in C.7/C.8; full replay remains unimplemented.
+compatibility and cleanup. Bounded recording is available in C.7/C.8; [Isolated replay](replay.md) is implemented.
 
 ## Ordered recording and bounded retention (C.7/C.8)
 
@@ -339,4 +339,12 @@ limits. Capture never changes runtime commit/error semantics. Mount and drain
 existing inputs/effects before starting; all recording operations require idle
 boundaries. See [recording](recording.md) and [the guide](../../DOCUMENTATION.md#bounded-recording)
 for options, byte accounting, ownership, errors, cleanup and an executable example.
-Full replay/seek/live-effect suppression remain unimplemented.
+[Isolated replay and live-source suppression](replay.md) are implemented; seek remains unimplemented.
+
+## Isolated replay
+
+`createReplay({recording,schema,...})` restores a separate app after complete
+preflight; its controller owns step/run and first-divergence comparison.
+`app.replaying` is false for createApp and true for the controller app.
+See [replay](replay.md) for readonly mutation boundaries, suppression, optional
+mount/flush, errors and disposal. Public app.dispose also closes its controller.
