@@ -112,3 +112,9 @@ bounded COW roots are retained; app disposal releases them and view cleanup
 removes subscriptions/queued bindings. Caller-held frames remain caller-owned.
 Interpolation changes no state versions, logical clock/PRNG or checkpoint hashes.
 Display roots/alpha are not serialized into authoritative checkpoints.
+
+D.1/D.2 [history](history.md) uses the same replay suppression during inspection.
+Its stable app restores whole state/control/route graphs, invalidating consumers;
+normal actions retain their existing property-level behavior. Explicit branch
+mount skips ambient startup hydration and restores the selected local URL before
+normal live behavior. See history for barriers, ownership, errors and cleanup.

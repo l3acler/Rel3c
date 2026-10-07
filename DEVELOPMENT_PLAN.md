@@ -1,12 +1,12 @@
 # Framework development plan
 
-**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C.1–C.10 are implemented and fixture-qualified. Phase D remains planned.
+**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C.1–C.10 are implemented and fixture-qualified. D.1/D.2 are implemented and verified. Remaining Phase D work is planned.
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.19, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.20, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** Phase C deterministic runtime is complete for its documented fixture scope. C.9/C.10 replay and qualification passed; next D.1/D.2 history policy and seek/undo. Broad native qualification remains open.
+**Current milestone:** D.1/D.2 retained history, seeking/undo/redo and branching. Qualification passed; next D.3/D.4 instrumentation and inspector. Broad native qualification remains open.
 
 ## 1. Purpose and scope
 
@@ -192,8 +192,8 @@ Deliver the tick runtime, controlled services, input adapters, optional interpol
 
 ### Tasks
 
-- [ ] **D.1 — Define history and reversible-action policy.** Dependencies: Phase C. Specify seek versus undo, action grouping, irreversible external effects, navigation/persistence during inspection, expired history, and branching after undo. Acceptance: an ADR explains which actions can be undone and what happens to the discarded future; no claim implies reversal of completed network/storage side effects.
-- [ ] **D.2 — Implement seek and undo/redo.** Dependencies: D.1. Restore the nearest preceding keyframe and replay to the requested retained transition. Keep live input/effects paused during inspection and restore clock/PRNG/input bookkeeping for continued execution. Acceptance: retained seeks match hashes within the configured replay interval plus restoration cost; undo/redo and branching are predictable; expired states fail clearly; resumed actions remain deterministic.
+- [x] **D.1 — Define history and reversible-action policy.** Dependencies: Phase C. Specify seek versus undo, action grouping, irreversible external effects, navigation/persistence during inspection, expired history, and branching after undo. Acceptance: an ADR explains which actions can be undone and what happens to the discarded future; no claim implies reversal of completed network/storage side effects.
+- [x] **D.2 — Implement seek and undo/redo.** Dependencies: D.1. Restore the nearest preceding keyframe and replay to the requested retained transition. Keep live input/effects paused during inspection and restore clock/PRNG/input bookkeeping for continued execution. Acceptance: retained seeks match hashes within the configured replay interval plus restoration cost; undo/redo and branching are predictable; expired states fail clearly; resumed actions remain deterministic.
 - [ ] **D.3 — Add development instrumentation.** Dependencies: C.10. Expose tick/version/action/input origins, payloads, state changes, dirty dependencies, binding evaluations, DOM write/listener counts, simulation/render duration, and frame timing. Bound diagnostic storage and make instrumentation optional. Acceptance: metrics describe actual work, do not change action ordering/hashes, and do not retain disposed resources or grow indefinitely.
 - [ ] **D.4 — Build the development inspector.** Dependencies: D.2, D.3. Display transition selection, inputs, state changes, dependency-to-binding relationships, scheduling, resource counts, and performance. Show included recording values and explicit export controls. Acceptance: a developer can select a transition and explain its inputs and affected bindings; inspector cleanup works and its controls are keyboard accessible.
 - [ ] **D.5 — Establish reproducible benchmark workloads.** Dependencies: D.3. Measure independent bindings, pre-frame bursts, keyed-list edits, moving elements, repeated mount/unmount, transaction churn, and replay throughput. Preserve equivalent-work reference baselines and deterministic workload seeds. Acceptance: scripts record environment, browser/version, machine, warmup, run count, workload source, raw samples, and checkpoint results.
@@ -717,7 +717,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [x] Implemented frontend capabilities are independent; development dependencies and limitations are disclosed (B.11).
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** C.9/C.10 complete and verified. Batch 7/8 committed as eaa118b at user request. Batch 9 remains uncommitted; no push. Next: D.1/D.2. Frontend/native browser qualification remains limited.
+**Current batch:** D.1/D.2 complete and verified; Batch 10 remains uncommitted. Batch 9 committed as 3bc1163 at user request; no push. Next: D.3/D.4. Frontend/native browser qualification remains limited.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -951,6 +951,25 @@ independently rejected negative lines; 138 Chrome checks, root startup, README
 walkthrough and empty runtime dependencies. All 159 source fingerprints match the
 final workspace. See the [report](docs/reports/task-C.9-C.10-replay-determinism.md)
 for raw artifact, exact commands, environment and limits.
-Batch 9 remains uncommitted; no push. Next: D.1/D.2 history policy and seek/undo.
+Batch 9 committed as 3bc1163 at user request; no push. Next: D.1/D.2 history policy and seek/undo.
 Ambient globals/source closures, OS IME/system clipboard/mobile/other-browser,
 heap collection and performance remain outside this qualification.
+
+### D.1/D.2 retained history and branching — complete (7 October 2026)
+
+Owner: Codex. Baseline: Batch 9 commit 3bc1163, committed at user request before
+starting this batch. ADR 0021 preceded implementation. createHistory indexes one
+bounded recording, seeks root endpoints from nearest keyframes, and applies declared
+reversible names/route-hydration barriers to whole-root undo/redo. Stable inspection
+preserves app/scopes/keyed DOM/focus; bulk restoration invalidates reactive consumers.
+Explicit branch disposes inspection, releases redo future, restores authoritative
+state/control/version/route into a new headless live app and starts a new empty
+input session. Native branch mount restores local URL and skips ambient hydration.
+Guide/README/types/example/API/PRD v2.20 updated together. Final clean-copy
+qualification passes: 644 runtime tests (31 history cases), 292 spike and 15
+benchmark correctness tests; positive TS/checked JS and 163 independently rejected
+negative lines; 143 Chrome checks, root startup, README walkthrough and empty runtime
+dependencies. All 166 final source fingerprints match. See
+[report](docs/reports/task-D.1-D.2-history-branching.md) for raw artifact, commands,
+environment, limits and preserved formatting-only edits.
+Batch 10 remains uncommitted; no push. Next: D.3/D.4 instrumentation and inspector.

@@ -2,7 +2,7 @@
 
 A JavaScript frontend framework built here, with no third-party runtime dependencies.
 It provides transactional state, precise DOM bindings, native events, keyed lists,
-routing, priorities and selected state persistence. C.1–C.10 also provide checkpoints, controlled services, fixed ticks, semantic inputs, optional interpolation, bounded recording and isolated replay. History, undo and developer tools remain planned for Phase D.
+routing, priorities and selected state persistence. C.1–C.10 also provide checkpoints, controlled services, fixed ticks, semantic inputs, optional interpolation, bounded recording and isolated replay. D.1/D.2 add retained history, reversible undo/redo and explicit branching. Inspector and performance tooling remain planned.
 
 The public API is experimental (`0.1.0`). The Phase B frontend walkthrough is
 qualified in desktop Chrome; OS IMEs, system clipboard paste, mobile and other
@@ -279,11 +279,45 @@ and leaves completed commits inspectable. Optional views mount through
 mutations reject. Native handlers, History/storage writes, adapter readers/effects/
 timers and scheduled callbacks are suppressed. Application globals and mutable
 closures remain the developer's responsibility; bind nested dispatch closures to
-the new app. No seek/undo or paint timing guarantee is provided.
+the new app. Use the history API below for retained seek/undo; paint timing is outside checkpoint guarantees.
 
 Use **Replay captured prefix** in `/examples/recording/` after exporting. See the
 [guide](DOCUMENTATION.md#isolated-replay) and [API](docs/api/replay.md) for matching
 configuration, versions, errors, cleanup, suppression and deterministic coding rules.
+
+## Inspect, undo and branch retained history
+
+History uses complete recorded roots and requires an explicit reversible-action
+list. Navigation/hydration roots are undo barriers; arbitrary seek can inspect them.
+The stable inspection app suppresses live sources and retains mounted keyed nodes.
+
+```js
+import {createApp,createActionSchema,createHistory} from './src/index.js';
+const schema=createActionSchema()(({action})=>({
+  increment:action((draft,services)=>{draft.count++;draft.draw=services.random();}),
+}));
+const source=createApp({schema,initialState:{count:0,draw:0},controls:{seed:7}});
+source.startRecording({keyframeInterval:2});
+source.actions.increment();source.actions.increment();source.actions.increment();
+const recording=source.exportRecording();source.dispose();
+const history=createHistory({recording,schema,reversible:['increment']});
+history.seek(history.status.endSequence);history.undo();history.redo();history.undo();
+const branch=history.branch(); // fresh headless live app; redo future discarded here
+branch.actions.increment(); // restored seed/draw/version continuation
+console.log(branch.state.count); // 3
+history.dispose();
+```
+
+Inspection starts at the retained baseline. Seek uses the nearest keyframe and
+compares the replayed suffix; use full replay to verify earlier bodies. Undo/redo
+group whole batches/ticks and validate barriers before moving. Branching restores
+clock/PRNG/version and route, clears old queues/effects, and starts a new input
+session. Explicit branch mount restores the selected local URL without ambient
+startup hydration and resumes normal live behavior. No completed external effect
+is reversed, and the original recording remains unchanged.
+
+Open `/examples/history/`. See the [guide](DOCUMENTATION.md#retained-history-and-branching)
+and [API](docs/api/history.md) for retained bounds, policy, errors and cleanup.
 
 ## Semantic inputs and display interpolation
 

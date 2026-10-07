@@ -3,7 +3,7 @@
 See the [public guide](../../DOCUMENTATION.md#bounded-recording) for a complete
 public-import example, [ADR 0019](../adr/0019-ordered-recording-retention.md) for the
 design, and the [runnable example](../../examples/recording/README.md). Experimental
-version-1 format; [isolated replay/suppression](replay.md) is implemented; seek remains unimplemented.
+version-1 format; [isolated replay/suppression](replay.md) is implemented; [retained history](history.md) adds seek/undo/redo.
 
 | API | Contract |
 | --- | --- |
@@ -94,3 +94,9 @@ Errors: RECORDING_INVALID, RECORDING_INCOMPATIBLE, RECORDING_LIMIT,
 RECORDING_ACTIVE, RECORDING_PENDING, RECORDING_MISSING, RECORDING_REENTRANT,
 and existing APP_DISPOSED. Limit-reached reasons are status results, not runtime
 exceptions. Plain malformed imports throw without app hooks or partial execution.
+
+D.1/D.2 [history](history.md) uses the same replay suppression during inspection.
+Its stable app restores whole state/control/route graphs, invalidating consumers;
+normal actions retain their existing property-level behavior. Explicit branch
+mount skips ambient startup hydration and restores the selected local URL before
+normal live behavior. See history for barriers, ownership, errors and cleanup.

@@ -300,6 +300,21 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
   })()`);
   if(!recordingExample)throw Error('Public bounded recording example failed');
   tests.results.push({name:'C.7–C.10 public example exports/validates bounded histories and replays the limited session end',passed:true});tests.passed++;
+  const historyPage=await open('examples/history/');
+  await historyPage.waitFor('document.getElementById("seek-end") !== null');
+  const historyExample=await historyPage.evaluate(`(async()=>{
+    const {app,history}=await import('/examples/history/main.js');
+    const {resourceCounts}=await import('/src/runtime/diagnostics.js');
+    const click=id=>{document.getElementById(id).click();app.flush();};
+    click('seek-end');const end=history.status.sequence;
+    click('undo');const undone=history.status.sequence===end-1&&history.app.state.n===11;
+    click('redo');const redone=history.status.sequence===end&&history.app.state.n===12;
+    click('undo');click('branch');const branched=history.status.status==='branched'&&history.status.discardedRecords===1;
+    click('branch-sample');const continued=history.app.state.n===12;
+    const selected=history.app;app.dispose();return undone&&redone&&branched&&continued&&Object.values(resourceCounts(selected)).every(n=>n===0);
+  })()`);
+  if(!historyExample)throw Error('Public history/branch example failed');
+  tests.results.push({name:'D.1/D.2 public history example seeks/undoes/redoes and branches deterministic state',passed:true});tests.passed++;
   const paths = ['src/index.js' , 'src/index.d.ts', 'src/runtime/app.js', 'src/runtime/errors.js', 'src/runtime/records.js',
     'src/runtime/state/initial-state.js', 'src/runtime/state/transactions.js', 'src/runtime/state/data.js',
     'src/runtime/state/draft.js', 'src/runtime/state/graph.js', 'src/runtime/reactivity/tracking.js', 'src/runtime/dom/bindings.js', 'src/runtime/dom/nodes.js', 'src/runtime/dom/properties.js', 'src/runtime/dom/renderer.js', 'src/runtime/dom/queue.js', 'src/runtime/dom/events.js', 'src/runtime/diagnostics.js', 'src/runtime/actions/schema.js', 'src/runtime/actions/dispatch.js', 'examples/basic/main.js', 'examples/basic/index.html',
@@ -319,13 +334,13 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
     'tests/semantic-inputs.test.js', 'tests/interpolation.test.js', 'tests/browser/semantic-interpolation.js',
     'examples/interpolation/main.js', 'examples/interpolation/index.html');
   paths.push('src/runtime/recording/format.js', 'src/runtime/recording/recorder.js', 'tests/recording.test.js',
-    'tests/browser/recording.js', 'tests/browser/replay.js', 'tests/replay.test.js', 'src/runtime/recording/replay.js', 'examples/recording/main.js', 'examples/recording/index.html');
+    'tests/browser/recording.js', 'tests/browser/replay.js', 'tests/replay.test.js', 'src/runtime/recording/replay.js', 'src/runtime/history/controller.js', 'tests/history.test.js', 'tests/browser/history.js', 'examples/history/main.js', 'examples/history/index.html', 'examples/recording/main.js', 'examples/recording/index.html');
   const sourceFiles = await Promise.all(paths.map(async file => ({ file,
     sha256: createHash('sha256').update(await readFile(path.join(root, file))).digest('hex') })));
-  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'C.9–C.10', formatVersion: 1, recordedAt: new Date().toISOString(),
+  const report = { kind: 'app-lifecycle-transactions-and-reactivity', task: 'D.1–D.2', formatVersion: 1, recordedAt: new Date().toISOString(),
     browserVersion, flags, machine: { cpu: os.cpus()[0]?.model, cpuCount: os.cpus().length,
       platform: os.platform(), release: os.release(), arch: os.arch(), node: process.version },
-    sourceFiles, example, tests, nativeInputs, limitations: 'Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. History/hash routing and cooperative priorities covered; memory/session/local/URL hydration and writes covered; controlled manual time/draws, checkpoints and restored continuation covered; fixed ticks, scoped external measurements/timers/network and cancellation covered; semantic packet forwarding and display interpolation covered; ordered bounded recording/export/import covered; isolated replay, first divergence, live-source suppression and replay checkpoint/render fixtures covered. Resource counters are not a heap-leak proof.' };
+    sourceFiles, example, tests, nativeInputs, limitations: 'Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. History/hash routing and cooperative priorities covered; memory/session/local/URL hydration and writes covered; controlled manual time/draws, checkpoints and restored continuation covered; fixed ticks, scoped external measurements/timers/network and cancellation covered; semantic packet forwarding and display interpolation covered; ordered bounded recording/export/import covered; isolated replay, first divergence, live-source suppression and replay checkpoint/render fixtures covered; retained seek/undo/redo, stable inspection/focus and explicit live branching covered. Resource counters are not a heap-leak proof.' };
   const directory = path.join(root, 'tests/results'); await mkdir(directory, { recursive: true });
   const file = path.join(directory, 'app-lifecycle-' + Date.now() + '-' + randomUUID().slice(0, 8) + '.json');
   await writeFile(file, JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });

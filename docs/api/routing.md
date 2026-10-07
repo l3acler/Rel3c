@@ -91,3 +91,9 @@ up at the next tick. Bootstrap and post-commit/state-derived work remain immedia
 Supplied location packets can update cells headlessly using the saved URL, without
 sampling/writing live History. See [semantic packets](semantic-interpolation.md)
 for compatibility and derived-input ownership. [Isolated replay suppression](replay.md) is implemented.
+
+D.1/D.2 [history](history.md) uses the same replay suppression during inspection.
+Its stable app restores whole state/control/route graphs, invalidating consumers;
+normal actions retain their existing property-level behavior. Explicit branch
+mount skips ambient startup hydration and restores the selected local URL before
+normal live behavior. See history for barriers, ownership, errors and cleanup.

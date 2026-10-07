@@ -4,6 +4,7 @@ This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
 application lifecycle, read-only state and synchronous named actions, exact observers, lazy computed values and declarative frame-batched DOM. Phase A (A.1–A.10) is complete. B.1–B.8 add native events, semantic keyboard/text inputs, cooperative priority lanes and History/hash routing with one shared application store, plus guarded memory/session/local/URL state locations. APIs remain experimental and browser qualification is limited.
 B.9–B.11 refine the public declarations and root auditor walkthrough. C.1–C.10 add versioned checkpoints, controlled services, fixed ticks, semantic inputs, optional display interpolation, bounded recording and isolated replay.
+D.1/D.2 add retained history, declared reversible undo/redo and explicit live branching.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -27,6 +28,7 @@ Import from `src/index.js`; applications do not need runtime internals.
 | Error reporting       | Readable framework error codes and a synchronous application error hook                        |
 | TypeScript            | Inferred action names/payloads and read-only state declarations                                |
 | Bounded recording     | Opt-in executed roots/traces, versioned export/import and usable recent/session baselines     |
+| Retained history      | Keyframe seeking, declared reversible root groups, undo/redo and live branching |
 | Isolated replay       | Whole-root step/run, checkpoint/trace comparison, first divergence and live-source suppression |
 | Checkpoints           | Canonical versioned state/control exports, owned restoration and SHA-256 comparison           |
 | Controlled services   | Manual logical microseconds and transaction-scoped seeded simulation draws                    |
@@ -105,6 +107,7 @@ explicit bindings below for updates.
 | `hashSnapshot(text)`                                | Validate and hash canonical state/control checkpoint text             |
 | `readRecording(text, options?)` / `serializeRecording(recording)` | Validate/decode immutable recordings and return canonical wire |
 | `createReplay(config)` | Restore a separate app and control verified replay with live sources suppressed |
+| `createHistory(config)` | Inspect retained root endpoints, undo/redo declared groups and create a live branch |
 | `FrameworkError`                                     | Framework error class with a readable message and`code`             |
 | `VERSION`                                            | Package version string                                                |
 | `FRAMEWORK_INFO`                                     | Frozen metadata describing implemented and planned capabilities       |
@@ -1011,7 +1014,7 @@ C.5 connects existing native semantic key/text snapshots, route observations,
 navigation requests and accepted hydration values to one owned packet boundary.
 The packet boundary itself retains no input log; C.7/C.8 recording is opt-in below. `observeInputs(callback)` reports execution
 attempts; `receiveInput(packet, {tick?})` validates and admits a supplied packet.
-These APIs support controlled input tests and the recorder below. Isolated replay suppresses runtime live sources as described below; seeking remains unimplemented.
+These APIs support controlled input tests and the recorder below. Isolated replay suppresses runtime live sources as described below; retained seeking is described below.
 
 Use view-owned helpers to admit semantic browser values through payload actions:
 
@@ -1179,7 +1182,7 @@ See the [API reference](docs/api/semantic-interpolation.md),
 C.7/C.8 add opt-in recording of executed transitions. The runtime keeps a usable
 baseline, ordered execution roots, action/input traces, checkpoint hashes and an
 end snapshot. Export is an explicit developer operation; nothing is automatically
-uploaded, downloaded or persisted. Isolated replay and divergence reports are described below; seeking remains unimplemented.
+uploaded, downloaded or persisted. Isolated replay and divergence reports are described below; retained seeking is described below.
 
 ```js
 import {createApp,createActionSchema,readRecording,serializeRecording}
@@ -1284,9 +1287,9 @@ checkpoint. Supplemental route data does not change `hashSnapshot`'s state/contr
 hash; ordinary `createApp({snapshot})` still does not restore route cells.
 
 Keyframes occur at complete root boundaries after the configured slot interval.
-An indivisible nested batch/tick can cross the interval; a later seek would replay
+An indivisible nested batch/tick can cross the interval; a retained seek replays
 at most that interval plus one atomic root, rather than resume half a dispatch
-without its pending children/navigation. No public seek is implemented yet.
+without its pending children/navigation. The history controller below implements retained root seeking.
 
 `readRecording(text,{schemaVersion?})` imports canonical version-1 JSON without
 calling action bodies/guards, starting effects or changing an app/History/storage.
@@ -1400,8 +1403,7 @@ dispatched action name (or null), optional eventIndex, reason (`trace`, `state`,
 the completed root. Action rollback/failure/discard/version order must match.
 Input admission sequence/queued flags and notification/native presentation error
 messages are not authoritative state; those errors need not recur. Repeated step/
-run returns the divergence unchanged. Restart with a new controller; seek, undo/
-redo and inspector remain Phase D work.
+run returns the divergence unchanged. Restart with a new replay controller; the history API below adds seek/undo/redo. The inspector remains unimplemented.
 
 `dispose()` is idempotent and releases imported history, comparison scratch and
 owned app/view resources. Direct `replay.app.dispose()` also closes the controller.
@@ -1422,6 +1424,137 @@ The [recording example](examples/recording/README.md) lets you export and replay
 captured prefix in a second view. See [replay API](docs/api/replay.md),
 [ADR 0020](docs/adr/0020-isolated-replay-divergence.md) and
 [C.9/C.10 qualification](docs/reports/task-C.9-C.10-replay-determinism.md).
+
+## Retained history and branching
+
+`createHistory` lets you inspect a bounded recording, seek complete root endpoints,
+undo/redo declared reversible groups, and continue from a selected point as a new
+live branch. It starts at the recording's retained baseline; the source app and
+original immutable recording are unchanged. Inspection suppresses live sources
+using the replay rules above.
+
+```js
+import {createApp,createActionSchema,createHistory,div} from './src/index.js';
+
+const schema=createActionSchema({version:'history-counter/1'})(({action})=>({
+  increment:action((draft,services)=>{
+    draft.count++;draft.draw=services.random();draft.time=services.now();
+  }),
+}));
+const source=createApp({schema,initialState:{count:0,draw:0,time:0},controls:{seed:7}});
+source.startRecording({keyframeInterval:2,maxActions:32,maxBytes:64000});
+source.actions.increment();source.actions.increment();source.actions.increment();
+const text=source.exportRecording();source.dispose();
+const history=createHistory({recording:text,schema,reversible:['increment'],
+  view:({bind})=>div('Selected count: ',bind.count)});
+// Optional: history.app.mount(document.getElementById('history-target'));
+history.seek(history.status.endSequence); // count 3
+history.undo(); // count 2; full root group, restored random/version continuation
+history.redo(); // count 3
+history.undo();
+const branch=history.branch(); // new headless live app; original future discarded here
+branch.actions.increment(); // count 3 using restored controlled services
+console.log(branch.state.count,history.status.discardedRecords); // 3, 1
+history.dispose(); // also owns/disposes the new branch
+```
+
+Configuration accepts `recording`, optional `schema`, `router`, `persistence`,
+`simulation`, `view`, and `reversible`. Recording/configuration/name/arity/keyframe
+route preflight happens before a transition or view. Register compatible bodies/
+guards, matching route/persistence fields and fixed duration/role as with replay.
+There is no target or live error-hook option; explicitly mount inspection through
+`history.app.mount(target)` after constructing the controller. Bind app closures
+through `history.app` so nested dispatch/navigation follow the current app after
+branching. Schemas/configuration remain experimental and versioned.
+
+`seek(sequence)` selects a complete root endpoint from baselineSequence through
+endSequence, including the baseline itself. Sequences count recorded roots, not
+state versions or ticks. It restores the nearest preceding stored keyframe and
+replays the suffix, comparing each replayed root. Checkpoints are validated stored
+state; seek does not execute/verify earlier bodies before that keyframe. Use full
+`createReplay` to verify every root. Expired history throws `HISTORY_EXPIRED`,
+beyond-end selection `HISTORY_RANGE`, and malformed/noninteger/negative-zero
+selection `HISTORY_INVALID`. Empty retained histories contain only a baseline.
+Invalid targets/policy leave the selected state unchanged.
+
+Inspection keeps the same app, observers/computed values, bindings and mounted
+keyed DOM across seeking. Whole-graph restoration replaces state/version/control/
+virtual route, resets display interpolation and empty tick/input bookkeeping, and
+invalidates all reactive consumers. Normal actions retain exact property invalidation.
+Render coalesces the selected values; `history.app.flush()` applies them immediately.
+Keys and normal form rendering preserve retained nodes, focus/selection and native
+editing rules. Saved frozen snapshots remain valid; tracked facades from a replaced
+graph detach and must be read again from current state.
+
+`reversible` is a dense unique list of registered action names (maximum 1024,
+default empty). It declares reversible in-memory behavior; the runtime cannot prove
+purity or reverse external effects. Every admitted action name in a root—including
+nested failed/discarded work—must be declared. Navigation/location/hydration
+packets always form undo/redo barriers. Pure clock or empty tick roots are eligible.
+A named external-result action can be declared, but undo restores its state only:
+completed requests, browser navigation or storage effects remain completed.
+
+`undo(count=1)` and `redo(count=1)` accept 1–1024 complete roots. A nested dispatch
+batch or tick is one group; there is no midpoint/per-child seek. The entire range
+and policy are checked before moving, so a multi-root move never partly crosses a
+barrier. `HISTORY_IRREVERSIBLE` identifies an undeclared action or route/hydration
+barrier. Arbitrary seek can still inspect across those barriers. Redo remains
+available until explicit branching; reaching the retained baseline/end reports an
+expired/range error. Undo operates on this inspection app, not a running source.
+
+`branch()` snapshots the selected state/version, clock/duration/seed/draw continuation
+and local virtual route into a new live app, disposes inspection and releases the
+recording/indexes. `history.app` then points to that new app; saved old app references
+are disposed. This branch discards its redo future and reports discardedRecords.
+The original caller-held recording remains immutable and can be inspected again
+with a new controller. Later history commands throw `HISTORY_BRANCHED`.
+
+The branch is headless with ticks paused and empty queues/effects. Explicitly call
+`branch.mount(target)` to start its live view. For routed branches, first mount
+replaces the browser's current History entry with the selected local URL, skips
+ambient startup URL/storage hydration, and acquires normal native router ownership.
+Subsequent commits use normal URL/storage writes and native input/effect adapters.
+Branching itself performs no external write. Native mount/History errors retain
+ordinary lifecycle behavior. A branch and a live source router cannot both own the
+same Window; finish/dispose the source before mounting that routed branch.
+
+Pending source inputs/effects and frame accumulators are not recorded continuation.
+A branch begins a new input-admission session; old tickets do not transfer. Fresh
+inputs continue from restored authoritative clock/PRNG/version, while session
+receipt labels stay outside state hashes. Start a new recording explicitly after
+mounting/draining inputs if required; its root sequence begins at 0. There is no
+automatic ongoing-history attachment, export or effect compensation.
+
+Frozen nonreactive `history.status` includes status (`inspecting`, `diverged`,
+`branched`, `disposed`), baselineSequence, endSequence, sequence, position, records,
+canUndo/canRedo, checkpointSequence, replayedRoots/replayedSlots, discardedRecords
+and divergence. Seek statistics describe the last effective seek; selecting the
+same current position is a no-op unless recovering divergence. Slots charge each
+admitted action or one for an empty root. A precomputed index chooses the preceding
+keyframe; suffix replay stays within the configured interval plus one atomic root,
+with snapshot restoration cost separate. Storage is one bounded recording plus
+O(retained roots) indexes and normal replay scratch; no second snapshot history.
+These are correctness/ownership bounds, not timing or heap-collection claims.
+
+First divergence preserves the actual consumed root/cursor for inspection and
+stops before further work. Undo/redo/branch reject `HISTORY_DIVERGED` until a valid
+seek clears it; canUndo/canRedo are false while diverged. Notification failure after
+restoration throws `HISTORY_RESTORE_FAILED` while retaining the restored checkpoint
+state/cursor. Branch cleanup failure throws while leaving the new app reachable
+through `history.app`. There is no rollback of completed publication or cleanup.
+
+`history.dispose()` is idempotent and disposes inspection or its resulting branch,
+releasing imported history/indexes and owned scopes. Direct app disposal makes the
+controller terminal too; subsequent operations throw `HISTORY_DISPOSED`. History
+commands during actions, mounting, reactive callbacks or another operation reject
+`HISTORY_REENTRANT` (ordinary active app boundaries may use `REPLAY_REENTRANT`).
+Caller-held records/snapshots/status reports remain caller-owned. Actions/guards/
+views/cleanup remain ordinary JavaScript; ambient globals and closure side effects
+are not sandboxed. Inspector and performance qualification remain future work.
+
+Run `/examples/history/` after `npm run dev` for public seek/undo/redo/branch controls.
+See [API](docs/api/history.md), [ADR 0021](docs/adr/0021-retained-history-and-branching.md)
+and [verification](docs/reports/task-D.1-D.2-history-branching.md).
 
 ## State and named actions
 

@@ -98,3 +98,9 @@ URL changes derive values from normalized route input. Supplied hydration valida
 namespace/version/field location/guards without reading live Storage. Existing
 fallback/write behavior is retained. See [semantic packets](semantic-interpolation.md).
 That packet boundary alone does not suppress storage writes; [createReplay](replay.md) does.
+
+D.1/D.2 [history](history.md) uses the same replay suppression during inspection.
+Its stable app restores whole state/control/route graphs, invalidating consumers;
+normal actions retain their existing property-level behavior. Explicit branch
+mount skips ambient startup hydration and restores the selected local URL before
+normal live behavior. See history for barriers, ownership, errors and cleanup.

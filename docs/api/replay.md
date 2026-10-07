@@ -42,7 +42,7 @@ expected/actual (bounded graph strings, hashes for larger data), expectedHash an
 actualHash. Hashes describe the root endpoints, including successful commits in a
 failed/divergent root. The first trace mismatch is preserved; the current atomic
 root finishes and the controller stops before the next. step/run then return the
-same result. Restart with a new controller. No seek/undo is provided.
+same result. Restart with a new controller. createReplay has no seek/undo; [createHistory](history.md) adds retained seeking/undo/redo.
 
 Native app handlers, tick/location drivers, mount-time URL/storage hydration,
 History/storage writes, adapter readers/effects/timers and scheduled application
@@ -76,3 +76,9 @@ behavior. Bind nested dispatch/navigation closures to the new app; avoid closure
 that mutate a live source app. Use controlled clock/random and recorded inputs.
 Checkpoint agreement verifies committed state for that fixture, not authenticity,
 all ambient-read detection, DOM paint timing, performance, or cross-browser support.
+
+D.1/D.2 [history](history.md) uses the same replay suppression during inspection.
+Its stable app restores whole state/control/route graphs, invalidating consumers;
+normal actions retain their existing property-level behavior. Explicit branch
+mount skips ambient startup hydration and restores the selected local URL before
+normal live behavior. See history for barriers, ownership, errors and cleanup.

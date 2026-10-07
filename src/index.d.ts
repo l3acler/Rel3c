@@ -396,3 +396,31 @@ export function createReplay<S extends object,D extends Definitions<S>>(
 export function createReplay<S extends object=Record<string,unknown>>(
   config:ReplayConfig<S>
 ):ReplayController<S>;
+
+export interface HistoryConfig<S extends object,D extends Definitions<S> = {}> extends ReplayConfig<S,D> {
+  /** Explicitly declare reversible in-memory action behavior; root groups are atomic. */
+  readonly reversible?:readonly (keyof D & string)[];
+}
+export interface HistoryStatus {
+  readonly status:'inspecting'|'diverged'|'branched'|'disposed';
+  readonly baselineSequence:number; readonly endSequence:number; readonly sequence:number;
+  readonly position:number; readonly records:number;
+  readonly canUndo:boolean; readonly canRedo:boolean;
+  readonly checkpointSequence:number; readonly replayedRoots:number; readonly replayedSlots:number;
+  readonly discardedRecords:number; readonly divergence:ReplayDivergence|null;
+}
+export interface HistoryController<S extends object,D extends Definitions<S> = {}> {
+  /** Stable throughout inspection; replaced with the new live app after branch(). */
+  readonly app:AppInstance<S,D>; readonly status:HistoryStatus;
+  seek(sequence:number):HistoryStatus;
+  undo(count?:number):HistoryStatus;
+  redo(count?:number):HistoryStatus;
+  branch():AppInstance<S,D>;
+  dispose():void;
+}
+export function createHistory<S extends object,D extends Definitions<S>>(
+  config:Omit<HistoryConfig<NoInfer<S>,D>,'schema'> & {readonly schema:ActionSchema<S,D>}
+):HistoryController<S,D>;
+export function createHistory<S extends object=Record<string,unknown>>(
+  config:HistoryConfig<S>
+):HistoryController<S>;

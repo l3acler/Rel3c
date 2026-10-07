@@ -63,3 +63,11 @@ retained recent/session baselines, compatibility preflight and readonly boundari
 [The report](reports/task-C.9-C.10-replay-determinism.md) records exact totals and
 versions. These replay fixtures do not qualify OS IME/system clipboard/mobile,
 other browsers, ambient-global sandboxing, heap collection or performance.
+
+D.1/D.2 additionally qualify repeated retained seeks with stable app/keyed DOM and
+native focus/selection, undo/redo barrier validation, virtual URL inspection without
+History changes, explicit branch URL restoration and seeded fixed-clock continuation.
+The public history example seeks, undoes/redoes and continues a new branch.
+[The report](reports/task-D.1-D.2-history-branching.md) lists exact source/command
+evidence. Native browser, IME/system clipboard/mobile and heap/performance boundaries
+above remain unchanged. Inspector and performance tooling are unimplemented.

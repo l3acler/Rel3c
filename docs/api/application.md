@@ -339,7 +339,7 @@ limits. Capture never changes runtime commit/error semantics. Mount and drain
 existing inputs/effects before starting; all recording operations require idle
 boundaries. See [recording](recording.md) and [the guide](../../DOCUMENTATION.md#bounded-recording)
 for options, byte accounting, ownership, errors, cleanup and an executable example.
-[Isolated replay and live-source suppression](replay.md) are implemented; seek remains unimplemented.
+[Isolated replay and live-source suppression](replay.md) are implemented; [retained history](history.md) adds seek/undo/redo.
 
 ## Isolated replay
 
@@ -348,3 +348,9 @@ preflight; its controller owns step/run and first-divergence comparison.
 `app.replaying` is false for createApp and true for the controller app.
 See [replay](replay.md) for readonly mutation boundaries, suppression, optional
 mount/flush, errors and disposal. Public app.dispose also closes its controller.
+
+D.1/D.2 [history](history.md) uses the same replay suppression during inspection.
+Its stable app restores whole state/control/route graphs, invalidating consumers;
+normal actions retain their existing property-level behavior. Explicit branch
+mount skips ambient startup hydration and restores the selected local URL before
+normal live behavior. See history for barriers, ownership, errors and cleanup.

@@ -5,36 +5,59 @@ import { indexGraph } from "../state/graph.js";
 // latest reachable node; frozen snapshots remain the ordinary app.state API.
 export function createTracking(store) {
   let nodes = indexGraph(store.getState(), { get: store.getObjectId });
-  const facades = new Map(), subscriptions = new Map(), resources = new Set();
-  const evaluationStack = [], pendingCallbacks = new Set();
-  let active = null, notifying = false, disposed = false, closing = false, nextLabel = 1, suppressTracking = 0, batchDepth = 0;
+  const facades = new Map(),
+    subscriptions = new Map(),
+    resources = new Set();
+  const evaluationStack = [],
+    pendingCallbacks = new Set();
+  let active = null,
+    notifying = false,
+    disposed = false,
+    closing = false,
+    nextLabel = 1,
+    suppressTracking = 0,
+    batchDepth = 0;
   const token = (id, kind, key = null) => JSON.stringify([id, kind, key]);
   function live() {
-    if (disposed) fail("SCOPE_DISPOSED", "Reactive application scope is disposed.");
+    if (disposed)
+      fail("SCOPE_DISPOSED", "Reactive application scope is disposed.");
   }
   function track(id, kind, key) {
     if (active && !suppressTracking) active.next.add(token(id, kind, key));
   }
   function readonly() {
-    fail("STATE_READONLY", "Tracked committed state is read-only; use a named action draft.");
+    fail(
+      "STATE_READONLY",
+      "Tracked committed state is read-only; use a named action draft.",
+    );
   }
   function wrap(value) {
     if (value === null || typeof value !== "object") return value;
     const id = store.getObjectId(value);
     if (facades.has(id)) return facades.get(id);
     // Shadow targets avoid frozen-data Proxy invariants when wrapping children.
-    const shadow = Array.isArray(value) ? [] : Object.create(Object.getPrototypeOf(value));
+    const shadow = Array.isArray(value)
+      ? []
+      : Object.create(Object.getPrototypeOf(value));
     const current = () => {
       live();
       const node = nodes.get(id)?.value;
-      if (!node) fail("STATE_DETACHED", "Tracked state node is no longer reachable. Read it again from the state root.");
+      if (!node)
+        fail(
+          "STATE_DETACHED",
+          "Tracked state node is no longer reachable. Read it again from the state root.",
+        );
       return node;
     };
     const proxy = new Proxy(shadow, {
       get(_target, key, receiver) {
         const node = current();
         if (typeof key === "string") track(id, "value", key);
-        if (Array.isArray(node) && !Object.hasOwn(node, key) && [Symbol.iterator, "keys", "values", "entries"].includes(key))
+        if (
+          Array.isArray(node) &&
+          !Object.hasOwn(node, key) &&
+          [Symbol.iterator, "keys", "values", "entries"].includes(key)
+        )
           track(id, "iterate");
         const result = Reflect.get(node, key, receiver);
         return Object.hasOwn(node, key) ? wrap(result) : result;
@@ -42,7 +65,11 @@ export function createTracking(store) {
       has(_target, key) {
         const node = current();
         const prototype = Object.getPrototypeOf(node);
-        if (typeof key === "string" && !(prototype && Reflect.has(prototype, key))) track(id, "has", key);
+        if (
+          typeof key === "string" &&
+          !(prototype && Reflect.has(prototype, key))
+        )
+          track(id, "has", key);
         return Reflect.has(node, key);
       },
       ownKeys() {
@@ -55,8 +82,18 @@ export function createTracking(store) {
         const descriptor = Object.getOwnPropertyDescriptor(node, key);
         if (!descriptor) return undefined;
         if (key === "length" && Array.isArray(node))
-          return { value: node.length, writable: true, enumerable: false, configurable: false };
-        return { value: wrap(descriptor.value), writable: false, enumerable: descriptor.enumerable, configurable: true };
+          return {
+            value: node.length,
+            writable: true,
+            enumerable: false,
+            configurable: false,
+          };
+        return {
+          value: wrap(descriptor.value),
+          writable: false,
+          enumerable: descriptor.enumerable,
+          configurable: true,
+        };
       },
       set: readonly,
       deleteProperty: readonly,
@@ -95,7 +132,8 @@ export function createTracking(store) {
   }
   function evaluate(resource) {
     live();
-    if (resource.disposed) fail("SCOPE_DISPOSED", "Reactive resource is disposed.");
+    if (resource.disposed)
+      fail("SCOPE_DISPOSED", "Reactive resource is disposed.");
     if (resource.evaluating) cycle(resource);
     const previous = active;
     resource.evaluating = true;
@@ -108,8 +146,15 @@ export function createTracking(store) {
       const result = read(wrap(store.getState()));
       // The framework's thenable check is not an application dependency read.
       suppressTracking++;
-      try { requireSync(result, "REACTIVITY_ASYNC", "Reactive reads must be synchronous."); }
-      finally { suppressTracking--; }
+      try {
+        requireSync(
+          result,
+          "REACTIVITY_ASYNC",
+          "Reactive reads must be synchronous.",
+        );
+      } finally {
+        suppressTracking--;
+      }
       resource.dirty = false;
       return result;
     } catch (error) {
@@ -126,7 +171,11 @@ export function createTracking(store) {
   }
   function disposeResource(resource) {
     if (resource.disposed) return;
-    if (active) fail("REACTIVITY_REENTRANT", "Cannot dispose reactive resources during a read.");
+    if (active)
+      fail(
+        "REACTIVITY_REENTRANT",
+        "Cannot dispose reactive resources during a read.",
+      );
     const dependents = [...resource.dependents];
     unlink(resource);
     resources.delete(resource);
@@ -138,16 +187,42 @@ export function createTracking(store) {
     if (!closing) invalidate(dependents);
   }
   function cycle(resource) {
-    const path = [...evaluationStack, resource].map(entry => entry.label).join(" -> ");
-    fail(resource.kind === "computed" ? "COMPUTED_CYCLE" : "REACTIVITY_CYCLE", `Reactive read cycle: ${path}.`);
+    const path = [...evaluationStack, resource]
+      .map((entry) => entry.label)
+      .join(" -> ");
+    fail(
+      resource.kind === "computed" ? "COMPUTED_CYCLE" : "REACTIVITY_CYCLE",
+      `Reactive read cycle: ${path}.`,
+    );
   }
   function createResource(kind, read, notify) {
     live();
-    if (active || notifying || batchDepth) fail("REACTIVITY_REENTRANT", "Cannot register reactive resources during reads or notifications.");
-    if (typeof read !== "function" || (kind === "observer" && typeof notify !== "function"))
-      fail("REACTIVITY_INVALID", `${kind} requires a read function and optional invalidation function.`);
-    const resource = { kind, label: `${kind}#${nextLabel++}`, read, notify, deps: new Set(),
-      sources: new Set(), dependents: new Set(), dirty: true, disposed: false, evaluating: false, cached: undefined };
+    if (active || notifying || batchDepth)
+      fail(
+        "REACTIVITY_REENTRANT",
+        "Cannot register reactive resources during reads or notifications.",
+      );
+    if (
+      typeof read !== "function" ||
+      (kind === "observer" && typeof notify !== "function")
+    )
+      fail(
+        "REACTIVITY_INVALID",
+        `${kind} requires a read function and optional invalidation function.`,
+      );
+    const resource = {
+      kind,
+      label: `${kind}#${nextLabel++}`,
+      read,
+      notify,
+      deps: new Set(),
+      sources: new Set(),
+      dependents: new Set(),
+      dirty: true,
+      disposed: false,
+      evaluating: false,
+      cached: undefined,
+    };
     resources.add(resource);
     return resource;
   }
@@ -159,10 +234,19 @@ export function createTracking(store) {
         if (active && !suppressTracking) active.nextSources.add(resource);
         return evaluate(resource);
       },
-      get dirty() { live(); if (resource.disposed) fail("SCOPE_DISPOSED", "Observer is disposed."); return resource.dirty; },
+      get dirty() {
+        live();
+        if (resource.disposed) fail("SCOPE_DISPOSED", "Observer is disposed.");
+        return resource.dirty;
+      },
       dispose: () => disposeResource(resource),
     });
-    try { evaluate(resource); } catch (error) { disposeResource(resource); throw error; }
+    try {
+      evaluate(resource);
+    } catch (error) {
+      disposeResource(resource);
+      throw error;
+    }
     return handle;
   }
   function computed(read) {
@@ -170,13 +254,19 @@ export function createTracking(store) {
     return Object.freeze({
       get value() {
         live();
-        if (resource.disposed) fail("SCOPE_DISPOSED", "Computed value is disposed.");
+        if (resource.disposed)
+          fail("SCOPE_DISPOSED", "Computed value is disposed.");
         if (resource.evaluating) cycle(resource);
         if (active && !suppressTracking) active.nextSources.add(resource);
         if (resource.dirty) resource.cached = evaluate(resource);
         return resource.cached;
       },
-      get dirty() { live(); if (resource.disposed) fail("SCOPE_DISPOSED", "Computed value is disposed."); return resource.dirty; },
+      get dirty() {
+        live();
+        if (resource.disposed)
+          fail("SCOPE_DISPOSED", "Computed value is disposed.");
+        return resource.dirty;
+      },
       dispose: () => disposeResource(resource),
     });
   }
@@ -190,7 +280,8 @@ export function createTracking(store) {
     const handle = Object.freeze({
       get value() {
         live();
-        if (resource.disposed) fail("SCOPE_DISPOSED", "List item scope is disposed.");
+        if (resource.disposed)
+          fail("SCOPE_DISPOSED", "List item scope is disposed.");
         if (active && !suppressTracking) active.nextSources.add(resource);
         return resource.cached;
       },
@@ -201,11 +292,16 @@ export function createTracking(store) {
   }
   function updateCells(updates) {
     live();
-    if (active || notifying) fail("REACTIVITY_REENTRANT", "Cannot retarget list cells during reactive reads/notifications.");
+    if (active || notifying)
+      fail(
+        "REACTIVITY_REENTRANT",
+        "Cannot retarget list cells during reactive reads/notifications.",
+      );
     const affected = new Set();
     for (const [handle, value] of updates) {
       const resource = cells.get(handle);
-      if (!resource || resource.disposed) fail("SCOPE_DISPOSED", "List cell is disposed.");
+      if (!resource || resource.disposed)
+        fail("SCOPE_DISPOSED", "List cell is disposed.");
       if (Object.is(resource.cached, value)) continue;
       resource.cached = value;
       for (const consumer of resource.dependents) affected.add(consumer);
@@ -218,7 +314,9 @@ export function createTracking(store) {
     nodes = indexGraph(result.state, { get: store.getObjectId });
     const affected = new Set();
     for (const change of result.affectedProperties) {
-      for (const resource of subscriptions.get(token(change.targetId, change.kind, change.key)) ?? [])
+      for (const resource of subscriptions.get(
+        token(change.targetId, change.kind, change.key),
+      ) ?? [])
         affected.add(resource);
     }
     const detached = new Set();
@@ -228,12 +326,15 @@ export function createTracking(store) {
       detached.add(id);
     }
     // Captured item facades also become dirty when their node is detached.
-    if (detached.size) for (const [key, set] of subscriptions)
-      if (detached.has(JSON.parse(key)[0])) for (const resource of set) affected.add(resource);
+    if (detached.size)
+      for (const [key, set] of subscriptions)
+        if (detached.has(JSON.parse(key)[0]))
+          for (const resource of set) affected.add(resource);
     invalidate(affected);
   }
   function invalidate(affected) {
-    const queue = [...affected], visited = new Set();
+    const queue = [...affected],
+      visited = new Set();
     // Finish invalidation before any callback can read another observer.
     for (let i = 0; i < queue.length; i++) {
       const resource = queue[i];
@@ -254,40 +355,92 @@ export function createTracking(store) {
         if (resource.disposed) continue;
         try {
           const { notify } = resource;
-          requireSync(notify(), "REACTIVITY_ASYNC", "Invalidation callbacks must be synchronous.");
+          requireSync(
+            notify(),
+            "REACTIVITY_ASYNC",
+            "Invalidation callbacks must be synchronous.",
+          );
+        } catch (error) {
+          errors.push(error);
         }
-        catch (error) { errors.push(error); }
       }
-    } finally { notifying = false; pendingCallbacks.clear(); }
+    } finally {
+      notifying = false;
+      pendingCallbacks.clear();
+    }
     if (errors.length === 1) throw errors[0];
-    if (errors.length) throw new AggregateError(errors, "Reactive notifications failed after state committed.");
+    if (errors.length)
+      throw new AggregateError(
+        errors,
+        "Reactive notifications failed after state committed.",
+      );
   }
   return Object.freeze({
-    state, observe, computed, publish, cell, updateCells,
+    state,
+    observe,
+    computed,
+    publish,
+    cell,
+    updateCells,
+    restore() {
+      live();
+      nodes = indexGraph(store.getState(), { get: store.getObjectId });
+      for (const id of facades.keys()) if (!nodes.has(id)) facades.delete(id);
+      invalidate(resources);
+    },
     batch(run) {
-      live(); batchDepth++;
+      live();
+      batchDepth++;
       let result, failure;
-      try { result = run(); } catch (error) { failure = error; }
-      finally { batchDepth--; }
-      if (!batchDepth) try { invalidate([]); } catch (error) {
-        failure = failure ? new AggregateError([failure, error], "Input publication/notification failed.") : error;
+      try {
+        result = run();
+      } catch (error) {
+        failure = error;
+      } finally {
+        batchDepth--;
       }
+      if (!batchDepth)
+        try {
+          invalidate([]);
+        } catch (error) {
+          failure = failure
+            ? new AggregateError(
+                [failure, error],
+                "Input publication/notification failed.",
+              )
+            : error;
+        }
       if (failure) throw failure;
       return result;
     },
     counts() {
-      return { observers: [...resources].filter(resource => resource.kind === "observer").length,
-        computed: [...resources].filter(resource => resource.kind === "computed").length,
-        cells: [...resources].filter(resource => resource.kind === "cell").length,
-        subscriptions: [...subscriptions.values()].reduce((sum, set) => sum + set.size, 0) +
-          [...resources].reduce((sum, resource) => sum + resource.sources.size, 0) };
+      return {
+        observers: [...resources].filter(
+          (resource) => resource.kind === "observer",
+        ).length,
+        computed: [...resources].filter(
+          (resource) => resource.kind === "computed",
+        ).length,
+        cells: [...resources].filter((resource) => resource.kind === "cell")
+          .length,
+        subscriptions:
+          [...subscriptions.values()].reduce((sum, set) => sum + set.size, 0) +
+          [...resources].reduce(
+            (sum, resource) => sum + resource.sources.size,
+            0,
+          ),
+      };
     },
     isBusy: () => active !== null || notifying || batchDepth > 0,
     dispose() {
       if (disposed) return;
       closing = true;
       for (const resource of resources) disposeResource(resource);
-      subscriptions.clear(); facades.clear(); nodes.clear(); pendingCallbacks.clear(); disposed = true;
+      subscriptions.clear();
+      facades.clear();
+      nodes.clear();
+      pendingCallbacks.clear();
+      disposed = true;
     },
   });
 }

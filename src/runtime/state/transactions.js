@@ -90,7 +90,10 @@ function createStorage(root, identities) {
 // Internal production engine. Application actions get access only through A.3.
 export function createTransactionStore(initialState = {}, initialVersion = 1) {
   if (!Number.isSafeInteger(initialVersion) || initialVersion < 1)
-    fail('VERSION_LIMIT', 'Initial state version must be a positive safe integer.');
+    fail(
+      "VERSION_LIMIT",
+      "Initial state version must be a positive safe integer.",
+    );
   let state = ownInitialState(initialState);
   initialState = null;
   const identities = createIdentities();
@@ -118,6 +121,20 @@ export function createTransactionStore(initialState = {}, initialVersion = 1) {
     hasActiveTransaction() {
       live();
       return active !== null;
+    },
+    restore(value, nextVersion) {
+      live();
+      if (active) fail("TRANSACTION_ACTIVE", "Restore requires an idle store.");
+      if (!Number.isSafeInteger(nextVersion) || nextVersion < 1)
+        fail(
+          "VERSION_LIMIT",
+          "Restored state version must be a positive safe integer.",
+        );
+      const next = ownInitialState(value);
+      for (const node of inspectGraph(next).records.keys())
+        identities.assign(node);
+      state = next;
+      version = nextVersion;
     },
     begin() {
       live();

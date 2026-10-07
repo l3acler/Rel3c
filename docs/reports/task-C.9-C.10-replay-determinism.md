@@ -1,7 +1,7 @@
 # C.9/C.10 — Isolated replay and deterministic qualification
 
 Baseline: Batch 7/8 commit `eaa118b`, committed at user request before starting
-this batch. ADR 0020 preceded implementation. Batch 9 remains uncommitted; no push.
+this batch. ADR 0020 preceded implementation. Batch 9 committed as `3bc1163` at user request on 7 October 2026; no push.
 
 Public createReplay restores a separate app after full import/configuration/name/
 arity preflight. Its step/run controller executes complete roots and compares

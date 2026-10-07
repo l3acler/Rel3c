@@ -217,3 +217,11 @@ type ReplayStateInference=Expect<Equal<typeof replay.app.state.n,number>>;
 type ReplayPayloadInference=Expect<Equal<Parameters<typeof replay.app.actions.scale>,[payload:number]>>;
 const replayStatus:ReplayStatus=replay.step(2);replay.run();replay.dispose();void replayStatus;
 createReplay({recording,view:()=>div('headless optional view')});
+
+// D.1/D.2 inferred reversible names, stable inspection state and typed live branch.
+import { createHistory, type HistoryStatus } from 'mini-framework';
+const history=createHistory({recording:roundTripRecording,schema:controlledSchema,reversible:['draw','scale'],
+  view:({bind})=>div(bind.n)});
+type HistoryStateInference=Expect<Equal<typeof history.app.state.n,number>>;
+const historyStatus:HistoryStatus=history.seek(3);history.undo();history.redo();
+const branch=history.branch();branch.actions.scale(2);history.dispose();void historyStatus;

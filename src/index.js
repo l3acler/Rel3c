@@ -10,14 +10,36 @@
  */
 
 import { createApplication } from "./runtime/app.js";
-import { createReplayController } from './runtime/recording/replay.js';
+import { createHistoryController } from "./runtime/history/controller.js";
+import { createReplayController } from "./runtime/recording/replay.js";
 export { createActionSchema } from "./runtime/actions/schema.js";
-export { element, div, span, p, button, form, label, input, textarea, select, option,
-  section, a, ul, li, when, keyed, outlet } from "./runtime/dom/nodes.js";
+export {
+  element,
+  div,
+  span,
+  p,
+  button,
+  form,
+  label,
+  input,
+  textarea,
+  select,
+  option,
+  section,
+  a,
+  ul,
+  li,
+  when,
+  keyed,
+  outlet,
+} from "./runtime/dom/nodes.js";
 export { derive } from "./runtime/dom/bindings.js";
 export { FrameworkError } from "./runtime/errors.js";
 export { hashSnapshot } from "./runtime/serialization/checkpoint.js";
-export { readRecording, serializeRecording } from "./runtime/recording/format.js";
+export {
+  readRecording,
+  serializeRecording,
+} from "./runtime/recording/format.js";
 
 export const VERSION = "0.1.0";
 
@@ -27,7 +49,7 @@ export const VERSION = "0.1.0";
 export const FRAMEWORK_INFO = Object.freeze({
   name: "mini-framework",
   version: VERSION,
-  phase: "C.1–C.10 - Deterministic Recording and Isolated Replay",
+  phase: "D.1–D.2 - Retained History, Undo/Redo and Branching",
   capabilities: Object.freeze([
     "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
     "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
@@ -50,6 +72,7 @@ export const FRAMEWORK_INFO = Object.freeze({
     "C.5: Owned semantic key/text/navigation/location/hydration packets and execution observation",
     "C.6: Optional display interpolation from frozen tick states; authoritative checkpoints unchanged",
     "RECORD-1: Ordered root/action/input traces, explicit versioned export/import and bounded baseline/keyframe retention (implemented C.7/C.8)",
+    "HISTORY-1: Retained root seeking, declared reversible groups, undo/redo and explicit live branching (implemented D.1/D.2)",
     "REPLAY-1: Isolated root replay, first divergence and live-source suppression (implemented C.9/C.10; ambient globals remain application responsibility)",
   ]),
 });
@@ -65,4 +88,8 @@ export function createApp(config = {}) {
 }
 export function createReplay(config) {
   return createReplayController(config, VERSION);
+}
+
+export function createHistory(config) {
+  return createHistoryController(config, VERSION);
 }

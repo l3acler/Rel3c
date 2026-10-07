@@ -20,10 +20,20 @@ function payloadError(error) {
   return error;
 }
 
-export function createDispatcher(store, registry, check, publish = () => {}, controls = null, hooks = {}) {
+export function createDispatcher(
+  store,
+  registry,
+  check,
+  publish = () => {},
+  controls = null,
+  hooks = {},
+) {
   let running = false,
     preparing = false,
-    children = null, executing = false, postCommit = null, currentId = null;
+    children = null,
+    executing = false,
+    postCommit = null,
+    currentId = null;
   let admitted = 0,
     usage = null;
 
@@ -87,8 +97,16 @@ export function createDispatcher(store, registry, check, publish = () => {}, con
     isActive: () => running,
     isExecuting: () => executing,
     afterCommit(operation) {
-      if (!executing || preparing) fail('NAVIGATION_REENTRANT', 'Navigation requests require an executing action.');
-      if (postCommit.length >= ACTION_LIMIT) fail('ROUTE_QUEUE_LIMIT', 'An action supports at most 1,024 navigation requests.');
+      if (!executing || preparing)
+        fail(
+          "NAVIGATION_REENTRANT",
+          "Navigation requests require an executing action.",
+        );
+      if (postCommit.length >= ACTION_LIMIT)
+        fail(
+          "ROUTE_QUEUE_LIMIT",
+          "An action supports at most 1,024 navigation requests.",
+        );
       postCommit.push(operation);
     },
     dispatch(name, ...args) {
@@ -100,7 +118,11 @@ export function createDispatcher(store, registry, check, publish = () => {}, con
         );
       if (running) {
         const entry = prepare(name, args);
-        entry.recordId = hooks.queued?.(name, entry.spec.input === 'none' ? [] : [entry.payload], currentId);
+        entry.recordId = hooks.queued?.(
+          name,
+          entry.spec.input === "none" ? [] : [entry.payload],
+          currentId,
+        );
         children.push(entry);
         return;
       }
@@ -111,7 +133,12 @@ export function createDispatcher(store, registry, check, publish = () => {}, con
         failures = [];
       try {
         const initial = prepare(name, args);
-        const packet = { version: 1, kind: 'action', name, args: initial.spec.input === 'none' ? [] : [initial.payload] };
+        const packet = {
+          version: 1,
+          kind: "action",
+          name,
+          args: initial.spec.input === "none" ? [] : [initial.payload],
+        };
         const drain = () => {
           initial.recordId = hooks.queued?.(name, packet.args, null);
           queue.push(initial);
@@ -122,32 +149,54 @@ export function createDispatcher(store, registry, check, publish = () => {}, con
             children = [];
             postCommit = [];
             let result, serviceTransaction;
-            hooks.action?.(recordId, 'dispatched', store.getVersion());
+            hooks.action?.(recordId, "dispatched", store.getVersion());
             try {
               const { run } = spec;
-              serviceTransaction = controls?.begin(() => executing && !preparing);
+              serviceTransaction = controls?.begin(
+                () => executing && !preparing,
+              );
               result = store.run((draft) => {
                 executing = true;
                 try {
                   const services = serviceTransaction?.services;
-                  const result = spec.input === "none" ? run(draft, services) : run(draft, payload, services);
-                  requireSync(result, "ACTION_ASYNC", "Actions must be synchronous; Promise/thenable returns reject.");
-                } finally { executing = false; serviceTransaction?.revoke(); }
+                  const result =
+                    spec.input === "none"
+                      ? run(draft, services)
+                      : run(draft, payload, services);
+                  requireSync(
+                    result,
+                    "ACTION_ASYNC",
+                    "Actions must be synchronous; Promise/thenable returns reject.",
+                  );
+                } finally {
+                  executing = false;
+                  serviceTransaction?.revoke();
+                }
               });
               serviceTransaction?.commit();
-              hooks.action?.(recordId, 'committed', store.getVersion());
+              hooks.action?.(recordId, "committed", store.getVersion());
               queue.push(...children);
             } catch (error) {
               serviceTransaction?.abort();
               failures.push(error);
-              hooks.action?.(recordId, 'failed', store.getVersion(), error);
-              for (const child of children) hooks.action?.(child.recordId, 'discarded', store.getVersion());
+              hooks.action?.(recordId, "failed", store.getVersion(), error);
+              for (const child of children)
+                hooks.action?.(child.recordId, "discarded", store.getVersion());
             }
             // Successful actions retain queued children and operations even if a
             // notification or native History write fails after publication.
             if (result) {
-              try { publish(result); } catch (error) { failures.push(error); }
-              for (const operation of postCommit) try { operation(); } catch (error) { failures.push(error); }
+              try {
+                publish(result);
+              } catch (error) {
+                failures.push(error);
+              }
+              for (const operation of postCommit)
+                try {
+                  operation();
+                } catch (error) {
+                  failures.push(error);
+                }
             }
             children = postCommit = null;
           }
@@ -162,7 +211,9 @@ export function createDispatcher(store, registry, check, publish = () => {}, con
       } finally {
         queue.length = 0;
         children = null;
-        postCommit = null; executing = false; currentId = null;
+        postCommit = null;
+        executing = false;
+        currentId = null;
         usage = null;
         admitted = 0;
         running = false;

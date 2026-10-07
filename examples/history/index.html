@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Retained history and branching</title>
+    <style>
+        body {
+            font: 17px system-ui;
+            max-width: 56rem;
+            margin: 3rem auto;
+            padding: 0 1rem
+        }
+
+        button {
+            font: inherit;
+            padding: .5rem;
+            margin: .3rem
+        }
+
+        p {
+            line-height: 1.5
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Retained history and branching</h1>
+    <p>Inspect a bounded recording from its baseline. Seek the captured end, undo or redo complete roots, then continue
+        from the selected state as a new live branch. Branching discards its redo future. Completed external effects are
+        never reversed.</p>
+    <div id="app"></div>
+    <script type="module" src="./main.js"></script>
+</body>
+
+</html>

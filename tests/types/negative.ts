@@ -287,3 +287,25 @@ createReplay({recording:''}).step('one');
 createReplay({recording:'',schema}).app.actions.rename(2);
 // @ts-expect-error Replay app state remains read-only.
 createReplay({recording:'',schema}).app.state.count=3;
+
+import { createHistory } from 'mini-framework';
+// @ts-expect-error A recording is required.
+createHistory({});
+// @ts-expect-error Reversible action names must be registered.
+createHistory({recording:'',schema,reversible:['missing']});
+// @ts-expect-error Reversible names require an array.
+createHistory({recording:'',schema,reversible:'increment'});
+// @ts-expect-error History starts headlessly; mount explicitly.
+createHistory({recording:'',target:document.body});
+// @ts-expect-error History cannot accept caller mutable initial state.
+createHistory({recording:'',initialState:{}});
+// @ts-expect-error Seek is a numeric complete root sequence.
+createHistory({recording:''}).seek('last');
+// @ts-expect-error Status is readonly.
+createHistory({recording:''}).status.canUndo=true;
+// @ts-expect-error Undo count is numeric.
+createHistory({recording:''}).undo('one');
+// @ts-expect-error Branching preserves registered payload inference.
+createHistory({recording:'',schema}).branch().actions.rename(2);
+// @ts-expect-error History views must be synchronous.
+createHistory({recording:'',view:async()=>div()});
