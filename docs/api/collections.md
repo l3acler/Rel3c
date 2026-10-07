@@ -46,4 +46,6 @@ DOM), plus VIEW_RESULT_INVALID / REACTIVITY_ASYNC / STATE_READONLY for invalid o
 impure callbacks. A render failure keeps committed state and is retried with flush
 or a later successful action. App-owned foreign binding tokens reject BINDING_OWNER.
 The existing 128-level declarative nesting bound applies; no list-size/per-frame
-CPU budget is claimed. General list performance/heap evidence remains later work.
+CPU budget is claimed. The [D.5/D.6 report](../reports/task-D.5-D.6-performance.md)
+measures specified keyed-list fixtures, range moves and separate heap observations;
+it supplies no general list-size or frame-latency guarantee.

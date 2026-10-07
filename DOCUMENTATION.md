@@ -7,6 +7,7 @@ B.9–B.11 refine the public declarations and root auditor walkthrough. C.1–C.
 D.1/D.2 add retained history, declared reversible undo/redo and explicit live branching.
 D.3/D.4 add optional bounded diagnostics and a separate development inspector.
 D.5/D.6 add reproducible Node/Chrome workloads and a measured technical report.
+D.7 records experimental product acceptance, compatibility and release limits.
 Import from `src/index.js`; applications do not need runtime internals.
 
 ## What works today
@@ -1732,7 +1733,8 @@ source fingerprints, raw samples, median/p95, trial medians, hashes and memory
 observations. Existing results are not overwritten. The
 [technical report](docs/reports/task-D.5-D.6-performance.md) states measured costs,
 strengths and provisional regression alerts; it makes no universal speed or stable
-latency promise. D.7 product acceptance/release review remains next. See also the
+latency promise. The [D.7 review](docs/reports/task-D.7-acceptance-release.md) records
+experimental acceptance and remaining release limits. See also the
 [command reference](docs/api/benchmarks.md).
 
 ## State and named actions
@@ -2042,8 +2044,9 @@ checks before installing locked tooling with scripts disabled. It checks types,
 dependency/source independence and Chrome integration. Candidate hashes must
 remain unchanged. It removes only its own temporary folder and records JSON
 under `tests/results/`; failures exit nonzero. Use `-- --offline` with a populated
-npm cache. This verifies candidate files, not a nonexistent committed revision.
-No runtime edits or Git changes are needed. For the full reference,
+npm cache. Add `--checkout` for the temporary local Git checkout procedure below.
+Startup needs no npm dependency or Git; the checkout regression test requires Git.
+The auditor never changes the source repository's Git state. For the full reference,
 see [application API](docs/api/application.md). For current validation results,
 see [C.7/C.8 recording evidence](docs/reports/task-C.7-C.8-recording-retention.md),
 [C.1/C.2 checkpoint/service evidence](docs/reports/task-C.1-C.2-checkpoints-controls.md),
@@ -2053,14 +2056,17 @@ see [C.7/C.8 recording evidence](docs/reports/task-C.7-C.8-recording-retention.m
 [B.1–B.3 input evidence](docs/reports/task-B.1-B.3-inputs.md) and
 [A.10 core evidence](docs/reports/task-A.10-core-slice.md). The
 [README](README.md) provides repository structure, feature status and the remaining
-verification commands; the [PRD](Framework_PRD.md) defines future acceptance gates.
+verification commands; the [PRD](Framework_PRD.md) defines acceptance requirements.
 
 ## Compatibility and browser qualification
 
 The public import boundary is `src/index.js` and its declarations; runtime,
 spikes and test tooling are internal. `0.1.0` is experimental. Pin a candidate
 revision; contract changes update this guide and relevant API references and
-state compatibility impact. No stable API freeze or complete product is claimed.
+state compatibility impact. The D.7 review covers the implemented PRD feature
+scope through automated fixtures and a local Git checkout; broad release
+qualification and an API freeze remain open. See [release notes](RELEASE_NOTES.md)
+and [acceptance evidence](docs/reports/task-D.7-acceptance-release.md).
 
 Package, action-schema and persistence versions are separate. Bump the schema
 when action/payload meaning changes and persistence version when stored shape
@@ -2070,6 +2076,33 @@ not a public recording/snapshot contract. C.1/C.2 implement a separate versioned
 public state/control checkpoint; C.7/C.8 implement a separate versioned bounded recording format.
 See [ADR 0015](docs/adr/0015-public-frontend-compatibility.md) and
 [ADR 0016](docs/adr/0016-deterministic-checkpoints-services.md).
+
+Public checkpoint and recording formats are version 1 with compatibility runtime
+`mini-framework-runtime/1`. Imports reject incompatible format/runtime/schema
+versions; no automatic converter is supplied. This acceptance review changes no
+runtime API or data format, so it needs no migration. Preserve old exports/buckets
+and implement application-specific conversion when changing their meaning; package
+version alone is not a migration instruction. Root PRD syntax sketches are design
+candidates, not substitutes for the runnable schema/controls/simulation examples
+in this guide. `FRAMEWORK_INFO.phase` describes D.3/D.4, the latest runtime API
+addition; D.5–D.7 add development measurements/review rather than runtime semantics.
+
+To repeat final acceptance from the root:
+
+```sh
+npm run audit:frontend -- --checkout --offline
+```
+
+Omit `--offline` when installing locked development tooling needs registry access.
+Only `--offline` and `--checkout` are accepted. Checkout mode requires installed
+Git, which is also used by one Node regression test; root startup remains install-
+and Git-free. The auditor reconstructs the README app, commits the copied candidate
+in a temporary local repository and clones a clean checkout. It runs all feature
+fixtures, startup, declarations and native Chrome checks with no previous installs
+or results, verifies source fingerprints/tracked files, then removes only its
+temporary workspace. It writes a unique JSON artifact to `tests/results/`.
+Local checkout preparation contacts no remote and changes no source-repository
+branch, index or commit. Without `--checkout`, the existing fresh-copy mode remains.
 
 The candidate passes desktop Chrome automation and the clean-root walkthrough.
 The [support matrix](docs/browser-support.md) separates trusted edits and Chrome

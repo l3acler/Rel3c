@@ -82,7 +82,8 @@ guards are fixed (128 levels, 10,000 nodes, 100,000 properties/array slots,
 1,000,000 UTF-16 text/key units). A.2 applies these guards to the internal engine's
 imports, monotonic transaction growth and prospective committed graph. See
 [ADR 0006](../adr/0006-production-transactions.md) for the conservative accounting;
-exact heap/history budgets remain later work.
+recording/diagnostic wire budgets are separate and do not bound total transient
+heap. See [recording](recording.md) and [diagnostics](inspector.md).
 
 Mount appends owned declarative nodes while preserving host children, focus and
 selection. Views accept strings, finite numbers, null/undefined/booleans, arrays,

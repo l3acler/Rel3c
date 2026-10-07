@@ -1,6 +1,6 @@
 # ADR 0015 — Public frontend compatibility
 
-Status: adopted for the experimental B.9–B.11 frontend candidate.
+Status: adopted for B.9–B.11; current C/D compatibility clarified at the D.7 review.
 
 ## Decision
 
@@ -24,17 +24,22 @@ implementation and tested against frontend fixtures.
 | Action schema `version` | Application-defined action/payload meaning |
 | Persistence `version` | Stored field schema; defaults to action schema version |
 | Private persistence graph format/version | Internal encoding; not a public snapshot/recording API |
-| Future recording/runtime/checkpoint versions | Unimplemented; specified and tested in C.1 |
+| Checkpoint format version 1 | Public state/control encoding, independent of persistence |
+| Recording format version 1 | Public executed-prefix log/metadata/retention encoding |
+| Runtime compatibility `mini-framework-runtime/1` | Authoritative checkpoint/recording execution contract |
 
 Bump schema versions when their meaning changes. Mismatched persisted envelopes
 follow documented fallback/reporting. A later successful action may write the
 new version; no migration is promised. Use a new namespace to preserve an old
 bucket. Do not consume the private codec as an export/import or replay API.
 
-Final recording/retention formats, undo policy, public templates, distributed
+Recording/retention, isolated replay and explicit retained-history undo policy are
+implemented and fixture-qualified in C/D. Public templates, distributed
 synchronization and the final name remain outside the verified frontend surface.
 Broad browser/OS qualification is open; see [browser support](../browser-support.md).
-Frontend acceptance does not complete the deterministic product.
+Frontend acceptance alone does not complete the deterministic product; the
+[D.7 review](../reports/task-D.7-acceptance-release.md) maps the complete implemented
+feature scope and distinguishes it from broad stable release qualification.
 
 ## B.9 compatibility change and evidence
 
@@ -54,4 +59,14 @@ runtime/checkpoint versions and controlled manual clock/seeded draw contract.
 `controls` initialization and new-app checkpoint restoration are implemented;
 existing callbacks may ignore the extra action services argument. Private
 persistence envelopes stay compatible. Fixed ticks, recording/retention and
-replay remain future gates; checkpoint restoration is not replay.
+isolated replay are now implemented; checkpoint restoration alone is not replay.
+
+## D.7 acceptance compatibility review
+
+The review changes no runtime semantics, public declarations or encoded formats.
+Existing synchronous callbacks may ignore action services. Format/runtime/schema
+mismatches reject on checkpoint/recording import; no automatic migration converter
+is provided. Preserve old exports/storage namespaces when application-specific
+conversion is needed. The package version remains experimental `0.1.0`; an npm
+publication or API freeze is not implied. See the [release notes](../../RELEASE_NOTES.md)
+and [public guide](../../DOCUMENTATION.md#compatibility-and-browser-qualification).

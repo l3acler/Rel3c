@@ -1,0 +1,1947 @@
+{
+  "kind": "D.7-local-packed-consumer-review",
+  "formatVersion": 1,
+  "recordedAt": "2026-10-07T10:48:26.321Z",
+  "passed": true,
+  "machine": {
+    "node": "v26.3.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "pack",
+        "--json",
+        "--ignore-scripts",
+        "--pack-destination",
+        "/var/folders/1p/x485r2q97nj3zbvfpvx35z4w0000gn/T/mini-framework-package-audit-AmoOxH",
+        "--cache",
+        "/var/folders/1p/x485r2q97nj3zbvfpvx35z4w0000gn/T/mini-framework-package-audit-AmoOxH/cache"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "tar",
+        "-xzf",
+        "/var/folders/1p/x485r2q97nj3zbvfpvx35z4w0000gn/T/mini-framework-package-audit-AmoOxH/mini-framework-0.1.0.tgz",
+        "-C",
+        "/var/folders/1p/x485r2q97nj3zbvfpvx35z4w0000gn/T/mini-framework-package-audit-AmoOxH/node_modules"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "mv",
+        "/var/folders/1p/x485r2q97nj3zbvfpvx35z4w0000gn/T/mini-framework-package-audit-AmoOxH/node_modules/package",
+        "/var/folders/1p/x485r2q97nj3zbvfpvx35z4w0000gn/T/mini-framework-package-audit-AmoOxH/node_modules/mini-framework"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "/opt/homebrew/Cellar/node/26.3.0/bin/node",
+        "/var/folders/1p/x485r2q97nj3zbvfpvx35z4w0000gn/T/mini-framework-package-audit-AmoOxH/consumer.mjs"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "package": {
+    "name": "mini-framework",
+    "version": "0.1.0",
+    "size": 1693270,
+    "unpackedSize": 10512459,
+    "entryCount": 335,
+    "archiveSha256": "6359ac1f8685cedba7049cb6d52f23729b36173f455c1d9c20285ad0ae4a1609",
+    "evidenceEntries": 55,
+    "files": [
+      {
+        "path": "AGENTS.md",
+        "size": 6463,
+        "mode": 420
+      },
+      {
+        "path": "DEVELOPMENT_PLAN.md",
+        "size": 96378,
+        "mode": 420
+      },
+      {
+        "path": "DOCUMENTATION.md",
+        "size": 131596,
+        "mode": 420
+      },
+      {
+        "path": "Framework_PRD.md",
+        "size": 55283,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 28858,
+        "mode": 420
+      },
+      {
+        "path": "RELEASE_NOTES.md",
+        "size": 4950,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/README.md",
+        "size": 6819,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/browser-1790893806968-3000696b.json",
+        "size": 419329,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/browser-1790960398521-3214f283.json",
+        "size": 418496,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/browser-quick-1790893647463-de734205.json",
+        "size": 42114,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/node-1790893706897-d731f06f.json",
+        "size": 576894,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/node-1790960264641-a12d0e33.json",
+        "size": 579221,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/node-quick-1790893622367-265f0913.json",
+        "size": 185213,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/runtime-node-1790971744988-017ba3a6.json",
+        "size": 388405,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/runtime-node-1790971933166-d5bb2b13.json",
+        "size": 386598,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/tooling-browser-1791363790767-1c1d046f.json",
+        "size": 1366921,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/tooling-browser-quick-1791362887879-c7baec64.json",
+        "size": 383751,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/tooling-node-1791363287690-f260e8c0.json",
+        "size": 1228361,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/tooling-node-quick-1791362767950-68740c28.json",
+        "size": 109161,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/view-syntax-1790895582200-4fe20723.json",
+        "size": 68108,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/view-syntax-1790895709612-8f97cb60.json",
+        "size": 69787,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/view-syntax-1790895781111-793f8b2c.json",
+        "size": 69601,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/view-syntax-1790896108425-a49740a2.json",
+        "size": 69005,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/view-syntax-quick-1790895505301-8bc185ba.json",
+        "size": 15105,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/view-syntax-quick-1790895658177-ff6dd055.json",
+        "size": 15503,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/view-syntax-quick-1790896181445-ec04247e.json",
+        "size": 15996,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/view-syntax-quick-1790960433800-c03943fb.json",
+        "size": 15922,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/results/view-syntax-quick-1791369819135-1aed1b8a.json",
+        "size": 15976,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/runtime/browser.js",
+        "size": 11032,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/runtime/index.html",
+        "size": 300,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/runtime/README.md",
+        "size": 6685,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/runtime/workloads.js",
+        "size": 6957,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/runtime/workloads.test.js",
+        "size": 2967,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/transactions/browser.js",
+        "size": 3294,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/transactions/engines.js",
+        "size": 358,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/transactions/index.html",
+        "size": 539,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/transactions/runtime-equivalence.test.js",
+        "size": 880,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/transactions/workloads.js",
+        "size": 3970,
+        "mode": 420
+      },
+      {
+        "path": "benchmarks/transactions/workloads.test.js",
+        "size": 2330,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0001-view-syntax.md",
+        "size": 6244,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0002-action-schema-serialization.md",
+        "size": 8240,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0003-transaction-engine-identity.md",
+        "size": 9821,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0004-browser-input-support.md",
+        "size": 6032,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0005-application-lifecycle.md",
+        "size": 6977,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0006-production-transactions.md",
+        "size": 6241,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0007-named-dispatch-ordering.md",
+        "size": 3738,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0008-exact-reactivity.md",
+        "size": 4042,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0009-declarative-dom-frames.md",
+        "size": 2882,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0010-keyed-scopes-clicks.md",
+        "size": 4039,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0011-native-events-inputs.md",
+        "size": 4849,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0012-priority-scheduling.md",
+        "size": 2206,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0013-routing-navigation.md",
+        "size": 5177,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0014-state-locations-hydration.md",
+        "size": 6702,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0015-public-frontend-compatibility.md",
+        "size": 4330,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0016-deterministic-checkpoints-services.md",
+        "size": 7709,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0017-fixed-ticks-external-inputs.md",
+        "size": 4117,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0018-semantic-inputs-interpolation.md",
+        "size": 3629,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0019-ordered-recording-retention.md",
+        "size": 3841,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0020-isolated-replay-divergence.md",
+        "size": 3303,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0021-retained-history-and-branching.md",
+        "size": 4280,
+        "mode": 420
+      },
+      {
+        "path": "docs/adr/0022-bounded-diagnostics-inspector.md",
+        "size": 3768,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/application.md",
+        "size": 21336,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/benchmarks.md",
+        "size": 3346,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/collections.md",
+        "size": 3257,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/determinism.md",
+        "size": 9870,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/dom.md",
+        "size": 7815,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/events.md",
+        "size": 10382,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/history.md",
+        "size": 7638,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/inspector.md",
+        "size": 10668,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/persistence.md",
+        "size": 7152,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/reactivity.md",
+        "size": 7753,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/recording.md",
+        "size": 7016,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/replay.md",
+        "size": 5866,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/routing.md",
+        "size": 6799,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/scheduling.md",
+        "size": 2769,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/semantic-interpolation.md",
+        "size": 7454,
+        "mode": 420
+      },
+      {
+        "path": "docs/api/ticks-inputs.md",
+        "size": 7865,
+        "mode": 420
+      },
+      {
+        "path": "docs/browser-support.md",
+        "size": 7033,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-0.5-correctness.md",
+        "size": 8812,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-0.6-measurements.md",
+        "size": 14478,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-0.7-view-syntax.md",
+        "size": 9630,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-0.8-actions-serialization.md",
+        "size": 8673,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-0.9-architecture-review.md",
+        "size": 12736,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-A.1-application-lifecycle.md",
+        "size": 6311,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-A.2-production-transactions.md",
+        "size": 8234,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-A.3-named-dispatch.md",
+        "size": 5386,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-A.4-A.5-reactivity.md",
+        "size": 5815,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-A.6-A.7-dom-frames.md",
+        "size": 5585,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-A.8-A.9-keyed-events.md",
+        "size": 6709,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-A.10-core-slice.md",
+        "size": 6981,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-B.1-B.3-inputs.md",
+        "size": 7117,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-B.4-B.6-routing-scheduling.md",
+        "size": 5571,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-B.7-B.8-persistence.md",
+        "size": 5749,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-B.9-B.11-auditor.md",
+        "size": 5373,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-C.1-C.2-checkpoints-controls.md",
+        "size": 5781,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-C.3-C.4-ticks-inputs.md",
+        "size": 3518,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-C.5-C.6-semantic-interpolation.md",
+        "size": 3321,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-C.7-C.8-recording-retention.md",
+        "size": 4164,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-C.9-C.10-replay-determinism.md",
+        "size": 5736,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-D.1-D.2-history-branching.md",
+        "size": 6590,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-D.3-D.4-diagnostics-inspector.md",
+        "size": 5132,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-D.5-D.6-performance.md",
+        "size": 22962,
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/task-D.7-acceptance-release.md",
+        "size": 14959,
+        "mode": 420
+      },
+      {
+        "path": "examples/auditor/index.html",
+        "size": 261,
+        "mode": 420
+      },
+      {
+        "path": "examples/auditor/main.js",
+        "size": 4998,
+        "mode": 420
+      },
+      {
+        "path": "examples/auditor/README.md",
+        "size": 1206,
+        "mode": 420
+      },
+      {
+        "path": "examples/basic/index.html",
+        "size": 3331,
+        "mode": 420
+      },
+      {
+        "path": "examples/basic/main.js",
+        "size": 1186,
+        "mode": 420
+      },
+      {
+        "path": "examples/core/app.js",
+        "size": 6731,
+        "mode": 420
+      },
+      {
+        "path": "examples/core/index.html",
+        "size": 1354,
+        "mode": 420
+      },
+      {
+        "path": "examples/core/main.js",
+        "size": 145,
+        "mode": 420
+      },
+      {
+        "path": "examples/core/README.md",
+        "size": 2282,
+        "mode": 420
+      },
+      {
+        "path": "examples/determinism/index.html",
+        "size": 267,
+        "mode": 420
+      },
+      {
+        "path": "examples/determinism/main.js",
+        "size": 2338,
+        "mode": 420
+      },
+      {
+        "path": "examples/determinism/README.md",
+        "size": 1097,
+        "mode": 420
+      },
+      {
+        "path": "examples/dom/index.html",
+        "size": 260,
+        "mode": 420
+      },
+      {
+        "path": "examples/dom/main.js",
+        "size": 1060,
+        "mode": 420
+      },
+      {
+        "path": "examples/features/index.html",
+        "size": 568,
+        "mode": 420
+      },
+      {
+        "path": "examples/features/main.js",
+        "size": 13145,
+        "mode": 420
+      },
+      {
+        "path": "examples/features/README.md",
+        "size": 2089,
+        "mode": 420
+      },
+      {
+        "path": "examples/features/styles.css",
+        "size": 5780,
+        "mode": 420
+      },
+      {
+        "path": "examples/history/index.html",
+        "size": 946,
+        "mode": 420
+      },
+      {
+        "path": "examples/history/main.js",
+        "size": 4522,
+        "mode": 420
+      },
+      {
+        "path": "examples/history/README.md",
+        "size": 1228,
+        "mode": 420
+      },
+      {
+        "path": "examples/inputs/index.html",
+        "size": 746,
+        "mode": 420
+      },
+      {
+        "path": "examples/inputs/main.js",
+        "size": 4635,
+        "mode": 420
+      },
+      {
+        "path": "examples/inputs/README.md",
+        "size": 1521,
+        "mode": 420
+      },
+      {
+        "path": "examples/inspector/index.html",
+        "size": 958,
+        "mode": 420
+      },
+      {
+        "path": "examples/inspector/main.js",
+        "size": 1130,
+        "mode": 420
+      },
+      {
+        "path": "examples/inspector/README.md",
+        "size": 1034,
+        "mode": 420
+      },
+      {
+        "path": "examples/interpolation/index.html",
+        "size": 275,
+        "mode": 420
+      },
+      {
+        "path": "examples/interpolation/main.js",
+        "size": 2266,
+        "mode": 420
+      },
+      {
+        "path": "examples/interpolation/README.md",
+        "size": 722,
+        "mode": 420
+      },
+      {
+        "path": "examples/keyed/index.html",
+        "size": 1637,
+        "mode": 420
+      },
+      {
+        "path": "examples/keyed/main.js",
+        "size": 3509,
+        "mode": 420
+      },
+      {
+        "path": "examples/keyed/README.md",
+        "size": 1392,
+        "mode": 420
+      },
+      {
+        "path": "examples/persistence/index.html",
+        "size": 665,
+        "mode": 420
+      },
+      {
+        "path": "examples/persistence/main.js",
+        "size": 2738,
+        "mode": 420
+      },
+      {
+        "path": "examples/persistence/README.md",
+        "size": 1178,
+        "mode": 420
+      },
+      {
+        "path": "examples/recording/index.html",
+        "size": 805,
+        "mode": 420
+      },
+      {
+        "path": "examples/recording/main.js",
+        "size": 3216,
+        "mode": 420
+      },
+      {
+        "path": "examples/recording/README.md",
+        "size": 1186,
+        "mode": 420
+      },
+      {
+        "path": "examples/routes/index.html",
+        "size": 711,
+        "mode": 420
+      },
+      {
+        "path": "examples/routes/main.js",
+        "size": 4475,
+        "mode": 420
+      },
+      {
+        "path": "examples/routes/README.md",
+        "size": 1208,
+        "mode": 420
+      },
+      {
+        "path": "examples/ticks/index.html",
+        "size": 273,
+        "mode": 420
+      },
+      {
+        "path": "examples/ticks/main.js",
+        "size": 2154,
+        "mode": 420
+      },
+      {
+        "path": "examples/ticks/README.md",
+        "size": 645,
+        "mode": 420
+      },
+      {
+        "path": "examples/ticks/sample.json",
+        "size": 74,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 1388,
+        "mode": 420
+      },
+      {
+        "path": "scripts/audit-checkout.js",
+        "size": 2411,
+        "mode": 420
+      },
+      {
+        "path": "scripts/audit-frontend.js",
+        "size": 9793,
+        "mode": 420
+      },
+      {
+        "path": "scripts/bench-runtime-worker.js",
+        "size": 4511,
+        "mode": 420
+      },
+      {
+        "path": "scripts/bench-runtime.js",
+        "size": 6184,
+        "mode": 420
+      },
+      {
+        "path": "scripts/bench-spikes-browser.js",
+        "size": 8835,
+        "mode": 420
+      },
+      {
+        "path": "scripts/bench-spikes-worker.js",
+        "size": 4350,
+        "mode": 420
+      },
+      {
+        "path": "scripts/bench-spikes.js",
+        "size": 5859,
+        "mode": 420
+      },
+      {
+        "path": "scripts/bench-tooling-browser.js",
+        "size": 8946,
+        "mode": 420
+      },
+      {
+        "path": "scripts/bench-tooling-node.js",
+        "size": 5387,
+        "mode": 420
+      },
+      {
+        "path": "scripts/bench-tooling-worker.js",
+        "size": 3704,
+        "mode": 420
+      },
+      {
+        "path": "scripts/check-action-types.js",
+        "size": 3435,
+        "mode": 420
+      },
+      {
+        "path": "scripts/check-app-lifecycle.js",
+        "size": 34651,
+        "mode": 420
+      },
+      {
+        "path": "scripts/check-auditor-browser.js",
+        "size": 5916,
+        "mode": 420
+      },
+      {
+        "path": "scripts/check-view-syntax.js",
+        "size": 8620,
+        "mode": 420
+      },
+      {
+        "path": "scripts/dev-server.js",
+        "size": 5531,
+        "mode": 420
+      },
+      {
+        "path": "scripts/local-browser.js",
+        "size": 4226,
+        "mode": 420
+      },
+      {
+        "path": "scripts/smoke.js",
+        "size": 8736,
+        "mode": 420
+      },
+      {
+        "path": "scripts/test-node.js",
+        "size": 1271,
+        "mode": 420
+      },
+      {
+        "path": "spikes/action-schema/actions.test.js",
+        "size": 12305,
+        "mode": 420
+      },
+      {
+        "path": "spikes/action-schema/index.d.ts",
+        "size": 3664,
+        "mode": 420
+      },
+      {
+        "path": "spikes/action-schema/index.js",
+        "size": 4484,
+        "mode": 420
+      },
+      {
+        "path": "spikes/action-schema/README.md",
+        "size": 6408,
+        "mode": 420
+      },
+      {
+        "path": "spikes/action-schema/snapshot.js",
+        "size": 10738,
+        "mode": 420
+      },
+      {
+        "path": "spikes/action-schema/snapshot.test.js",
+        "size": 12729,
+        "mode": 420
+      },
+      {
+        "path": "spikes/action-schema/types/javascript.js",
+        "size": 950,
+        "mode": 420
+      },
+      {
+        "path": "spikes/action-schema/types/negative.ts",
+        "size": 3127,
+        "mode": 420
+      },
+      {
+        "path": "spikes/action-schema/types/positive.ts",
+        "size": 3780,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/comparison-fixtures.js",
+        "size": 6310,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/comparison.test.js",
+        "size": 16242,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/contract.js",
+        "size": 5187,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/contract.test.js",
+        "size": 1589,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/cow-engine.js",
+        "size": 1179,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/cow.test.js",
+        "size": 4698,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/draft-view.js",
+        "size": 3238,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/engine-shell.js",
+        "size": 4088,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/fixtures.js",
+        "size": 21336,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/graph.js",
+        "size": 3636,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/README.md",
+        "size": 2061,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/reference-evaluator.js",
+        "size": 1705,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/staged-engine.js",
+        "size": 2508,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/staged.test.js",
+        "size": 4750,
+        "mode": 420
+      },
+      {
+        "path": "spikes/transactions/type-policy.test.js",
+        "size": 6994,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/bindings.js",
+        "size": 1084,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/browser-tests.js",
+        "size": 14700,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/events.js",
+        "size": 2448,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/examples.js",
+        "size": 3434,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/index.html",
+        "size": 1133,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/index.js",
+        "size": 1879,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/measurements.js",
+        "size": 4558,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/nodes.js",
+        "size": 1615,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/reactivity.js",
+        "size": 6140,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/README.md",
+        "size": 3620,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/renderer.js",
+        "size": 10204,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/security.js",
+        "size": 3541,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/syntax.test.js",
+        "size": 3365,
+        "mode": 420
+      },
+      {
+        "path": "spikes/view-syntax/templates.js",
+        "size": 4364,
+        "mode": 420
+      },
+      {
+        "path": "src/index.d.ts",
+        "size": 27697,
+        "mode": 420
+      },
+      {
+        "path": "src/index.js",
+        "size": 4824,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/actions/dispatch.js",
+        "size": 7625,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/actions/schema.js",
+        "size": 2207,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/app.js",
+        "size": 45880,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/determinism/controls.js",
+        "size": 4574,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/determinism/interpolation.js",
+        "size": 2180,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/determinism/ticks.js",
+        "size": 9947,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/diagnostics.js",
+        "size": 490,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/dom/bindings.js",
+        "size": 1890,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/dom/events.js",
+        "size": 7218,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/dom/inputs.js",
+        "size": 6730,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/dom/nodes.js",
+        "size": 5489,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/dom/properties.js",
+        "size": 7179,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/dom/queue.js",
+        "size": 2508,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/dom/renderer.js",
+        "size": 21277,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/errors.js",
+        "size": 855,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/history/controller.js",
+        "size": 10779,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/inputs/adapters.js",
+        "size": 10298,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/inputs/boundary.js",
+        "size": 4175,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/inputs/ownership.js",
+        "size": 1024,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/inspector/instrumentation.js",
+        "size": 7763,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/inspector/panel.js",
+        "size": 6646,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/persistence/codec.js",
+        "size": 890,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/persistence/locations.js",
+        "size": 15073,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/reactivity/tracking.js",
+        "size": 15254,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/recording/format.js",
+        "size": 22847,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/recording/recorder.js",
+        "size": 8090,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/recording/replay.js",
+        "size": 12663,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/records.js",
+        "size": 1003,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/routing/router.js",
+        "size": 17652,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/scheduler.js",
+        "size": 6262,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/serialization/checkpoint.js",
+        "size": 5638,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/serialization/graph.js",
+        "size": 11819,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/serialization/sha256.js",
+        "size": 2603,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/state/data.js",
+        "size": 5262,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/state/draft.js",
+        "size": 2586,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/state/graph.js",
+        "size": 3951,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/state/initial-state.js",
+        "size": 354,
+        "mode": 420
+      },
+      {
+        "path": "src/runtime/state/transactions.js",
+        "size": 6906,
+        "mode": 420
+      },
+      {
+        "path": "tests/app.test.js",
+        "size": 22396,
+        "mode": 420
+      },
+      {
+        "path": "tests/audit-checkout.test.js",
+        "size": 1883,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/app-lifecycle.html",
+        "size": 200,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/app-lifecycle.js",
+        "size": 24415,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/click.js",
+        "size": 6676,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/core-slice.js",
+        "size": 9866,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/determinism.js",
+        "size": 4265,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/dom.js",
+        "size": 5458,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/events-input.js",
+        "size": 8703,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/history.js",
+        "size": 5218,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/inspector.js",
+        "size": 5234,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/keyed.js",
+        "size": 4980,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/persistence.js",
+        "size": 4532,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/reactivity.js",
+        "size": 7245,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/recording.js",
+        "size": 4098,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/render-queue.js",
+        "size": 4614,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/replay.js",
+        "size": 7135,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/routing-scheduler.js",
+        "size": 8491,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/semantic-interpolation.js",
+        "size": 4715,
+        "mode": 420
+      },
+      {
+        "path": "tests/browser/ticks-inputs.js",
+        "size": 5269,
+        "mode": 420
+      },
+      {
+        "path": "tests/checkpoint.test.js",
+        "size": 13207,
+        "mode": 420
+      },
+      {
+        "path": "tests/click.test.js",
+        "size": 10762,
+        "mode": 420
+      },
+      {
+        "path": "tests/computed.test.js",
+        "size": 13941,
+        "mode": 420
+      },
+      {
+        "path": "tests/core-slice.test.js",
+        "size": 7755,
+        "mode": 420
+      },
+      {
+        "path": "tests/deterministic-services.test.js",
+        "size": 13588,
+        "mode": 420
+      },
+      {
+        "path": "tests/dispatch.test.js",
+        "size": 22478,
+        "mode": 420
+      },
+      {
+        "path": "tests/dom.test.js",
+        "size": 12818,
+        "mode": 420
+      },
+      {
+        "path": "tests/events-input.test.js",
+        "size": 16514,
+        "mode": 420
+      },
+      {
+        "path": "tests/external-inputs.test.js",
+        "size": 11047,
+        "mode": 420
+      },
+      {
+        "path": "tests/fixed-ticks.test.js",
+        "size": 12008,
+        "mode": 420
+      },
+      {
+        "path": "tests/helpers/core-probe.js",
+        "size": 3613,
+        "mode": 420
+      },
+      {
+        "path": "tests/helpers/fake-browser.js",
+        "size": 2384,
+        "mode": 420
+      },
+      {
+        "path": "tests/helpers/fake-dom.js",
+        "size": 5413,
+        "mode": 420
+      },
+      {
+        "path": "tests/helpers/transaction-fixtures.js",
+        "size": 21876,
+        "mode": 420
+      },
+      {
+        "path": "tests/history.test.js",
+        "size": 23638,
+        "mode": 420
+      },
+      {
+        "path": "tests/inspector.test.js",
+        "size": 12708,
+        "mode": 420
+      },
+      {
+        "path": "tests/interpolation.test.js",
+        "size": 7851,
+        "mode": 420
+      },
+      {
+        "path": "tests/keyed.test.js",
+        "size": 11873,
+        "mode": 420
+      },
+      {
+        "path": "tests/persistence-codec.test.js",
+        "size": 12869,
+        "mode": 420
+      },
+      {
+        "path": "tests/persistence.test.js",
+        "size": 18244,
+        "mode": 420
+      },
+      {
+        "path": "tests/public-contract.test.js",
+        "size": 4928,
+        "mode": 420
+      },
+      {
+        "path": "tests/reactivity.test.js",
+        "size": 13882,
+        "mode": 420
+      },
+      {
+        "path": "tests/recording.test.js",
+        "size": 26131,
+        "mode": 420
+      },
+      {
+        "path": "tests/render-queue.test.js",
+        "size": 14898,
+        "mode": 420
+      },
+      {
+        "path": "tests/replay.test.js",
+        "size": 19359,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1790965315808-e0e83f81.json",
+        "size": 6777,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1790969628972-f91f2ae7.json",
+        "size": 7309,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1790971859868-9cf130ea.json",
+        "size": 8849,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1790972441405-bd843470.json",
+        "size": 8849,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791040764331-e8fb339f.json",
+        "size": 8849,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791042105525-d38038b2.json",
+        "size": 9988,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791042486102-69fe1a15.json",
+        "size": 9988,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791045705758-294f30fe.json",
+        "size": 9988,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791047430041-e146d392.json",
+        "size": 10053,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791047984795-ef4121e2.json",
+        "size": 11811,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791048445723-3186c7d5.json",
+        "size": 11811,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791048539824-f3ba8748.json",
+        "size": 11811,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791048572171-0ef6c712.json",
+        "size": 11811,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791052277376-3b89c628.json",
+        "size": 13240,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791052737423-aab54f19.json",
+        "size": 14751,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791052984000-535c492d.json",
+        "size": 14751,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791053151320-40bb5f48.json",
+        "size": 14751,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791152187299-c45e039b.json",
+        "size": 15543,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791153737700-6f31c964.json",
+        "size": 17445,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791155496740-a76b8603.json",
+        "size": 21461,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791183689811-1f2dcf65.json",
+        "size": 21461,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791186314322-4cf5c3f7.json",
+        "size": 26160,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791197602705-3816842d.json",
+        "size": 29181,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/app-lifecycle-1791214161977-17d23ffd.json",
+        "size": 31090,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/auditor-1791220483250-3e91b375.json",
+        "size": 125245,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/auditor-1791222624329-5206c706.json",
+        "size": 133729,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/auditor-1791230788151-c4970703.json",
+        "size": 141570,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/auditor-1791232680040-b641b70c.json",
+        "size": 147576,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/auditor-1791235249124-c85bbae4.json",
+        "size": 154502,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/auditor-1791324154624-72e7dd32.json",
+        "size": 159771,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/auditor-1791358072246-bda11166.json",
+        "size": 165877,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/auditor-1791360018476-61fbdbbd.json",
+        "size": 170799,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/auditor-1791367735919-086ac69f.json",
+        "size": 174865,
+        "mode": 420
+      },
+      {
+        "path": "tests/results/auditor-1791370037908-47a9a246.json",
+        "size": 175853,
+        "mode": 420
+      },
+      {
+        "path": "tests/router.test.js",
+        "size": 18974,
+        "mode": 420
+      },
+      {
+        "path": "tests/scheduler.test.js",
+        "size": 8596,
+        "mode": 420
+      },
+      {
+        "path": "tests/semantic-inputs.test.js",
+        "size": 13476,
+        "mode": 420
+      },
+      {
+        "path": "tests/smoke.test.js",
+        "size": 2983,
+        "mode": 420
+      },
+      {
+        "path": "tests/transaction-comparison.test.js",
+        "size": 16095,
+        "mode": 420
+      },
+      {
+        "path": "tests/transaction-production.test.js",
+        "size": 15399,
+        "mode": 420
+      },
+      {
+        "path": "tests/transaction-type-policy.test.js",
+        "size": 5767,
+        "mode": 420
+      },
+      {
+        "path": "tests/transactions.test.js",
+        "size": 541,
+        "mode": 420
+      },
+      {
+        "path": "tests/types/negative.ts",
+        "size": 17237,
+        "mode": 420
+      },
+      {
+        "path": "tests/types/positive.ts",
+        "size": 14463,
+        "mode": 420
+      }
+    ]
+  },
+  "sourceFiles": [
+    {
+      "file": "src/index.d.ts",
+      "sha256": "21e0ad4a555c4b6a4da40ce8e7ceb860498e0b2f855f5ef7d83409405ce00796"
+    },
+    {
+      "file": "src/index.js",
+      "sha256": "26267025d963baa9287477af709243fa58ce79a826f849da08b368e7066b38ce"
+    },
+    {
+      "file": "src/runtime/actions/dispatch.js",
+      "sha256": "f5762c43f5a5ba5399d6d587634fb3e80c46b5e5b564a95bedab0e197a4c891f"
+    },
+    {
+      "file": "src/runtime/actions/schema.js",
+      "sha256": "be68fea174ad25646b8611ca5a88bce7e9703631511b86179f087a1b1301bfe1"
+    },
+    {
+      "file": "src/runtime/app.js",
+      "sha256": "8040514f04b580e5060b28a15de8f1ea0893b19cb805d0f2a40c029c623f3a62"
+    },
+    {
+      "file": "src/runtime/determinism/controls.js",
+      "sha256": "c5e7135379702f941d59ad4a9458766aa1400f72e0f7c63faad2a282340a6822"
+    },
+    {
+      "file": "src/runtime/determinism/interpolation.js",
+      "sha256": "3d7e724a0f1fd81a9f91853385c25f809e488da0e88d12951b2c83162eb85a78"
+    },
+    {
+      "file": "src/runtime/determinism/ticks.js",
+      "sha256": "977f4c592b4e3fb9c91722a106f518ef1ecb8fa2b925483d45543e689144cb5f"
+    },
+    {
+      "file": "src/runtime/diagnostics.js",
+      "sha256": "deb0400265ad0f8f07d295892c3fa63d4613552f768ad27ae742a41d98773c09"
+    },
+    {
+      "file": "src/runtime/dom/bindings.js",
+      "sha256": "e2fe508b0836172b48de86902e822cb54e16c8f5c2823463cf6583496e299fb8"
+    },
+    {
+      "file": "src/runtime/dom/events.js",
+      "sha256": "9410752167e1a015bfbe977eb87205eef9a96cc8c39c909ca1f5f10d411aed2a"
+    },
+    {
+      "file": "src/runtime/dom/inputs.js",
+      "sha256": "cb0fdcec5d298b8eb9ed08c1c528a9b61b6be7da69f168bd7f7d6e355b296181"
+    },
+    {
+      "file": "src/runtime/dom/nodes.js",
+      "sha256": "1a290cf4eb32a6d8b271601d58eaa6c239debd71b9f022b733850acccebc0f57"
+    },
+    {
+      "file": "src/runtime/dom/properties.js",
+      "sha256": "c01f301f475b32d80c83906e98cfca2b99487a0db9d7e97cea2f8828cef247c9"
+    },
+    {
+      "file": "src/runtime/dom/queue.js",
+      "sha256": "8b0a9f43af06b8a55490c5308f14c47cc2ea231ebfe6fa7f265e7bdcfaf6a1fd"
+    },
+    {
+      "file": "src/runtime/dom/renderer.js",
+      "sha256": "51bc3bdd22d17b598e3be7a20802b4d46cd6da2118fd5cb20523eee6c52461dd"
+    },
+    {
+      "file": "src/runtime/errors.js",
+      "sha256": "28a0d3509157c62f5c731d2d5b49611a2ee678fdd31ab931e5a9b1bc71681da0"
+    },
+    {
+      "file": "src/runtime/history/controller.js",
+      "sha256": "660fb44d680d052903a6a2544e0425a06d200d4ebe8b47c12e431f9be8c8ea67"
+    },
+    {
+      "file": "src/runtime/inputs/adapters.js",
+      "sha256": "57350f5c10d75aca432302e831f2d6efd4e791964993aec35e85fe819dc728bc"
+    },
+    {
+      "file": "src/runtime/inputs/boundary.js",
+      "sha256": "71ad9eeab466b0b732a058b994d12ef2650fef8ae1ae4280b963b728f323bf80"
+    },
+    {
+      "file": "src/runtime/inputs/ownership.js",
+      "sha256": "4ffaef16d8dfa82a02c7310ef5ccb16c0530de17c71095fe1fae46241fc0cd0d"
+    },
+    {
+      "file": "src/runtime/inspector/instrumentation.js",
+      "sha256": "3662d82eff167ce2651e4fce52e2697664e0055049a5841b7ddd30ac23235190"
+    },
+    {
+      "file": "src/runtime/inspector/panel.js",
+      "sha256": "cf935bd9640b9ae29659b8bfb5939452579f7ea021c033a0e158c8678f2c0cb8"
+    },
+    {
+      "file": "src/runtime/persistence/codec.js",
+      "sha256": "15a2c2cc85e14cf94d245d076ebf08af738c293564ac241c9c1ca11ab7e23e3f"
+    },
+    {
+      "file": "src/runtime/persistence/locations.js",
+      "sha256": "9a1ecda61ab8c06958e6b7f16aadb8fef8964b2d33cd5de7dbe00dd7408e9dfa"
+    },
+    {
+      "file": "src/runtime/reactivity/tracking.js",
+      "sha256": "5520a1c03c57328475c018584e8df002308c33faad21f9fd4ca1363f8643dd57"
+    },
+    {
+      "file": "src/runtime/recording/format.js",
+      "sha256": "f3154bff03e2215643939ac0e2e007192f885d9f12925d5343d92fc50cb6e0a6"
+    },
+    {
+      "file": "src/runtime/recording/recorder.js",
+      "sha256": "e1ff46e034189ae1aa2e553e9aa1439a7683a712be0d8b40ab6bde2b7d53a0fc"
+    },
+    {
+      "file": "src/runtime/recording/replay.js",
+      "sha256": "49ab7569003f5e9cd10a451d48e567ecc8f4e88efab083a8c71f02bbc23cab50"
+    },
+    {
+      "file": "src/runtime/records.js",
+      "sha256": "2ab1fdc349a55e10b2042626e01c9209dc52dfbfdcfc7b776d6d757e6b3434a8"
+    },
+    {
+      "file": "src/runtime/routing/router.js",
+      "sha256": "3938ba0f5b554744fd4d935ea94c1eaf15a05253df8930ea8d02774ef8a056ab"
+    },
+    {
+      "file": "src/runtime/scheduler.js",
+      "sha256": "ef36dd3a38d2bdede6b1dc0c4f7d7d501d62f7de9b083ff7d2f0a26002987492"
+    },
+    {
+      "file": "src/runtime/serialization/checkpoint.js",
+      "sha256": "a3ad72b514dd88aff09e25a748ede99161b3feebdf46272bf51ce805bd6b71ed"
+    },
+    {
+      "file": "src/runtime/serialization/graph.js",
+      "sha256": "f71dc694079448591590fef308e25d839e7bfa70b10aa382dfb64802beae3782"
+    },
+    {
+      "file": "src/runtime/serialization/sha256.js",
+      "sha256": "33ebba2604709a7ddfb0dd5e772667314defdd6292fbb82ec343f841eeb01e26"
+    },
+    {
+      "file": "src/runtime/state/data.js",
+      "sha256": "0d3cc0f69f05e93c2ce60546ac41c29dccd7f971d534325b141d2276bcb6661a"
+    },
+    {
+      "file": "src/runtime/state/draft.js",
+      "sha256": "4132704ac792c9a2a775a74cfe7cb6f83a45ae4b0c2fcd5534b917d006da6497"
+    },
+    {
+      "file": "src/runtime/state/graph.js",
+      "sha256": "921f9e7a201a258bf8aa42b38d303c7f20b15f5e934298feb66cd9dabb7223b3"
+    },
+    {
+      "file": "src/runtime/state/initial-state.js",
+      "sha256": "691661ed37ad32a78c7bf66fdb26df8b427383ab5cb3ac6b0ad8529d0a84b724"
+    },
+    {
+      "file": "src/runtime/state/transactions.js",
+      "sha256": "64e656e893d630b41bf3eea77da09b377c8dc6cf3ef290cd97756221c404bfa7"
+    }
+  ],
+  "consumerSource": "import assert from 'node:assert/strict';\nimport * as framework from 'mini-framework';\nconst {createApp,createActionSchema,createReplay,createDiagnostics,hashSnapshot}=framework;\nconst schema=createActionSchema({version:'package-review/1'})(({action})=>({\n  add:action((draft,services)=>{draft.count++;draft.draw=services.random();}),\n  fail:action(draft=>{draft.count=999;throw Error('rollback');}),\n}));\nconst app=createApp({schema,initialState:{count:0,draw:0},controls:{seed:123}});\nconst diagnostics=createDiagnostics(app,{maxEntries:8,maxBytes:65536});\napp.startRecording({mode:'session',maxActions:16,maxBytes:1048576});\napp.actions.add();app.actions.add();\nconst before=app.snapshot();assert.throws(()=>app.actions.fail(),/rollback/);assert.equal(app.snapshot(),before);\nconst recording=app.exportRecording(),replay=createReplay({recording,schema});\nassert.equal(replay.run().status,'complete');assert.equal(hashSnapshot(replay.app.snapshot()),hashSnapshot(app.snapshot()));\nassert.equal(app.state.count,2);assert.equal(app.stateVersion,3);assert.ok(Object.isFrozen(app.state));\nconst names=Object.keys(framework).sort();replay.dispose();app.dispose();assert.equal(diagnostics.snapshot().status,'disposed');\nconsole.log(JSON.stringify({passed:true,exports:names,version:framework.VERSION,hash:hashSnapshot(before),checks:['package-name import','action/seeded-services','rollback','recording/replay endpoint','readonly ownership','diagnostic/replay/app disposal']}));\n",
+  "consumer": {
+    "passed": true,
+    "exports": [
+      "FRAMEWORK_INFO",
+      "FrameworkError",
+      "VERSION",
+      "a",
+      "button",
+      "createActionSchema",
+      "createApp",
+      "createDiagnostics",
+      "createHistory",
+      "createInspector",
+      "createReplay",
+      "derive",
+      "div",
+      "element",
+      "form",
+      "hashSnapshot",
+      "input",
+      "keyed",
+      "label",
+      "li",
+      "option",
+      "outlet",
+      "p",
+      "readRecording",
+      "section",
+      "select",
+      "serializeRecording",
+      "span",
+      "textarea",
+      "ul",
+      "when"
+    ],
+    "version": "0.1.0",
+    "hash": "acb29c682f32f6a68c1805cf8e722ab032749ec4f18363d79e3dea918519b7c5",
+    "checks": [
+      "package-name import",
+      "action/seeded-services",
+      "rollback",
+      "recording/replay endpoint",
+      "readonly ownership",
+      "diagnostic/replay/app disposal"
+    ]
+  },
+  "limitations": "Temporary local archive/extraction, no installation from or publication to npm. Public runtime/docs match candidate at packaging; evidence reports may be completed afterward. Node consumer is headless, native browser behavior is qualified separately by checkout audit."
+}

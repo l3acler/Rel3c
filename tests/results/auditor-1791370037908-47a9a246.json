@@ -1,0 +1,2220 @@
+{
+  "kind": "clean-candidate-frontend-auditor",
+  "task": "D.7",
+  "formatVersion": 1,
+  "recordedAt": "2026-10-07T10:47:17.908Z",
+  "passed": true,
+  "offline": true,
+  "checkout": {
+    "kind": "local-git-candidate-checkout",
+    "revision": "74633a64e1d28dcd87af260fdecf0dd01525f154",
+    "tree": "ff732e1ccddba6b82155b4fd859b37a87718e12f",
+    "gitVersion": "git version 2.39.5 (Apple Git-154)",
+    "initiallyClean": true,
+    "trackedSourcesUnchanged": true
+  },
+  "checks": [
+    "Fresh copy without .git, node_modules or old results; app reconstructed from README.",
+    "Candidate committed only in a temporary local repository and cloned into a clean Git checkout; no source repository mutation or remote access.",
+    "Runtime imports stay inside src; no runtime dependencies; app imports the public entry without DOM patches/listeners.",
+    "All candidate sources retain their original hashes after setup and verification."
+  ],
+  "sourceFiles": [
+    {
+      "file": "src/index.d.ts",
+      "sha256": "21e0ad4a555c4b6a4da40ce8e7ceb860498e0b2f855f5ef7d83409405ce00796"
+    },
+    {
+      "file": "src/index.js",
+      "sha256": "26267025d963baa9287477af709243fa58ce79a826f849da08b368e7066b38ce"
+    },
+    {
+      "file": "src/runtime/actions/dispatch.js",
+      "sha256": "f5762c43f5a5ba5399d6d587634fb3e80c46b5e5b564a95bedab0e197a4c891f"
+    },
+    {
+      "file": "src/runtime/actions/schema.js",
+      "sha256": "be68fea174ad25646b8611ca5a88bce7e9703631511b86179f087a1b1301bfe1"
+    },
+    {
+      "file": "src/runtime/app.js",
+      "sha256": "8040514f04b580e5060b28a15de8f1ea0893b19cb805d0f2a40c029c623f3a62"
+    },
+    {
+      "file": "src/runtime/determinism/controls.js",
+      "sha256": "c5e7135379702f941d59ad4a9458766aa1400f72e0f7c63faad2a282340a6822"
+    },
+    {
+      "file": "src/runtime/determinism/interpolation.js",
+      "sha256": "3d7e724a0f1fd81a9f91853385c25f809e488da0e88d12951b2c83162eb85a78"
+    },
+    {
+      "file": "src/runtime/determinism/ticks.js",
+      "sha256": "977f4c592b4e3fb9c91722a106f518ef1ecb8fa2b925483d45543e689144cb5f"
+    },
+    {
+      "file": "src/runtime/diagnostics.js",
+      "sha256": "deb0400265ad0f8f07d295892c3fa63d4613552f768ad27ae742a41d98773c09"
+    },
+    {
+      "file": "src/runtime/dom/bindings.js",
+      "sha256": "e2fe508b0836172b48de86902e822cb54e16c8f5c2823463cf6583496e299fb8"
+    },
+    {
+      "file": "src/runtime/dom/events.js",
+      "sha256": "9410752167e1a015bfbe977eb87205eef9a96cc8c39c909ca1f5f10d411aed2a"
+    },
+    {
+      "file": "src/runtime/dom/inputs.js",
+      "sha256": "cb0fdcec5d298b8eb9ed08c1c528a9b61b6be7da69f168bd7f7d6e355b296181"
+    },
+    {
+      "file": "src/runtime/dom/nodes.js",
+      "sha256": "1a290cf4eb32a6d8b271601d58eaa6c239debd71b9f022b733850acccebc0f57"
+    },
+    {
+      "file": "src/runtime/dom/properties.js",
+      "sha256": "c01f301f475b32d80c83906e98cfca2b99487a0db9d7e97cea2f8828cef247c9"
+    },
+    {
+      "file": "src/runtime/dom/queue.js",
+      "sha256": "8b0a9f43af06b8a55490c5308f14c47cc2ea231ebfe6fa7f265e7bdcfaf6a1fd"
+    },
+    {
+      "file": "src/runtime/dom/renderer.js",
+      "sha256": "51bc3bdd22d17b598e3be7a20802b4d46cd6da2118fd5cb20523eee6c52461dd"
+    },
+    {
+      "file": "src/runtime/errors.js",
+      "sha256": "28a0d3509157c62f5c731d2d5b49611a2ee678fdd31ab931e5a9b1bc71681da0"
+    },
+    {
+      "file": "src/runtime/history/controller.js",
+      "sha256": "660fb44d680d052903a6a2544e0425a06d200d4ebe8b47c12e431f9be8c8ea67"
+    },
+    {
+      "file": "src/runtime/inputs/adapters.js",
+      "sha256": "57350f5c10d75aca432302e831f2d6efd4e791964993aec35e85fe819dc728bc"
+    },
+    {
+      "file": "src/runtime/inputs/boundary.js",
+      "sha256": "71ad9eeab466b0b732a058b994d12ef2650fef8ae1ae4280b963b728f323bf80"
+    },
+    {
+      "file": "src/runtime/inputs/ownership.js",
+      "sha256": "4ffaef16d8dfa82a02c7310ef5ccb16c0530de17c71095fe1fae46241fc0cd0d"
+    },
+    {
+      "file": "src/runtime/inspector/instrumentation.js",
+      "sha256": "3662d82eff167ce2651e4fce52e2697664e0055049a5841b7ddd30ac23235190"
+    },
+    {
+      "file": "src/runtime/inspector/panel.js",
+      "sha256": "cf935bd9640b9ae29659b8bfb5939452579f7ea021c033a0e158c8678f2c0cb8"
+    },
+    {
+      "file": "src/runtime/persistence/codec.js",
+      "sha256": "15a2c2cc85e14cf94d245d076ebf08af738c293564ac241c9c1ca11ab7e23e3f"
+    },
+    {
+      "file": "src/runtime/persistence/locations.js",
+      "sha256": "9a1ecda61ab8c06958e6b7f16aadb8fef8964b2d33cd5de7dbe00dd7408e9dfa"
+    },
+    {
+      "file": "src/runtime/reactivity/tracking.js",
+      "sha256": "5520a1c03c57328475c018584e8df002308c33faad21f9fd4ca1363f8643dd57"
+    },
+    {
+      "file": "src/runtime/recording/format.js",
+      "sha256": "f3154bff03e2215643939ac0e2e007192f885d9f12925d5343d92fc50cb6e0a6"
+    },
+    {
+      "file": "src/runtime/recording/recorder.js",
+      "sha256": "e1ff46e034189ae1aa2e553e9aa1439a7683a712be0d8b40ab6bde2b7d53a0fc"
+    },
+    {
+      "file": "src/runtime/recording/replay.js",
+      "sha256": "49ab7569003f5e9cd10a451d48e567ecc8f4e88efab083a8c71f02bbc23cab50"
+    },
+    {
+      "file": "src/runtime/records.js",
+      "sha256": "2ab1fdc349a55e10b2042626e01c9209dc52dfbfdcfc7b776d6d757e6b3434a8"
+    },
+    {
+      "file": "src/runtime/routing/router.js",
+      "sha256": "3938ba0f5b554744fd4d935ea94c1eaf15a05253df8930ea8d02774ef8a056ab"
+    },
+    {
+      "file": "src/runtime/scheduler.js",
+      "sha256": "ef36dd3a38d2bdede6b1dc0c4f7d7d501d62f7de9b083ff7d2f0a26002987492"
+    },
+    {
+      "file": "src/runtime/serialization/checkpoint.js",
+      "sha256": "a3ad72b514dd88aff09e25a748ede99161b3feebdf46272bf51ce805bd6b71ed"
+    },
+    {
+      "file": "src/runtime/serialization/graph.js",
+      "sha256": "f71dc694079448591590fef308e25d839e7bfa70b10aa382dfb64802beae3782"
+    },
+    {
+      "file": "src/runtime/serialization/sha256.js",
+      "sha256": "33ebba2604709a7ddfb0dd5e772667314defdd6292fbb82ec343f841eeb01e26"
+    },
+    {
+      "file": "src/runtime/state/data.js",
+      "sha256": "0d3cc0f69f05e93c2ce60546ac41c29dccd7f971d534325b141d2276bcb6661a"
+    },
+    {
+      "file": "src/runtime/state/draft.js",
+      "sha256": "4132704ac792c9a2a775a74cfe7cb6f83a45ae4b0c2fcd5534b917d006da6497"
+    },
+    {
+      "file": "src/runtime/state/graph.js",
+      "sha256": "921f9e7a201a258bf8aa42b38d303c7f20b15f5e934298feb66cd9dabb7223b3"
+    },
+    {
+      "file": "src/runtime/state/initial-state.js",
+      "sha256": "691661ed37ad32a78c7bf66fdb26df8b427383ab5cb3ac6b0ad8529d0a84b724"
+    },
+    {
+      "file": "src/runtime/state/transactions.js",
+      "sha256": "64e656e893d630b41bf3eea77da09b377c8dc6cf3ef290cd97756221c404bfa7"
+    },
+    {
+      "file": "scripts/audit-checkout.js",
+      "sha256": "e4fb04f641b7b4e86e245e807925637205d8c487260b6e50dcb9db3943f91ea8"
+    },
+    {
+      "file": "scripts/audit-frontend.js",
+      "sha256": "03e1dd5872d2d2d6ece8eebbaec3458ed76cf0e856196d56acfad3f14d3be38a"
+    },
+    {
+      "file": "scripts/bench-runtime-worker.js",
+      "sha256": "abefd82922d445f8ef2e714039ae8056bee3166e2698d7f91e428f7aa34c46f0"
+    },
+    {
+      "file": "scripts/bench-runtime.js",
+      "sha256": "5baf62ac20c355a7706dd992a77fb5babb3964601e634e9cd21ec951b36a896f"
+    },
+    {
+      "file": "scripts/bench-spikes-browser.js",
+      "sha256": "160ab9db87a51499213af7a4d367b604312a63675167fa383183cb51225e9d1e"
+    },
+    {
+      "file": "scripts/bench-spikes-worker.js",
+      "sha256": "2322a9d3071d7b93f9f9106243652e6df94d73a4edf343accaf27f4a9e890083"
+    },
+    {
+      "file": "scripts/bench-spikes.js",
+      "sha256": "becb715b38863eb224216b81f11ab7ce3e5a2e81d5b84fb5d1ba352acda5c4bd"
+    },
+    {
+      "file": "scripts/bench-tooling-browser.js",
+      "sha256": "9337461161b41baecf025117db6fb0e2c337497003e0fe198e32906f818105fe"
+    },
+    {
+      "file": "scripts/bench-tooling-node.js",
+      "sha256": "b784c4169bb9f44e1be6a82201e7e7759043ea3f0b3b1ef518f8950420fdd667"
+    },
+    {
+      "file": "scripts/bench-tooling-worker.js",
+      "sha256": "c53395a7f423f85017c7be14941cdbddf74ce7b0747182e91c5d776e74680a6f"
+    },
+    {
+      "file": "scripts/check-action-types.js",
+      "sha256": "2944912ef5c9963ae58afefe08e1b9a9d5936ed3ecaa0f95767a214a47da4ba9"
+    },
+    {
+      "file": "scripts/check-app-lifecycle.js",
+      "sha256": "be469a165c99ce6a9230881ef518518c218c1ca94c167fd99dbe50d34c0f523d"
+    },
+    {
+      "file": "scripts/check-auditor-browser.js",
+      "sha256": "2512e8eb1a2fb4be892e368bf7660e64774bddd04f152c67ddcd86259efb8317"
+    },
+    {
+      "file": "scripts/check-view-syntax.js",
+      "sha256": "913eb274d413e8a206fef001babf96ce89d147d8f0dede95fc724193fc59cc64"
+    },
+    {
+      "file": "scripts/dev-server.js",
+      "sha256": "117485a85f01986d3649755821537693d27711a63dd4af7a5cbcd1ba1035939e"
+    },
+    {
+      "file": "scripts/local-browser.js",
+      "sha256": "303794d10b6e9c4b97f570863854e6078452b9c2478a4ff5795091ab7cdca1d7"
+    },
+    {
+      "file": "scripts/smoke.js",
+      "sha256": "d60eed9c53502b6a6a829d6cb717bb54b7dff79cf90670d7c2f9c957de7397fc"
+    },
+    {
+      "file": "scripts/test-node.js",
+      "sha256": "d26a6a040f4bb12bd6208a5eef5e0b4ac07ac84773c3628c989c16e2a60399c1"
+    },
+    {
+      "file": "tests/app.test.js",
+      "sha256": "6207980a87f61f415e8ed2e911d07386a3461242cef8af4cc4d4caffa75de365"
+    },
+    {
+      "file": "tests/audit-checkout.test.js",
+      "sha256": "6173d39685a2a74e02a819e9d7f1cd36d008b092b8ae20b35180a0ff382cebe5"
+    },
+    {
+      "file": "tests/browser/app-lifecycle.html",
+      "sha256": "f905e1428e9a7b84e4ccb494725ede5a507acdf5b7e24b507e0cc4e9017d4e16"
+    },
+    {
+      "file": "tests/browser/app-lifecycle.js",
+      "sha256": "996bf970dd8d690fd95584fec549803cb2d589dbd841655ecb58bea96dcdb667"
+    },
+    {
+      "file": "tests/browser/click.js",
+      "sha256": "c0c48b6cf7536af97c8f8c74bc716ba595bf9ce3d30a907714ca220f7422bdc7"
+    },
+    {
+      "file": "tests/browser/core-slice.js",
+      "sha256": "8a870b08e23efdcd39b4ef6314abe46be2ef5c13c125c970bcd914c73e422162"
+    },
+    {
+      "file": "tests/browser/determinism.js",
+      "sha256": "4a5bea157ba0c99f0bc6a74a41d0699e6765eccdac988f9ea78e7344d2e6c218"
+    },
+    {
+      "file": "tests/browser/dom.js",
+      "sha256": "4bd72a20696aa4dcf893615216bed1fb6880784054830cb0ee28917699c28b7b"
+    },
+    {
+      "file": "tests/browser/events-input.js",
+      "sha256": "b5a35108771922aec2ebc002e6015413fb85ddc12d73f56105adc9ff224c76c2"
+    },
+    {
+      "file": "tests/browser/history.js",
+      "sha256": "3ebbcceb2b4fd742c4eb524faba473aa6a75f2b40c084b4c2c631cb2d799a54c"
+    },
+    {
+      "file": "tests/browser/inspector.js",
+      "sha256": "c1685b5e067473804b826dfb2f9a1df4a22adb6d427c3f8bd39e2ed1cf6922ba"
+    },
+    {
+      "file": "tests/browser/keyed.js",
+      "sha256": "99521f6f97253f5166643aa9afa7a42c194b63f7340602fcdbceeb580ec902ba"
+    },
+    {
+      "file": "tests/browser/persistence.js",
+      "sha256": "cb4c9856ca55d7923c50697d398daa6742106e9b86aefc0bbcf659037fffae24"
+    },
+    {
+      "file": "tests/browser/reactivity.js",
+      "sha256": "85902f83111136f54b79bc8a0d6a3d7136edafae14d676584e271a852913e4f9"
+    },
+    {
+      "file": "tests/browser/recording.js",
+      "sha256": "12735ad07b156a541e4da8b0dabe0470f1027a557489ee5b280e2fbb21c9d3b6"
+    },
+    {
+      "file": "tests/browser/render-queue.js",
+      "sha256": "245cf8b28b3e0cf8c90b89cc11a71e40d258a961791d02e35b9676eb72d4c61e"
+    },
+    {
+      "file": "tests/browser/replay.js",
+      "sha256": "5880494c2437b0c4e4817a9f6bc71f1ba9b12fceca0f65488a91c0932838c4e5"
+    },
+    {
+      "file": "tests/browser/routing-scheduler.js",
+      "sha256": "4e4a3fa210a52dfd8fa2b0feb1713cd48a706869ac0ab69d3cff3395a284ac5d"
+    },
+    {
+      "file": "tests/browser/semantic-interpolation.js",
+      "sha256": "6eeaefcf9cdb9e3298794b921cfd3fd2a0b4c7fc3ffb932712ff0d11220febfc"
+    },
+    {
+      "file": "tests/browser/ticks-inputs.js",
+      "sha256": "7a0987ee5ec1c1e1a04407e0168dd07467237ed9a4d8cea10617d5f07a52376f"
+    },
+    {
+      "file": "tests/checkpoint.test.js",
+      "sha256": "0387028c91e500366aa7040fd7c3ed7acb5902d69c1333a6c840a9c43d512a0d"
+    },
+    {
+      "file": "tests/click.test.js",
+      "sha256": "baf3f20f4dc46133847a18c7818613b5ebad850b63869f42111d62fcc753807e"
+    },
+    {
+      "file": "tests/computed.test.js",
+      "sha256": "c09b7a16dbea87583e7f927aadbe9a5c22cdcaf2ba2b8cab569c715e096a9124"
+    },
+    {
+      "file": "tests/core-slice.test.js",
+      "sha256": "7404a66a1a240299289f8b1292ed4f83a0625d8bc7a0fa20f1fd0f900619620f"
+    },
+    {
+      "file": "tests/deterministic-services.test.js",
+      "sha256": "4925e86b41bcfaec54102cbec74a8c52235924db237ae38aa0067bf6e4499988"
+    },
+    {
+      "file": "tests/dispatch.test.js",
+      "sha256": "922869c65b1faee95b2fee64748639584ce88e6a2bda5892fd635083973e5083"
+    },
+    {
+      "file": "tests/dom.test.js",
+      "sha256": "7e9d9df6350b070a6a88b2e48a4ce6eba7de589e26dd81b99aede8cac2fa0002"
+    },
+    {
+      "file": "tests/events-input.test.js",
+      "sha256": "26bae8f9390f304c9f04bba12980b070ddfaa57dfc709d86389ed1fb4f36f833"
+    },
+    {
+      "file": "tests/external-inputs.test.js",
+      "sha256": "239c9a44ea94480f65abef5fc8e3502c32357effdb68f72266bf8b6eb690db5a"
+    },
+    {
+      "file": "tests/fixed-ticks.test.js",
+      "sha256": "64e93fd6d694f0771cdae86e9d9f663ebd01ad5a5c4142ab480375966a21e8d8"
+    },
+    {
+      "file": "tests/helpers/core-probe.js",
+      "sha256": "99be18d0a016e938483530325e066c736b95cb77a28922f4ca4d0aff25530077"
+    },
+    {
+      "file": "tests/helpers/fake-browser.js",
+      "sha256": "d7bf59868895d37c5a766670a5f79482034c0ef6ab5a4f36a12158f59724c1d8"
+    },
+    {
+      "file": "tests/helpers/fake-dom.js",
+      "sha256": "afade8a7f1eb342573aff860a994f7f8c8f416ed8263c10f65ece90bbe30fc49"
+    },
+    {
+      "file": "tests/helpers/transaction-fixtures.js",
+      "sha256": "3f75125c5b412126562d704d9d50414123a2de3ab732c0d702a1272a17737aca"
+    },
+    {
+      "file": "tests/history.test.js",
+      "sha256": "15d026b3bcefd476be7df79846c70d74ad823c8642a89b042431031e6f0b7644"
+    },
+    {
+      "file": "tests/inspector.test.js",
+      "sha256": "2275eafd13f6f07684be4cab912b94fd2b5d376c2d31ffb599dd418ae132243b"
+    },
+    {
+      "file": "tests/interpolation.test.js",
+      "sha256": "02b13db1f55ec5c02d502893fa6bfaf38aa745a9a2779a27174a278ee72a275c"
+    },
+    {
+      "file": "tests/keyed.test.js",
+      "sha256": "ed10ec1bf02b87169d48d8f4c2b8f9169e8b32c6168fe62b7d490014f6e2e517"
+    },
+    {
+      "file": "tests/persistence-codec.test.js",
+      "sha256": "bd34bb00bce0ccb1b05228f63fef5b01767f47fd19498a04c6662ecfec2ee76b"
+    },
+    {
+      "file": "tests/persistence.test.js",
+      "sha256": "b3ebedd52c7d3b807cec75ddaf1595fe02425fcdd31d53ac4fa631e7411795f3"
+    },
+    {
+      "file": "tests/public-contract.test.js",
+      "sha256": "d3db230f939bc58dfe5c076d613499a83c9d465f656ea08f0d8614e1272965c9"
+    },
+    {
+      "file": "tests/reactivity.test.js",
+      "sha256": "01116a6c46e619f54560aaa6027b4dbf7db1514dc5cd4f4bde44fc6b647b434f"
+    },
+    {
+      "file": "tests/recording.test.js",
+      "sha256": "7d368c63e1412b0e675a34ed5295c307bc5be6de045c4f4dce592ee54b913d40"
+    },
+    {
+      "file": "tests/render-queue.test.js",
+      "sha256": "d888d407759e468eef86c3d07cb64b350112b5426d53228a8e3ade723a82c3ef"
+    },
+    {
+      "file": "tests/replay.test.js",
+      "sha256": "e821a60a004fafb0a7abd8a9573d57dd513e40ccbb57ff6c7f30e8347c99f74b"
+    },
+    {
+      "file": "tests/router.test.js",
+      "sha256": "a618e7287e52d948f9d4b78812102daaa2cebff2834aa722a8b8c2ea0b4072c1"
+    },
+    {
+      "file": "tests/scheduler.test.js",
+      "sha256": "c3fde7656df78775a9489b744cd764eecfe53fa0eac6d1576aa1582b486c4f1d"
+    },
+    {
+      "file": "tests/semantic-inputs.test.js",
+      "sha256": "3a6c4fc77589e99e60935e8276f70db63d767e7807e38f1b979ebe1d5e022210"
+    },
+    {
+      "file": "tests/smoke.test.js",
+      "sha256": "c747c4782dc0758bfc2a09b9829119f7cd9b6fb1ec942d868dacdca7adbf1dae"
+    },
+    {
+      "file": "tests/transaction-comparison.test.js",
+      "sha256": "7b7b405c85592ba8e9997f4a9a6150d20b6cdd51dd291e257ac2fefe542aa2bc"
+    },
+    {
+      "file": "tests/transaction-production.test.js",
+      "sha256": "8374aa4e122b75e59390e3647439a1e8275340a7f91c771fa4afa1eb6f0f6e7a"
+    },
+    {
+      "file": "tests/transaction-type-policy.test.js",
+      "sha256": "5d99a8799e83eec48e7347961f7ab8d4dd496ef2d0e174d2bf1af3a7c3f3918a"
+    },
+    {
+      "file": "tests/transactions.test.js",
+      "sha256": "6a1047c7cbaa4318b2905513efa9e9d859ce7b45e88b1ed07f635856400d0359"
+    },
+    {
+      "file": "tests/types/negative.ts",
+      "sha256": "e0d31d3a1a3f8421d63992f2681cdceef4003c9ff87e20b83bce37ba982f0a1e"
+    },
+    {
+      "file": "tests/types/positive.ts",
+      "sha256": "376a3dcd5879891d643d865d913a6c533502d454414010bfda4b5b69a2b49ccf"
+    },
+    {
+      "file": "examples/auditor/index.html",
+      "sha256": "2118698a6224944619b712593e65f82e301adec694630282d72ab3895884a514"
+    },
+    {
+      "file": "examples/auditor/main.js",
+      "sha256": "22b0bfbbadf56509cd443ca26377c1316088347cc2a684af6f1420e1f6d7dd92"
+    },
+    {
+      "file": "examples/basic/index.html",
+      "sha256": "c43f013a8dcac07678145d84d43788e9ff826f33f0bea4152983c79f5df88e89"
+    },
+    {
+      "file": "examples/basic/main.js",
+      "sha256": "76bea3a38dc7a71c6c4a12c5fbaf3b212f9b9221453392084250a67948feaebb"
+    },
+    {
+      "file": "examples/core/README.md",
+      "sha256": "f1d59c050aab7291f927665e952ace4ead407fb6e2e3a72727e051938c688506"
+    },
+    {
+      "file": "examples/core/app.js",
+      "sha256": "0b52f3bca3052972d30974cb34b7c0bae8a12ead3a6cab93a234cbe1224faf4a"
+    },
+    {
+      "file": "examples/core/index.html",
+      "sha256": "3f294dc790652b8f41d6cbb71ddd1f8f2dfacd0bbcf81c80177bb96d8f9cb2bd"
+    },
+    {
+      "file": "examples/core/main.js",
+      "sha256": "b6818a4ce8cb7e966cdaf53d1782fadffcb2a18370264b297473e53288e7928e"
+    },
+    {
+      "file": "examples/determinism/README.md",
+      "sha256": "987fdd94139b396f375624991d3c1c30520f8fbc52e767ecbb6b9a4576946e75"
+    },
+    {
+      "file": "examples/determinism/index.html",
+      "sha256": "631fda37a93c53f85938204fea88d4adde1f0c6849ec1012732f97b6acbabe16"
+    },
+    {
+      "file": "examples/determinism/main.js",
+      "sha256": "1eca57e636a1126f057139efa63a8164bbf368a92d13ecb6361a1d036be239a4"
+    },
+    {
+      "file": "examples/dom/index.html",
+      "sha256": "97d27795323744a97d74d5c6baff245b26a3f1ab4c85405672e507cb55caa337"
+    },
+    {
+      "file": "examples/dom/main.js",
+      "sha256": "6ae696c95fc16a74839eab534d8f911a44440e4371a86a9c9aa04a2189b5c792"
+    },
+    {
+      "file": "examples/features/README.md",
+      "sha256": "0cc3176c9ff8099404c1e3af8df03f746249094471928a4bc6f4a04b39e6a817"
+    },
+    {
+      "file": "examples/features/index.html",
+      "sha256": "11483d1a2a3ea71359f6f0151b556740cacd3270c2f4db8c95703cd3611c33c1"
+    },
+    {
+      "file": "examples/features/main.js",
+      "sha256": "83d1e928c036d5ca73e9f10fbdb549622dc4e0bbe90bc51a49a7f0b9256149e8"
+    },
+    {
+      "file": "examples/features/styles.css",
+      "sha256": "f5d9c88600d90f7a33dc2e28f3472313c740f201eba55751062893ffaedf1b8c"
+    },
+    {
+      "file": "examples/history/README.md",
+      "sha256": "95948dfec685578c283f5b1cc1eb869229bd71ea1a84cb129a97f4f04c3b9e04"
+    },
+    {
+      "file": "examples/history/index.html",
+      "sha256": "c2e9eef94675a71159f1220ad1df4ef3218a9d15770d5219004877b08f880b09"
+    },
+    {
+      "file": "examples/history/main.js",
+      "sha256": "dff15d6853f8b22f56d59f247114e60386f54cf04b88134bdaf3c72df53337d9"
+    },
+    {
+      "file": "examples/inputs/README.md",
+      "sha256": "d1de9f4e6e55f24fc6558e080dead011a1388d8db8b80ec504b1ae1f269d354e"
+    },
+    {
+      "file": "examples/inputs/index.html",
+      "sha256": "6104476ea2eb928665c45c3a4791311c2a5cb6b051be9c0052a39bf19cf30f86"
+    },
+    {
+      "file": "examples/inputs/main.js",
+      "sha256": "3e56e3af2a34699a43ad4d50cc30eba3f8ea5fbf91ff54b0e758391455dd37dc"
+    },
+    {
+      "file": "examples/inspector/README.md",
+      "sha256": "400d3c3aad29cb3c9678c2f4827521a0dc0084fb9c5e5faa8a1cd041791afd93"
+    },
+    {
+      "file": "examples/inspector/index.html",
+      "sha256": "8d9969bd6fd613c6d5d1984e8e6279e97877372fa23be5a3e66e80a88d409c71"
+    },
+    {
+      "file": "examples/inspector/main.js",
+      "sha256": "32199a26e79e8a73a785f75c8d5a271ad9b44187b1b7676872104fff15dc1562"
+    },
+    {
+      "file": "examples/interpolation/README.md",
+      "sha256": "eb007245a50ed12b830d819b245b16b782f1f5af6f264352eadcf9c70e32175f"
+    },
+    {
+      "file": "examples/interpolation/index.html",
+      "sha256": "91a5fecb0f76b5383055eb224aef5b5de748c122d9545d3717066f04e5bbc396"
+    },
+    {
+      "file": "examples/interpolation/main.js",
+      "sha256": "0be2bab549cc888d9a67ef86bed3cc099e90be234999a9888323d45a78836565"
+    },
+    {
+      "file": "examples/keyed/README.md",
+      "sha256": "eed14d66411a4eb8d1dfaa9f6a0d5b170f4a2f1749da6494228e4b70c94a84b6"
+    },
+    {
+      "file": "examples/keyed/index.html",
+      "sha256": "37dc3cddbaaae5f9f226dd567a9ac0fbbb1291c67ee8fa001b1e4626f43017f2"
+    },
+    {
+      "file": "examples/keyed/main.js",
+      "sha256": "b03b4625893209ec8cb8d97dd090c2c0fedef0bcbc3c6b247945c84b735f2d16"
+    },
+    {
+      "file": "examples/persistence/README.md",
+      "sha256": "d8d36e54c36baa151a7d1536bbfc04a084cf54a0bd58003393fa1e66478d14ea"
+    },
+    {
+      "file": "examples/persistence/index.html",
+      "sha256": "0d376c17bf325a635adf373015fccc3e8518a9c2837b5cff8b57207ee0dd7f42"
+    },
+    {
+      "file": "examples/persistence/main.js",
+      "sha256": "5789aff40d4a4d16395b84c818cd9846c93574276996e7fa8adcbfc66ba1aab9"
+    },
+    {
+      "file": "examples/recording/README.md",
+      "sha256": "4f25bc8d31cd116cccf80fda5543ec826d6b39d918873f17be8ac66e0d6d0b3b"
+    },
+    {
+      "file": "examples/recording/index.html",
+      "sha256": "e5633bf6c17502ec4f0203c37ce011b1fd07f070b3f0b3e430c85e5d52975c18"
+    },
+    {
+      "file": "examples/recording/main.js",
+      "sha256": "f88c6d4ed76289cc547bd602609b3a7e9887e67df96ad7a279ce333efe61c15f"
+    },
+    {
+      "file": "examples/routes/README.md",
+      "sha256": "72b9e42e7f0c58ac597f4a91bfe14d5a665ef6188731c5dbae88df6e96243e28"
+    },
+    {
+      "file": "examples/routes/index.html",
+      "sha256": "6077d45245e8b3e7194687c2c95b8bef2515072655f9ec02470797644d520aff"
+    },
+    {
+      "file": "examples/routes/main.js",
+      "sha256": "1d47c6626296d7d575299142c8b514b8ddeb5bd1550fdb1a62abfbee4e0ed292"
+    },
+    {
+      "file": "examples/ticks/README.md",
+      "sha256": "ec545d02fbd288a021a68160735fd80ada1c2bc2cdddbbaf9e2be1281c639cf9"
+    },
+    {
+      "file": "examples/ticks/index.html",
+      "sha256": "659833057d242b68d1b9a182ac6245cac2bf50d203ff41cafdeae4424783a8fa"
+    },
+    {
+      "file": "examples/ticks/main.js",
+      "sha256": "4e7fea363bf091634c2b56f353acfacbfc513789382fa9d649186ca73a5425a2"
+    },
+    {
+      "file": "examples/ticks/sample.json",
+      "sha256": "66364b9ad31c7c224a4a7efdf0bdcd82a21c755783c66f81cf0c05b5d29f9438"
+    },
+    {
+      "file": "benchmarks/README.md",
+      "sha256": "88c2cea70cf4c69e527e4289f069dc0c81c43d0e50f8f01d9579dba53e9d3ef8"
+    },
+    {
+      "file": "benchmarks/runtime/README.md",
+      "sha256": "8eb7899875a4b14cd93d89e7add57293125f3bc749be2758020d30d3da5e38e8"
+    },
+    {
+      "file": "benchmarks/runtime/browser.js",
+      "sha256": "ab1747b7bcae150ec24710a5dc57dcaf8fb06935aa743c30909568d5a6dc96cb"
+    },
+    {
+      "file": "benchmarks/runtime/index.html",
+      "sha256": "054dee61d3af66059ddd01fb772fd188ac8d5ebd2c039226025828fef30b290e"
+    },
+    {
+      "file": "benchmarks/runtime/workloads.js",
+      "sha256": "5dda9f2e436731afee1efed38297b1bdc6af4ac6fef34976aed2827741f2ac96"
+    },
+    {
+      "file": "benchmarks/runtime/workloads.test.js",
+      "sha256": "3853fe0f676f348bf3bdf1ee757bcad5a100578e9fde4cc94875833296e74b8d"
+    },
+    {
+      "file": "benchmarks/transactions/browser.js",
+      "sha256": "7b7f06872376c1f991c4df914f343036354461410c5305cdb17bca94ae144874"
+    },
+    {
+      "file": "benchmarks/transactions/engines.js",
+      "sha256": "3f40dc93390c806e5fadd8f243ecf1e817615bbfe438d08f0a30d857e66c4515"
+    },
+    {
+      "file": "benchmarks/transactions/index.html",
+      "sha256": "a7eeb2d8f528bee6b47899472fd9a446a61a2a14c51469606e91070e2d883353"
+    },
+    {
+      "file": "benchmarks/transactions/runtime-equivalence.test.js",
+      "sha256": "092c16c018263ce1e82556cfbd8b7b5d00b0bcd6daa8764f09207a28a80098a9"
+    },
+    {
+      "file": "benchmarks/transactions/workloads.js",
+      "sha256": "63cbbf6aeb2f53c5eeed93462bbca23a90185f8b8c6891df46da689dae8552a0"
+    },
+    {
+      "file": "benchmarks/transactions/workloads.test.js",
+      "sha256": "b46eb695cc62de39eeb31529cc360a15fb1446ffc97ee4153c8c8d8495762597"
+    },
+    {
+      "file": "docs/api/application.md",
+      "sha256": "b7b2306873a75c9c5a74215df603226b77cb48a9ce4e356f3fbfb71ae3893b5e"
+    },
+    {
+      "file": "docs/api/benchmarks.md",
+      "sha256": "38ff1dbcc765163f1ca294b349ce4eefd61dc6a71d4ac8da4f3fa22367183eb9"
+    },
+    {
+      "file": "docs/api/collections.md",
+      "sha256": "e8efbfe365a65a65a419d32a3092b84cd29dd84f1a41f1e74119b2907ee0adbc"
+    },
+    {
+      "file": "docs/api/determinism.md",
+      "sha256": "5f175ec542483e642f22be845936a5333c1037d2e1f7c249a3482160428e9aaa"
+    },
+    {
+      "file": "docs/api/dom.md",
+      "sha256": "64388324067fe9917b853886103e23b478d89c0f3a59bdf8f79adbeb4447fb51"
+    },
+    {
+      "file": "docs/api/events.md",
+      "sha256": "9d692a2a8f5eeec5b362efd2b3ddcdf38a229ab559b8b04d294fdfcb4ff07f0c"
+    },
+    {
+      "file": "docs/api/history.md",
+      "sha256": "a24e12fde638ff6538559aac63c97aedde24637945209078dac97f0e6df25d28"
+    },
+    {
+      "file": "docs/api/inspector.md",
+      "sha256": "124744840124e97feaa7660bbd4f27b85993c08505f2674f400859270ee40c83"
+    },
+    {
+      "file": "docs/api/persistence.md",
+      "sha256": "89fa5a30e8776e80d27cdb36d83bf999a9c867fba99fbc1ea4ee06d01b330409"
+    },
+    {
+      "file": "docs/api/reactivity.md",
+      "sha256": "e509833ac4f263836bd6fc21c3d40470594df776061c2511e18138bfdb6f8a91"
+    },
+    {
+      "file": "docs/api/recording.md",
+      "sha256": "92d64042918a7f84db2e2ababe7158a1aa645dece3869a1de30bcfac8c7ed0be"
+    },
+    {
+      "file": "docs/api/replay.md",
+      "sha256": "075854a1cace0fc0f5003b58651bbe6163abc2ccb253ee39c65f3c809749ba79"
+    },
+    {
+      "file": "docs/api/routing.md",
+      "sha256": "d0c5aad84a7e41938c31fcad640be336a674642f8def26705292e61ba8e0e3f2"
+    },
+    {
+      "file": "docs/api/scheduling.md",
+      "sha256": "571d4ed6bbc36c17cd0fe2509512be2b73062e7c527e154612f9b37e9b0f79ee"
+    },
+    {
+      "file": "docs/api/semantic-interpolation.md",
+      "sha256": "3e92f51180ae3f91636868929df805475eba2fc638b91ff078fb33e368fa1f20"
+    },
+    {
+      "file": "docs/api/ticks-inputs.md",
+      "sha256": "6cf207c6018b32ecfe814e72b43247f6278cc155296388d86de47c00fedd7044"
+    },
+    {
+      "file": "README.md",
+      "sha256": "1edd8cec32cc898117a02091dc1a98ea260894d4c7088fb52404a09ad21d9c4c"
+    },
+    {
+      "file": "DOCUMENTATION.md",
+      "sha256": "899f3c04ff7ba99762e49189e3f1ceea119352593e408e16f597214ec78567cf"
+    },
+    {
+      "file": "Framework_PRD.md",
+      "sha256": "71835fbafad196634a46a56c4134d291daf2f142c896fa82aed1cce1cb823017"
+    },
+    {
+      "file": "package.json",
+      "sha256": "c75161a45a99b8618a67eb4180f60db523fc6195c7be64eb69c5326c6af27fd1"
+    },
+    {
+      "file": "package-lock.json",
+      "sha256": "e7089525b062ab424ff6819fcd7e24c86dbe84e9a1a1644a48075e7343b1f4c0"
+    },
+    {
+      "file": ".gitignore",
+      "sha256": "3ac4f778895dde9f5edb24962c0bcbb6a971a8e7b0a04185bd0fd70b1d0a514e"
+    },
+    {
+      "file": "RELEASE_NOTES.md",
+      "sha256": "e2708c5957d0c0ccd55b800367b390f11a3ed4b2f7a88a8a2056996f15f10d09"
+    },
+    {
+      "file": "docs/browser-support.md",
+      "sha256": "294d16df5d4903dec7b3301b46d0965e372b30da5685ed151d840a6b8e81effa"
+    },
+    {
+      "file": "docs/adr/0015-public-frontend-compatibility.md",
+      "sha256": "c17ad5c996b7725ffea683d04f96c1ca273b8d9236c1c8dd62176593321157c9"
+    }
+  ],
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "output": "\n> mini-framework@0.1.0 test\n> node scripts/test-node.js tests\n\n✔ default mount resolves #app lazily and preserves host content (3.137834ms)\n✔ default mount fails clearly without DOM or #app and can retry after target appears (0.453667ms)\n✔ explicit and configured targets bypass default lookup; invalid explicit targets do not fall back (0.365292ms)\n✔ default targets use existing claims and check lifecycle before resolving DOM (0.2945ms)\n✔ createApp is headless-safe, lazy without target, frozen and method-detachable (0.221708ms)\n✔ initial state is privately copied/read-only and independent between apps (0.523625ms)\n✔ ownership preserves aliases/distinct nodes/prototypes/order/holes/undefined/negative zero (0.568291ms)\n✔ unsupported state types/prototypes/accessors fail before exposing an app (7.181791ms)\n✔ initial construction limits guard depth, aliases at deeper paths, entries, nodes, text and holes (102.396291ms)\n✔ shared DAG is traversed once per node without ordinary property gets (0.457333ms)\n✔ config getters and unknown/planned options reject instead of silently doing nothing (0.188541ms)\n✔ schemas register explicit modes, own names, frozen metadata and safe prototype-colliding names (1.003ms)\n✔ schema validation rejects forged/accessor definitions and invalid helper/options (0.213667ms)\n✔ mount invokes frozen context once and preserves host-owned children (0.20175ms)\n✔ invalid targets, exclusive ownership and claim release are explicit (0.233458ms)\n✔ cleanup is LIFO and child scope precedes app scope; dispose-before-mount also cleans (0.213ms)\n✔ failed mount drains its scope, releases target and allows a fresh view attempt (1.666917ms)\n✔ partial DOM mount failure cleans the appended owned node and does not touch foreign children (0.495583ms)\n✔ disposal continues through all failing callbacks, completes and aggregates failures (0.533875ms)\n✔ failed view and failed cleanup preserve both causes (0.308292ms)\n✔ onError observes operation failures without swallowing them or duplicate reports (0.414583ms)\n✔ throwing error observers preserve original operation failure (0.2115ms)\n✔ recursive error reporting does not recursively invoke the observer (0.219042ms)\n✔ runtime module graph contains only production-relative imports, never spikes or dependencies (1.9775ms)\n✔ lifecycle reentrancy is guarded and reentrant dispose while cleaning is harmless (0.188791ms)\n✔ cleanup registration rejects invalid callbacks without running them (0.060416ms)\n✔ declarative boundary rejects forged descriptors and unknown thenables without execution (0.422209ms)\n✔ illegal async views/builders/cleanup/error hooks reject and native rejections are observed (6.479291ms)\n✔ D.7 local checkout preserves sources, excludes ignored installs and detects tracked mutations (580.4395ms)\n✔ C.1 canonical empty checkpoint is a versioned golden fixture (3.43125ms)\n✔ C.1 restored state preserves aliases, distinct equal nodes, holes, prototypes and property order (1.708375ms)\n✔ C.1 array state roots restore and app/store versions continue exactly (1.384625ms)\n✔ C.1 hashes distinguish key order, alias topology, numeric meaning, versions and controls (6.473833ms)\n✔ C.1 input conflicts/schema mismatch fail before views or targets are claimed (2.620875ms)\n✔ C.1 import rejects wrong format (0.291875ms)\n✔ C.1 import rejects wrong checkpoint version (0.256375ms)\n✔ C.1 import rejects wrong runtime version (0.232708ms)\n✔ C.1 import rejects missing metadata (0.258875ms)\n✔ C.1 import rejects extra metadata (0.450416ms)\n✔ C.1 import rejects empty schema (0.141125ms)\n✔ C.1 import rejects oversize schema (0.114625ms)\n✔ C.1 import rejects invalid state version (0.181625ms)\n✔ C.1 import rejects unsafe version (0.161916ms)\n✔ C.1 import rejects fractional version (0.116125ms)\n✔ C.1 import rejects fixed clock missing duration (0.099334ms)\n✔ C.1 import rejects manual clock nonzero tick (1.544125ms)\n✔ C.1 import rejects manual clock nonnull duration (0.217542ms)\n✔ C.1 import rejects negative time (0.104167ms)\n✔ C.1 import rejects fractional time (0.672125ms)\n✔ C.1 import rejects extra clock (0.12625ms)\n✔ C.1 import rejects extra controls (0.439708ms)\n✔ C.1 import rejects unknown algorithm (0.516542ms)\n✔ C.1 import rejects negative seed (1.438875ms)\n✔ C.1 import rejects unsafe seed (0.1265ms)\n✔ C.1 import rejects zero word (0.097334ms)\n✔ C.1 import rejects fractional word (1.048458ms)\n✔ C.1 import rejects wrong initial word (0.091875ms)\n✔ C.1 import rejects negative draws (0.069417ms)\n✔ C.1 import rejects unsafe draws (0.07225ms)\n✔ C.1 import rejects graph wrong format (0.091708ms)\n✔ C.1 import rejects graph wrong version (0.079667ms)\n✔ C.1 import rejects primitive state root (0.085458ms)\n✔ C.1 import rejects graph dangling ref (0.075667ms)\n✔ C.1 import rejects graph cycle (0.085542ms)\n✔ C.1 import rejects graph unused node (0.080625ms)\n✔ C.1 import rejects graph extra field (0.079958ms)\n✔ C.1 import rejects sparse slot overflow (0.07275ms)\n✔ C.1 canonical validation rejects whitespace, duplicate fields and nested metadata reordering (0.353292ms)\n✔ C.1 string/byte and state import budgets reject before application use (13.816166ms)\n✔ C.1 snapshot reads/export never publish versions, bindings or storage writes (1.545375ms)\n✔ C.1 persistence after restoring is ordinary hydration, explicitly separate from checkpoint restore (4.173917ms)\n✔ C.1 SHA-256 standard vectors, UTF-8 and block padding match Node crypto (35.774583ms)\n✔ C.1 a state within graph budgets can exceed the independent export wire budget (541.82925ms)\n✔ A.9 direct action wrappers receive zero arguments and clicks queue only dependent visual work (6.088542ms)\n✔ A.9 delegation invokes live child-to-parent handlers without preventing native defaults (0.969333ms)\n✔ A.9 null/undefined click props register no listener and foreign host clicks are ignored (1.048291ms)\n✔ A.9 removed conditional handlers are unregistered, stale nodes cannot act, and remount adds one delegate (3.264ms)\n✔ A.9 same-key replacement handlers read current item rather than obsolete factory captures (2.158792ms)\n✔ A.9 events after application disposal cannot dispatch even when old nodes are reattached (0.342417ms)\n✔ A.9 a handler may dispose its app; later handlers on that click path are skipped (3.421667ms)\n✔ A.9 a handler can explicitly flush removal before an ancestor handler runs (1.228875ms)\n✔ A.9 action failures in clicks roll back and report once at the event boundary (1.976709ms)\n✔ A.9 click handler failures aggregate after healthy parent handlers commit (2.377ms)\n✔ A.9 recursive click invocation is rejected without recursively reporting errors (0.291833ms)\n✔ A.9 error hooks reject dispatch and preserve both handler/hook errors (0.209958ms)\n✔ A.9 Promise/thenable handlers reject without unhandled native rejections or thenable execution (11.250584ms)\n✔ A.9 invalid handlers and later failed mounts release delegates/scopes and allow retry (0.711083ms)\n✔ A.9 repeated scoped remount/disposal restores exact resource counts without growing handlers (59.388958ms)\n✔ A.9 delegate/cancellation failures still dispose all scopes and run user hooks (0.383791ms)\n✔ A.5 initial and dirty unobserved computations are lazy and cache repeated reads (3.414833ms)\n✔ A.5 observed computed values invalidate without recomputing until consumed (0.447083ms)\n✔ A.5 chains and diamonds invalidate fully before callbacks with one evaluation per computed (0.939041ms)\n✔ A.5 computed branch dependencies replace both properties and computed edges (0.544125ms)\n✔ A.5 direct dynamic state dependencies, aliases and item structure remain exact (0.815584ms)\n✔ A.5 computed object-valued state reads do not trap downstream readers in an old COW copy (0.346833ms)\n✔ A.5 useful cycle diagnostic for 1 computed nodes and recovery (0.392792ms)\n✔ A.5 useful cycle diagnostic for 2 computed nodes and recovery (0.783959ms)\n✔ A.5 useful cycle diagnostic for 3 computed nodes and recovery (0.937125ms)\n✔ A.5 errors remain dirty and replace partial dependencies; caught upstream errors can recover (4.240208ms)\n✔ A.5 computed readers cannot mutate state, dispatch or destroy app lifecycle (0.508209ms)\n✔ A.5 async computed results reject lazily and observe native rejections without thenable execution (11.451333ms)\n✔ A.5 computed disposal invalidates dependents and removes source subscriptions (0.608625ms)\n✔ A.5 disposing a source from a notification dirties clean dependents in the same notification drain (0.327292ms)\n✔ A.5 no-op and failed actions do not dirty computed caches (0.350208ms)\n✔ A.5 constant results stay cached; dependents are invalidated when inputs change even if the result is equal (0.299625ms)\n✔ A.5 app-owned and failed/successful mount-owned computed lifetimes are independent (2.235667ms)\n✔ A.5 reactive graph ownership is isolated between apps and 100 dispose cycles restore behavior (29.275292ms)\n✔ A.5 invalid computed read null rejects at registration (0.099292ms)\n✔ A.5 invalid computed read [object Object] rejects at registration (0.052125ms)\n✔ A.5 invalid computed read 42 rejects at registration (0.040542ms)\n✔ A.5 app disposal stops computed-dependent notifications before scoped and user cleanup (0.214625ms)\n✔ A.5 internal thenable checks add no accidental state dependencies (0.122625ms)\n✔ A.10 one click commits once, evaluates only the counter binding and writes exactly one text node (11.29125ms)\n✔ A.10 a click that throws across every section keeps the state snapshot, version and whole UI (4.804167ms)\n✔ A.10 independent nested and item properties update only their exact bindings (6.006ms)\n✔ A.10 keyed reorders retain rows and insertion/removal restore resource ownership (4.645958ms)\n✔ A.10 conditional removal cancels queued descendant reads/writes and stale handlers (2.456917ms)\n✔ A.10 click bursts coalesce, explicit flush avoids duplicates, and disposal cancels later work (4.901667ms)\n✔ C.2 known xorshift32 vector and logical time reach no-payload and payload actions (3.819583ms)\n✔ C.2 independent BigInt oracle covers zero seed, uint32 boundary and repeated draws (7.735ms)\n✔ C.2 throwing action preserves state, version, random continuation and logical clock (3.769667ms)\n✔ C.2 commit graph validation and version overflow also discard draws (2.041584ms)\n✔ C.2 Promise/thenable actions revoke leaked service closures and publish no draws (3.074833ms)\n✔ C.2 FIFO children see parent committed draws; failed parent discards queued descendants (1.0725ms)\n✔ C.2 failed child discards its draws while committed siblings continue the stream (0.231ms)\n✔ C.2 post-commit notification failure retains both state and service advancement (0.445ms)\n✔ C.2 manual time is monotone, frozen, nonreactive and independent from state versions (0.331542ms)\n✔ C.2 control and snapshot boundaries reject during actions, guards and reactive work (0.377917ms)\n✔ C.2 clocks remain scoped and cannot advance from mounting or error hooks (2.644625ms)\n✔ C.2 malformed configuration rejects without ordinary accessor execution (0.514167ms)\n✔ C.2 draw-count overflow rejects without state or control publication (0.5965ms)\n✔ C.1/C.2 identical inputs and restored continuation match across independent applications (143.258584ms)\n✔ C.2 a payload guard cannot consume the captured parent stream during admission (0.4845ms)\n✔ C.2 service-only successful actions publish versions without dirtying unrelated bindings (1.722459ms)\n✔ C.2 failed post-commit History operations preserve draws and admit healthy FIFO children (4.219542ms)\n✔ named dispatch and detached wrappers publish one complete version, no-ops included (6.173375ms)\n✔ exact arity, unknown names and modes reject before guards or bodies (1.135291ms)\n✔ payloads preserve aliases, holes, null prototypes and scalar meaning without owning caller data (1.018166ms)\n✔ supported primitive payload roots reach guards unchanged (0.770459ms)\n✔ invalid payload types, descriptors and cycles reject without getters, guards or bodies (3.461208ms)\n✔ guards require exactly true and preserve thrown causes without committing (0.311375ms)\n✔ Promise guards reject and observe rejection; unknown thenables are not executed (5.609667ms)\n✔ throwing or invalid final action graphs roll back and revoke every leaked draft (1.177791ms)\n✔ Promise actions roll back, revoke deferred writes and never execute returned thenables (1.792542ms)\n✔ nested work executes FIFO after parent commit and captures payload at admission (0.726375ms)\n✔ failed throw parent discards its admitted children (0.225125ms)\n✔ failed async parent discards its admitted children (1.215916ms)\n✔ failed invalid parent discards its admitted children (0.508875ms)\n✔ failed child drops its descendants, siblings continue, outer caller sees the original failure (2.0505ms)\n✔ multiple failed children aggregate in FIFO order after other successes (3.010167ms)\n✔ nested admission failures can be caught; uncaught failures abort the parent (0.2745ms)\n✔ guard dispatch and lifecycle changes reject before action execution (0.233958ms)\n✔ mount/dispose from action bodies reject and cannot destroy the transaction (0.15475ms)\n✔ error callbacks see committed state and cannot dispatch recovery work (0.164292ms)\n✔ self-dispatch is bounded without stack recursion and the next outer batch recovers (24.733542ms)\n✔ wide batch count limit discards a failed root and allows caught admission recovery (6.72325ms)\n✔ payload graph limits reject before guard; aggregate batch limits include consumed payloads (1.592625ms)\n✔ mounted actions update state and retained context getters while text stays unchanged until bindings exist (0.979125ms)\n✔ view dispatch rejects before commit and failed mounting releases its target (0.213041ms)\n✔ reusing the same thrown error reports once for each outer batch (0.122292ms)\n✔ aggregate payload accounting includes requests discarded by failed children (0.866875ms)\n✔ native Promises reject even with a shadowed non-callable then property (2.148417ms)\n✔ public bodies preserve aliases across array reorder and share unrelated branches (0.939791ms)\n✔ non-Error action throws normalize at the outer error boundary without publishing (0.437875ms)\n✔ A.6 public elements nest, copy children/props and escape text without using HTML (4.120208ms)\n✔ A.6 direct/deep bindings and derived text update exact nodes without rerunning the view (2.469ms)\n✔ A.6 attributes, classes and CSS maps track direct fields and remove missing values (1.009833ms)\n✔ A.6 computed-backed and whole state class/style maps retain nested dependencies (0.628459ms)\n✔ A.6 aliases and dynamic derived dependencies remain precise per binding (2.9985ms)\n✔ A.6 form values use live properties, initialize native defaults and keep boolean attributes distinct from ARIA (2.201583ms)\n✔ A.6 conditional branches preserve unrelated nodes, replace on toggles, and dispose branch resources (0.818167ms)\n✔ A.6 conditional reads normalized to the same branch do not reconstruct it (0.264459ms)\n✔ A.6 failed actions leave reactive DOM untouched; successful no-ops do not read bindings (0.361541ms)\n✔ A.6 read computations and branch factories reject state mutation and dispatch (0.389625ms)\n✔ A.6 failed tree construction cleans partial subscriptions and DOM and allows retry (0.293917ms)\n✔ A.6 async bindings and branches reject without executing unknown thenables (10.363166ms)\n✔ A.6 malformed props/children reject before invoking accessors and forbid inline event/HTML escape hatches (0.91425ms)\n✔ A.6 bind tokens are immutable, paths are stable and foreign app bindings reject (0.208959ms)\n✔ A.6 root child semantics for true (0.09675ms)\n✔ A.6 root child semantics for false (0.0735ms)\n✔ A.6 root child semantics for null (0.059125ms)\n✔ A.6 root child semantics for undefined (0.058208ms)\n✔ A.6 root child semantics for 0 (0.08475ms)\n✔ A.6 root child semantics for \"\" (0.346042ms)\n✔ A.6 root child semantics for \"text\" (1.244125ms)\n✔ A.6 root child semantics for [\"a\",[1]] (0.376667ms)\n✔ B.1 event maps own options and preserve currentTarget, native target, capture and child-to-parent order (6.822458ms)\n✔ B.1 framework cancellation stops ancestors and reports native default prevention (0.38475ms)\n✔ B.1 once is consumed before a throwing handler; passive cancellation fails without preventing defaults (0.725375ms)\n✔ B.1 scroll uses a direct listener and submit can explicitly cancel native default (0.302583ms)\n✔ B.1 event configuration rejects invalid types/options, accessors and duplicates without running getters (0.1365ms)\n✔ B.1 async handlers reject, healthy ancestors run, and recursive events are guarded (6.656417ms)\n✔ B.2 held keys, repeat, modifiers and releases are immutable serializable semantic inputs (0.579084ms)\n✔ B.2 focus moving inside a keyboard scope retains held keys; focus exit/window blur/hidden reset once (0.424334ms)\n✔ B.2 shortcuts can explicitly cancel defaults while native events never enter action payloads (6.045375ms)\n✔ B.3 ordinary edits, paste and deletion dispatch actual control values with selection snapshots (1.314417ms)\n✔ B.3 active composition survives external commits and resumes from latest state after acceptance (0.5395ms)\n✔ B.3 bound controls without onText also protect composition; blur reconciles the latest external value (0.287125ms)\n✔ B.3 differing bound values preserve and clamp active selection; equal values require no native setter (0.273916ms)\n✔ B.3 canceled composition and final input are deduplicated; changed selection alone is presentation (1.795792ms)\n✔ B.1–B.3 invalid semantic handlers/control types and failed mounts release all resources (0.542459ms)\n✔ B.1–B.3 scoped removal and app disposal cancel listeners, held keys and deferred writes (6.743584ms)\n✔ B.1 custom events preserve native direct propagation and stopImmediatePropagation cancels later native listeners (0.195667ms)\n✔ B.2 keyboard scopes stay independent and held-key growth is bounded (0.9095ms)\n✔ B.2/B.3 async semantic callbacks reject and observe native Promise failures (2.749625ms)\n✔ B.3 programmatic initial/bound values establish the input baseline without spurious semantic callbacks (1.462334ms)\n✔ B.1–B.3 failing native listener removal attempts all cleanup and leaves surviving callbacks inert (0.814083ms)\n✔ C.4 external inputs are owned frozen versioned envelopes with origin and admission receipts (3.511875ms)\n✔ C.4 measurements and storage normalize values, errors and missing values outside actions (7.840459ms)\n✔ C.4 failed samplers emit plain errors, async samplers and unsupported returned data reject (6.554458ms)\n✔ C.4 inputs cannot enter from an action, reader, observer or invalid action registration (0.785833ms)\n✔ C.4 effect success/rejection ordering follows completion, cancellation wins once and late results are consumed (4.0925ms)\n✔ C.4 immediate effect cancellation prevents callback launch and app disposal suppresses late success/error (6.465958ms)\n✔ C.4 scope disposal aborts effects and removes already queued results before their future tick (4.245375ms)\n✔ C.4 fixed adapters queue at the next tick, own values, and scoped cancellation cannot mutate state (1.125333ms)\n✔ C.4 timer samples owned payloads and cancellation clears host timers (4.807ms)\n✔ C.4 application delivery failures reject done without duplicating the terminal result (2.159292ms)\n✔ C.4 bounded pending effects recover capacity after cancellation and disposal (25.584ms)\n✔ C.4 manually injected saved external payloads match despite different live layout/network values (1.219875ms)\n✔ C.4 unsupported effect values and pathological errors remain bounded and cannot retain native errors (0.291459ms)\n✔ C.4 failed mount closes effect scopes before microtasks can launch ambient work (0.238541ms)\n✔ C.4 scopes created on later render frames can register and deliver owned effects (4.814916ms)\n✔ C.3 inputs run in FIFO order before tick logic and paused sampling leaves state unchanged (6.58575ms)\n✔ C.3 retained queue payloads preserve aliases and aggregate budgets reclaim capacity on cancel (8.8905ms)\n✔ C.3 automatic driver errors report once and pause without retrying a failed tick (5.311292ms)\n✔ C.3 overload retains numbered ticks and drains the accumulator within each bounded advance (7.583833ms)\n✔ C.3 fake 30/60/120 Hz and irregular elapsed schedules match every corresponding tick hash (33.678291ms)\n✔ C.3 nested FIFO and failed roots preserve healthy input commits, draws and consumed tick (1.041291ms)\n✔ C.3 guards are deferred to tick execution; rejection continues siblings and pauses (0.796916ms)\n✔ C.3 queue bounds, cancellation, safe tick assignment and overflow preserve remaining work (8.432292ms)\n✔ C.3 fixed checkpoint restores exact continuation, requires matching duration and resets driver metadata (1.8075ms)\n✔ C.3 real driver sampling, hidden/resume epochs and complete disposal use independent DOM frames (3.142875ms)\n✔ C.3 active callbacks cannot drive ticks, enqueue, cancel or snapshot mid-tick (0.815917ms)\n✔ C.3 failed native frame cancellation still removes visibility ownership and queued inputs (0.758958ms)\n✔ C.3 invalid simulation null (0.226209ms)\n✔ C.3 invalid simulation {} (0.132208ms)\n✔ C.3 invalid simulation {\"tickDuration\":0} (0.096708ms)\n✔ C.3 invalid simulation {\"tickDuration\":0} (0.080292ms)\n✔ C.3 invalid simulation {\"tickDuration\":-1} (0.086959ms)\n✔ C.3 invalid simulation {\"tickDuration\":1.5} (0.164416ms)\n✔ C.3 invalid simulation {\"tickDuration\":1,\"maxCatchUp\":0} (0.230333ms)\n✔ C.3 invalid simulation {\"tickDuration\":1,\"maxCatchUp\":1025} (0.091333ms)\n✔ C.3 invalid simulation {\"tickDuration\":1,\"action\":\"input\"} (0.085875ms)\n✔ C.3 invalid simulation {\"tickDuration\":1,\"action\":\"missing\"} (0.071833ms)\n✔ C.3 invalid simulation {\"tickDuration\":1,\"unknown\":1} (0.072208ms)\n✔ C.3 absent simulation and invalid elapsed values reject with no publication (1.298792ms)\n✔ D.2 history starts at retained baseline and seeks exact snapshots in both directions (29.91475ms)\n✔ D.2 nearest-keyframe seek executes only the bounded suffix (6.963333ms)\n✔ D.1 undo/redo defaults to explicit reversible names, with whole nested batches grouped (7.757125ms)\n✔ D.1 failed/discarded names participate in policy; partial successes remain one root (5.257834ms)\n✔ D.1 multi-root undo/redo validates the whole barrier range before any mutation (6.573166ms)\n✔ D.1 route/location/hydration groups are barriers even when their action names are declared (9.795959ms)\n✔ D.1 pure logical-time and empty fixed-tick roots are reversible without action declarations (8.796584ms)\n✔ D.2 expired/out-of-range/malformed seeks and move counts leave selected state untouched (13.990792ms)\n✔ D.2 branch continues seed/version/time state, discards future and starts an empty input session (4.931292ms)\n✔ D.2 fixed branches resume deterministic ticks after replay selection with no future tickets (5.797125ms)\n✔ D.2 mounted inspection retains keyed node identity/focus and observers across restores (3.697583ms)\n✔ D.2 mounted inspection never samples location/storage or runs native callbacks during seeks (1.409041ms)\n✔ D.2 branch first mount restores local URL and skips changed ambient persistence defaults (5.697084ms)\n✔ D.2 divergence leaves the consumed root inspectable and blocks undo/branch until a valid seek (2.890833ms)\n✔ D.2 restores entire graph aliases/holes and preserves snapshots saved before seeking (2.602375ms)\n✔ D.2 reentrant seeking/disposal is rejected from actions and reactive notification work (2.652666ms)\n✔ D.2 post-restore notification errors retain the restored checkpoint cursor and permit recovery (4.412167ms)\n✔ D.2 direct inspection/branch app disposal closes the controller without retaining history (0.98125ms)\n✔ D.1 policy/configuration reject getters, sparse/duplicate/unknown names before execution (0.285625ms)\n✔ D.2 randomized retained recent seeks match independent hashes and atomic-root bounds (349.221708ms)\n✔ D.2 randomized retained session seeks match independent hashes and atomic-root bounds (73.497875ms)\n✔ D.2 supplied hydration is an undo barrier and virtual routes restore to null baseline (1.71825ms)\n✔ D.2 caller router/persistence configuration is owned before later seeks/branch construction (1.210584ms)\n✔ D.2 branch cleanup errors retain the created live app and release inspection resources (1.042875ms)\n✔ D.2 branches replace a hash URL without hydrating old browser state and remain initially paused (1.531625ms)\n✔ D.1 fake dense policy arrays with custom keys cannot bypass registration checks (0.811458ms)\n✔ D.2 empty retained histories have no undo/redo range and branch from their baseline (0.624125ms)\n✔ D.2 reactive resources survive whole-graph replacement and detached tracked facades expire (1.250458ms)\n✔ D.2 restored keyframe route configurations preflight before any replay body executes (0.615834ms)\n✔ D.2 disposal callbacks may dispose their history owner idempotently, including branch handoff (0.899625ms)\n✔ D.2 invalid nested configuration accessors are rejected without reading browser/application values (0.134917ms)\n✔ D.3 off mode retains no diagnostic data; one optional session owns bounded storage (4.64825ms)\n✔ D.3 coalesced render explains exact dirty/evaluated bindings and one text write (17.715333ms)\n✔ D.3 diagnostic summaries retain input origins, payload previews and property deltas (2.27775ms)\n✔ D.3 captures FIFO children and rollback/discard without changing versions or errors (14.669917ms)\n✔ D.3 optional instrumentation leaves recording bytes, hashes and replay endpoints identical (20.607041ms)\n✔ D.3 fixed ticks capture one root with input and simulation work and logical endpoints (0.670125ms)\n✔ D.3 entry and byte limits evict old summaries; oversized transitions truncate details, not counts (79.366416ms)\n✔ D.3 preview owns scalar summaries, truncates sensitive strings and never calls accessors (1.135417ms)\n✔ D.3 invalid configurations and active-boundary attachment fail without a state change (1.027084ms)\n✔ D.3 unavailable observation clock does not change controlled execution; off mode never reads it (0.982083ms)\n✔ D.3 descriptor previews do not execute getters/toJSON or retain aliased data (0.1315ms)\n✔ D.4 Promise-returning export callback rejects after explicit capture with no source mutation (0.961125ms)\n✔ D.4 inspector selection and export are read-only to the source; cleanup owns only the panel (2.2515ms)\n✔ D.4 missing recording and invalid selection/export report clear failures (0.253292ms)\n✔ D.4 retained history restore and replay are captured; compatible history controls are explicit (6.940125ms)\n✔ D.3/D.4 repeated panel/session/source disposal returns all owned resources to zero (50.667292ms)\n✔ C.6 fractional elapsed changes only opted-in bindings and preserves versions/hash/forms (8.871792ms)\n✔ C.6 pause, resume, hidden state and overload clamp alpha without extrapolation (1.102125ms)\n✔ C.6 successful tick prefixes and direct commits reset the display window predictably (0.993042ms)\n✔ C.6 interpolation cannot mutate snapshots, enter runtime actions, or return async values (1.854417ms)\n✔ C.6 structural interpolation is rejected before a timed display can create or dispose effects (0.731583ms)\n✔ C.6 restored apps begin with equal display roots while tick continuation still matches (0.664375ms)\n✔ C.6 frame-rate display differences preserve corresponding authoritative checkpoints (1.2065ms)\n✔ C.6 scoped interpolation tokens and queued bindings expire and resource counts return to zero (0.510667ms)\n✔ C.6 previous/current roots preserve historical aliases and array reorder meaning (2.919459ms)\n✔ A.8 keyed reorder/insert/remove preserve nodes and update scoped indices (10.876583ms)\n✔ A.8 editing a non-key field reruns only its leaf binding, not list keys or unrelated items (3.167666ms)\n✔ A.8 same-key replacement retargets item values/computed/observer resources even if old item remains aliased (0.730625ms)\n✔ A.8 removed item scopes dispose computed, observers, cleanup and captured tokens (0.591916ms)\n✔ A.8 primitives, empty rows and same textual string/number keys are supported (0.495375ms)\n✔ A.8 key changes replace that scope while preserved keys keep node identity (0.429041ms)\n✔ A.8 pre-frame reorders coalesce and rolled-back/no-op actions do not rebuild (0.603542ms)\n✔ A.8 validates complete key sets before constructing or changing item views (0.973792ms)\n✔ A.8 staged new item factories clean failures and retain the existing list for retry (0.660125ms)\n✔ A.8 nested conditions and nested keyed lists are owned by item scopes (0.5975ms)\n✔ A.8 missing diagnostics clean a failed mount (0.205083ms)\n✔ A.8 null diagnostics clean a failed mount (0.137583ms)\n✔ A.8 object diagnostics clean a failed mount (0.137833ms)\n✔ A.8 boolean diagnostics clean a failed mount (0.118917ms)\n✔ A.8 zero diagnostics clean a failed mount (0.150875ms)\n✔ A.8 holes diagnostics clean a failed mount (0.136042ms)\n✔ A.8 non-array diagnostics clean a failed mount (0.12775ms)\n✔ A.8 key reads and item factories forbid state mutation, dispatch and async results (4.999167ms)\n✔ A.8 keyed argument validation rejects snapshots/functions instead of bindings (0.466875ms)\n✔ A.8 native placement failure disposes candidate scopes and allows a clean retry (1.275291ms)\n✔ A.8 derived filters preserve item identity and update membership (1.4345ms)\n✔ snapshot round trip: null (1.295042ms)\n✔ snapshot round trip: undefined (0.079792ms)\n✔ snapshot round trip: false (0.073458ms)\n✔ snapshot round trip: true (0.388541ms)\n✔ snapshot round trip: empty string (0.222791ms)\n✔ snapshot round trip: unicode/quotes/control/lone surrogate (0.14625ms)\n✔ snapshot round trip: zero (0.184417ms)\n✔ snapshot round trip: negative zero (0.098ms)\n✔ snapshot round trip: negative fraction (0.2045ms)\n✔ snapshot round trip: maximum finite (0.205541ms)\n✔ snapshot round trip: minimum subnormal (0.116458ms)\n✔ snapshot round trip: already-rounded unsafe integer (0.104417ms)\n✔ snapshot round trip: empty object (1.013416ms)\n✔ snapshot round trip: null prototype (0.189459ms)\n✔ snapshot round trip: empty array (0.071709ms)\n✔ snapshot round trip: sparse array (0.122208ms)\n✔ snapshot round trip: undefined own property (0.99575ms)\n✔ snapshot round trip: frozen/sealed data values (0.32975ms)\n✔ preserves aliases, distinct equal-shaped nodes, own __proto__, and key order (0.374209ms)\n✔ preserves sparse length, aliases and custom enumerable array properties (0.525958ms)\n✔ plain JSON loses distinctions that the codec retains (0.205375ms)\n✔ encoding preserves observable property order rather than lexically sorting keys (0.14475ms)\n✔ snapshot rejects: NaN (0.298541ms)\n✔ snapshot rejects: Infinity (0.092625ms)\n✔ snapshot rejects: negative Infinity (0.095833ms)\n✔ snapshot rejects: BigInt (0.079791ms)\n✔ snapshot rejects: symbol value (0.087542ms)\n✔ snapshot rejects: function (0.1735ms)\n✔ snapshot rejects: Promise (0.132667ms)\n✔ snapshot rejects: Date (0.087708ms)\n✔ snapshot rejects: Map (0.083375ms)\n✔ snapshot rejects: Set (0.083417ms)\n✔ snapshot rejects: RegExp (0.078166ms)\n✔ snapshot rejects: typed array (0.078667ms)\n✔ snapshot rejects: ArrayBuffer (0.077917ms)\n✔ snapshot rejects: class instance (0.221208ms)\n✔ snapshot rejects: Array subclass (0.092958ms)\n✔ snapshot rejects: custom object prototype (0.0825ms)\n✔ snapshot rejects: symbol key (0.080458ms)\n✔ snapshot rejects: nonenumerable property (0.088ms)\n✔ snapshot rejects: thenable (0.1015ms)\n✔ snapshot rejects: DOM-shaped object (0.13775ms)\n✔ getters, setters and toJSON are never invoked (0.207583ms)\n✔ rejects object and array cycles while allowing repeated DAG nodes (0.880875ms)\n✔ 0.9 regression: type validation memoizes completed DAG nodes without value gets (0.329208ms)\n✔ snapshot import rejects: wrong format (0.053166ms)\n✔ snapshot import rejects: wrong version (0.03175ms)\n✔ snapshot import rejects: extra field (0.032625ms)\n✔ snapshot import rejects: missing root (0.031083ms)\n✔ snapshot import rejects: wrong node table (0.027958ms)\n✔ snapshot import rejects: unknown tag (0.028625ms)\n✔ snapshot import rejects: extra token field (0.025042ms)\n✔ snapshot import rejects: wrong primitive type (0.023958ms)\n✔ snapshot import rejects: unknown reference (0.041959ms)\n✔ snapshot import rejects: negative reference (0.028333ms)\n✔ snapshot import rejects: fractional reference (0.026708ms)\n✔ snapshot import rejects: unknown node kind (0.02825ms)\n✔ snapshot import rejects: invalid prototype (0.025125ms)\n✔ snapshot import rejects: duplicate property (0.032209ms)\n✔ snapshot import rejects: bad property key (0.033125ms)\n✔ snapshot import rejects: bad property list (0.02525ms)\n✔ snapshot import rejects: cycle (0.028416ms)\n✔ snapshot import rejects: unreachable node (0.027167ms)\n✔ snapshot import rejects: negative array length (0.030666ms)\n✔ snapshot import rejects: index beyond length (0.04075ms)\n✔ snapshot import rejects: array length property (0.02925ms)\n✔ snapshot import rejects: noncanonical integer-key order (0.041875ms)\n✔ snapshot import rejects: imported DOM-shaped object (0.035833ms)\n✔ rejects malformed JSON, duplicate envelope keys, pretty printing and nonfinite/negative-zero number tokens (0.193625ms)\n✔ encoding/import enforce byte, node, property, depth and sparse-slot limits (0.636208ms)\n✔ shared node revisited at a deeper path cannot bypass maxDepth (0.359625ms)\n✔ invalid or accessor limits fail without invoking getters (0.238209ms)\n✔ seeded graphs preserve arbitrary alias topology and array/property distinctions (26.161833ms)\n✔ B.8 mount hydrates before first view and commits one owned input while memory-only fields reset (11.367ms)\n✔ B.8 only successful commits queue coalesced writes; visual flush is separate, explicit persistence flush cancels the task (2.313625ms)\n✔ B.8 reload restores selected fields and leaves memory-only state at defaults (1.653917ms)\n✔ B.8 URL state replaces owned keys without new history entries, retaining route keys and one synchronized notification (1.234167ms)\n✔ B.8 native traversal and imperative/action navigation hydrate URL fields without feedback history writes (7.265958ms)\n✔ B.8 hash-mode URL fields use the inner route query, leaving document query and fragments intact (4.319292ms)\n✔ B.8 malformed/version-mismatched/wrongly typed data falls back, queues reports and preserves healthy fields (3.030667ms)\n✔ B.8 read/access failures retain defaults; write quota failures preserve commits and attempt other areas (2.013417ms)\n✔ B.8 aliases, holes, custom properties, null prototypes, undefined and negative zero survive storage hydration (2.543708ms)\n✔ B.8 disposal and failed mount cancel jobs; retry rehydrates without leaking tasks or notifications (1.558292ms)\n✔ B.8 guards are frozen, synchronous and cannot reenter runtime; invalid action values fail persistence after commit (7.463583ms)\n✔ B.8 query duplicates, malformed wire and URL length errors remain bounded and preserve committed memory (5.825ms)\n✔ B.7 invalid field/config/default contracts reject without executing accessors (2.998375ms)\n✔ B.8 no-op hydration retains object identities and unrelated memory bindings remain exact (1.848167ms)\n✔ B.8 individually valid storage inputs that exceed aggregate state limits roll back hydration and retain memory (2.734916ms)\n✔ B.8 validators receive independent frozen object graphs and cannot register reactive work during writes (0.520417ms)\n✔ B.9 package exports match the documented browser surface (1.327084ms)\n✔ B.9 JavaScript payload admission rejects unknown actions, native values and accessors before mutation (10.1565ms)\n✔ B.9 frozen snapshots and tracked reads both reject writes through public state (0.45125ms)\n✔ B.9 computed cycle diagnostics identify the public read cycle without a commit (0.20975ms)\n✔ B.9 missing and duplicate list keys fail mounting with a reusable target (1.757792ms)\n✔ B.9 render-time actions fail at a public boundary and release mount resources (0.2285ms)\n✔ B.9 sync error hooks observe original errors; async hooks aggregate after rollback (0.250042ms)\n✔ A.4 nested properties and aliases invalidate independently without rerunning reads (3.832667ms)\n✔ A.4 value, own/inherited presence and key reads use distinct dependencies (0.6285ms)\n✔ A.4 key order changes invalidate iteration even when the same keys remain (0.254459ms)\n✔ A.4 dynamic branches replace stale dependencies on explicit read (0.393542ms)\n✔ A.4 array item edits, length, structure, holes and custom keys are independent (1.060292ms)\n✔ A.4 captured items follow stable IDs across reorders and detect detach (0.494416ms)\n✔ A.4 tracked state aliases and reflection work while mutation paths reject (0.33925ms)\n✔ A.4 app.state reads inside evaluations track; saved snapshots remain historical (0.176917ms)\n✔ A.4 observers see complete commits only; no-op and rollback produce no notifications (0.356584ms)\n✔ A.4 dirty observers notify once until refreshed, and all are dirty before callbacks run (0.242459ms)\n✔ A.4 callback failures preserve commits, parent children, sibling notifications and next batches (0.250459ms)\n✔ A.4 read/notification dispatch and lifecycle reentrancy reject without state changes (0.998417ms)\n✔ A.4 async reads/callbacks reject without executing thenables; failed registration leaves no subscriptions (3.237459ms)\n✔ A.4 disposal cancels callbacks already queued and is idempotent (0.248ms)\n✔ A.4 failed view scopes dispose observers automatically while application observers survive (1.03175ms)\n✔ A.4 invalid observer read null rejects (0.083709ms)\n✔ A.4 invalid observer read 1 rejects (0.0485ms)\n✔ A.4 invalid observer read [object Object] rejects (0.0505ms)\n✔ A.4 invalid observer read read rejects (0.038292ms)\n✔ A.4 custom array properties named like iterator methods remain ordinary exact fields (0.201333ms)\n✔ A.4 invalid observer callbacks reject at registration (0.081417ms)\n✔ A.4/A.5 read and notification callbacks never receive an internal resource as this (0.184083ms)\n✔ C.7 recording is opt-in, explicit export only, stop/clear independent of application commits (9.411209ms)\n✔ C.7 nested FIFO actions are one root with ordered committed versions and owned payloads (3.37ms)\n✔ C.7 rollback discards child traces and PRNG draws without discarding healthy sibling commits (2.450208ms)\n✔ C.7 no-op commits and manual logical-time inputs preserve exact versions/control continuation (3.360042ms)\n✔ C.7 graph payloads round-trip aliases, holes, undefined, negative zero, null prototypes and insertion order (1.143083ms)\n✔ C.7 consumed external inputs retain queued admission metadata; canceled/unconsumed inputs have no transition (2.905042ms)\n✔ C.7 fixed tick roots are independent of render cadence and include their configured tick action (12.273166ms)\n✔ C.7 failed ticks retain consumed logical time, successful prefixes, and stop capture only at the root boundary (4.568541ms)\n✔ C.7 action failure and observer failure remain separate from already committed state (3.087291ms)\n✔ C.7 failed payload execution is recorded without a false admitted action; invalid direct admissions are excluded (2.272083ms)\n✔ C.7 thrown undefined and hostile error accessors produce bounded inert summaries (1.299125ms)\n✔ C.7 native navigation, derived location and hydration have one owner and route continuations (6.450459ms)\n✔ C.7 supplied hydration commits and preserves aliases outside named actions (0.748917ms)\n✔ C.7 recording operations reject active actions/reads/inputs and mount transitions (0.648541ms)\n✔ C.7 recording start rejects existing tick queues and pending effects (0.411ms)\n✔ C.8 recording option validation and failed restarts preserve the prior usable recording (0.421625ms)\n✔ C.8 long recent histories stay bounded and every retained checkpoint suffix reproduces from its baseline (132.468042ms)\n✔ C.8 no-keyframe eviction advances to the latest baseline rather than leaving an unreplayable suffix (1.127917ms)\n✔ C.8 recent oversized atomic batches advance the baseline and report coordinated eviction (0.907042ms)\n✔ C.8 recent byte pressure accounts UTF-8, escaped graph strings, snapshots and metadata (15.816125ms)\n✔ C.8 oversized baseline stops recent capture and preserves the prior prefix without affecting commits (1.140667ms)\n✔ C.8 session action limits stop visibly without dropping already captured roots (2.480917ms)\n✔ C.8 session byte limits freeze a complete prefix while the live app continues (0.690666ms)\n✔ C.8 empty ticks/control roots consume action slots so histories cannot grow without actions (1.371042ms)\n✔ C.8 root-boundary keyframes may cross the interval without splitting nested action ownership (0.636834ms)\n✔ C.8 disposal clears retained and scratch records; exported caller strings remain independent (5.686167ms)\n✔ C.7 import is inert and rejects incompatible formats/schema/runtime/checkpoint versions before execution (0.592166ms)\n✔ C.7 import rejects noncanonical JSON, malformed records and declared budget overflow (2.48575ms)\n✔ C.7 import validates graph tags/aliases and nested trace ownership/order (1.606916ms)\n✔ C.7 import options reject ordinary getters and unknown fields without invoking application code (0.137583ms)\n✔ C.7 validated immutable recording serialization round-trips the canonical wire without trusting forged objects (2.413834ms)\n✔ C.7 recording checkpoints retain array reorder/insertion and aliased object identity (2.023291ms)\n✔ C.7 logical tick overflow records no phantom consumed root or queue removal (0.755709ms)\n✔ C.7 malformed decoded trace scalars and nonlocal hash routes fail with recording errors (2.295292ms)\n✔ A.7 bursts evaluate once per binding and write only the latest committed value (15.221333ms)\n✔ A.7 explicit flush is detachable, cancels frames and prevents late callback duplicate writes (0.516084ms)\n✔ A.7 reverted and equivalent normalized text/class/style values produce zero writes (6.53075ms)\n✔ A.7 unchanged form values avoid setters even after unrelated dependent input changes (0.639042ms)\n✔ A.7 attributes add/remove once for a committed burst (1.435583ms)\n✔ A.7 disposed app cancels queued reads and writes, including a stale frame callback (0.488791ms)\n✔ A.7 structural parents dispose dirty descendants before evaluating their queued work (0.483334ms)\n✔ A.7 branch toggles coalesce without reconstructing a retained final branch (0.28625ms)\n✔ A.7 new branch initial bindings consume latest state once (3.058042ms)\n✔ A.7 no-ops and rolled-back actions do not schedule work (0.464875ms)\n✔ A.7 separate applications independently schedule and flush their own work (0.332375ms)\n✔ A.7 explicit flush supports headless creation and DOM environments without animation frames (0.214167ms)\n✔ A.7 failing bindings preserve commits, report render errors and permit explicit/next-commit retries (0.287209ms)\n✔ A.7 frame callback failures report once and do not spin in failing frames (2.969542ms)\n✔ A.7 several binding errors aggregate while healthy bindings still render (4.552875ms)\n✔ A.7 failed conditional construction keeps the old branch and retries without leaks (0.273ms)\n✔ A.7 flush rejects reentry from actions, reads, notifications, branch factories and error hooks (0.3035ms)\n✔ A.7 nested action commits share a frame and read the final FIFO state (0.206583ms)\n✔ A.7 scope cleanup invalidations of surviving computed consumers are drained in the same flush (0.280542ms)\n✔ A.7 failed DOM writes retain jobs and retry latest committed reads (0.187416ms)\n✔ A.7 branch cleanup runs before root/app hooks and pending callbacks are cancelled before hooks (0.792125ms)\n✔ A.7 flush rejects payload guard and render error-hook reentry without recursive reporting (0.206833ms)\n✔ C.9 replay executes nested FIFO once, no-ops and manual time with exact control hashes (19.861ms)\n✔ C.9 replay preserves partial successes, rollback, discarded children and random continuation (4.82975ms)\n✔ C.9 replay supports decoded recordings and restored alias/hole payload graphs (2.120125ms)\n✔ C.9 replay reports first changed state root and never executes the following root (3.651708ms)\n✔ C.9 changed transaction failure is a trace divergence at the first differing event (2.705459ms)\n✔ C.9 missing later action fails preflight before any action executes (1.50125ms)\n✔ C.9 replay rejects incompatible registered arity and schema/format before execution (1.9325ms)\n✔ C.9 replay rejects incompatible tick role before any root runs (4.299334ms)\n✔ C.9 failed tick replay consumes all root inputs and configured action, preserving successful siblings (5.848625ms)\n✔ C.9 replay ignores input admission sequence gaps and future unconsumed queue tickets (5.26775ms)\n✔ C.9 committed observer failures and input observer failures need not recur in replay (7.048792ms)\n✔ C.9 recorded failed guard input is a valid replay root without an action admission (0.994625ms)\n✔ C.9 replay restores routes headlessly and suppresses live History/storage hydration and writes (19.854375ms)\n✔ C.9 source URL default hydration and state URL projection execute only recorded children (8.95575ms)\n✔ C.9 native History failure without derived location remains a no-location replay root (4.745667ms)\n✔ C.9 supplied hydration replays without storage and preserves shared field aliases (2.764583ms)\n✔ C.9 replay suppresses readers/effects/timers/scheduling and consumes only recorded result packets (13.682708ms)\n✔ C.9 controller exclusively owns state transitions, recording, input admission and tick drivers (0.873ms)\n✔ C.9 controller rejects reentrant stepping/disposal and validates bounded step counts (1.50925ms)\n✔ C.9 empty recording is already complete and direct app disposal releases the controller (1.079875ms)\n✔ C.10 retained recent windows restore their own baseline and captured end (66.215584ms)\n✔ C.10 retained session windows restore their own baseline and captured end (25.170084ms)\n✔ C.10 randomized alias/array operations replay every hash, seed 1 (22.759334ms)\n✔ C.10 randomized alias/array operations replay every hash, seed 7 (20.111584ms)\n✔ C.10 randomized alias/array operations replay every hash, seed 42 (16.500708ms)\n✔ C.10 randomized alias/array operations replay every hash, seed 999 (15.883333ms)\n✔ C.10 different fixed/render schedules yield identical recorded checkpoints and replay results (7.9005ms)\n✔ C.9 replay native handlers are inert and normal mounted view bindings update under stepping (1.262208ms)\n✔ C.9 absolute same-origin body navigation uses recorded local URLs without sampling a replay host origin (2.176041ms)\n✔ C.9 changed nested dispatch ordering stops at its first trace mismatch even when final state could match (0.635ms)\n✔ C.9 mounting cannot dispatch and stepping cannot reenter reactive notification work (0.81275ms)\n✔ C.9 options reject accessors/unknown fields without invoking views or getters (0.163541ms)\n✔ B.6 direct entry decodes route parameters/query into owned immutable snapshots (5.132416ms)\n✔ B.6 navigation synchronizes URL/route immediately and preserves shared state and unrelated nodes on frames (2.066084ms)\n✔ B.6 query/hash changes retain route scope, focus and input identity; only route-dependent bindings invalidate (1.002042ms)\n✔ B.6 replace, duplicate URL and native back/forward preserve host history state (0.821416ms)\n✔ B.6 first matching route wins, literal and parameter rules are explicit, outside-base native URLs use notFound (0.612875ms)\n✔ B.6 hash mode preserves document path/search and deduplicates popstate + hashchange (0.546959ms)\n✔ B.6 action navigation publishes after state commit before nested FIFO children; rollback drops URL writes and children (0.671959ms)\n✔ B.6 post-commit notifications/history errors retain committed state and drain healthy children (3.520292ms)\n✔ B.6 links own href/click and preserve native modifiers, download, target, fragments and external behavior (7.324167ms)\n✔ B.6 route transition disposes native/input handlers and scoped tasks; stale events cannot dispatch (0.9245ms)\n✔ B.6 failed replacement view keeps old DOM, disposes candidate resources and retries on flush (0.366416ms)\n✔ B.6 router ownership and failed mount cleanup release URL/target claims and permit retry (0.465125ms)\n✔ B.6 duplicate outlets, missing routers and synchronous route view contracts reject explicitly (18.398ms)\n✔ B.6 URL/options/config admission rejects malformed and unsupported inputs without writes (0.756083ms)\n✔ B.6 navigation from reactive reads, notifications and view construction rejects without recursion (0.803167ms)\n✔ B.6 stale listeners from failed mounts stay inert after another-window retry even if removal fails (1.620458ms)\n✔ B.6 bounded action navigation and async rollback never write rejected requests (14.215208ms)\n✔ B.6 navigation defaults require undefined; malformed pattern errors stay configuration errors (0.549709ms)\n✔ B.4 immediate state commits precede deferred lanes; visual work precedes frame callbacks (7.556459ms)\n✔ B.4 normal work makes progress without frames and consumes at most 32 FIFO callbacks per turn (3.106042ms)\n✔ B.4 reentrant normal work stays bounded and a queued sibling cannot be starved (0.39675ms)\n✔ B.4 idle budgets and deadline/fallback policy never block normal correctness (0.313833ms)\n✔ B.4 explicit flush handles frame work only, and reentrant frame work waits for another frame (0.335416ms)\n✔ B.4 cancellation is idempotent, removes empty native drivers and guards stale callbacks (0.227958ms)\n✔ B.4 scoped work cancels on unmount and app disposal clears every lane before hooks (0.633ms)\n✔ B.4 admission errors, immediate recursion, render/action mutation guards and queue bound are explicit (0.821083ms)\n✔ B.4 scheduled callbacks have no bound this and async returns reject independently (4.067417ms)\n✔ B.4 failed callbacks are consumed, healthy work runs, errors report once and later turns still progress (0.409792ms)\n✔ B.4 native cancellation failures still invalidate drivers and attempt every lane on disposal (0.266791ms)\n✔ B.4 completed context tasks release pending work and frame failures are consumed with render phase (3.040375ms)\n✔ C.5 scoped semantic keyboard packets preserve held/repeat/reset and native cancellation (7.278042ms)\n✔ C.5 semantic text captures editing/paste/composition values and forwards saved packets without native Events (7.990208ms)\n✔ C.5 fixed semantic inputs queue in one order, leave native editing live, and cancel with the view (1.94775ms)\n✔ C.5 hydration and native route packets reproduce committed versions without consulting another live store (8.381708ms)\n✔ C.5 immediate and consumed fixed adapter packets release all owned resource tickets (49.180959ms)\n✔ C.5 fixed native route observation is queued while boot hydration and derived URL publication remain immediate (1.018375ms)\n✔ C.5 saved hydration guards reject before partial assignments and preserve aliases (0.7665ms)\n✔ C.5 input observer failures preserve input execution, block reentry and aggregate independently (0.301542ms)\n✔ C.5 action-origin navigation is derived, stays after commit, and failed action navigation is discarded (0.471792ms)\n✔ C.5 packet validation never runs ordinary field/args getters, and structural fields are exact (1.079125ms)\n✔ C.5 observer lifetime is bounded, independently disposable and owned by view scopes (2.121333ms)\n✔ C.5 fixed bootstrap and future native locations reproduce state at matching numbered ticks (5.159417ms)\n✔ C.5 hash locations can be injected headlessly and reject incompatible router policies (0.681834ms)\n▶ Phase 0.1 Root Scaffold & Public Entry Smoke Tests\n  ✔ public exports are available and immutable where expected (0.483208ms)\n  ✔ createApp public lifecycle mounts and disposes (1.939416ms)\n  ✔ package.json enforces zero runtime dependencies and ES module structure (0.164625ms)\n✔ Phase 0.1 Root Scaffold & Public Entry Smoke Tests (3.201833ms)\n▶ A.2 production identity regressions\n  ✔ an unread alias observes a mutation and remains aliased at commit (1.325833ms)\n  ✔ repeated edits through different aliases target the same draft (0.19425ms)\n  ✔ a held item survives reorder and edits follow its identity (0.953417ms)\n  ✔ remove/reinsert retains item identity and revokes the returned draft (0.42425ms)\n  ✔ adding undefined differs from absence; array holes survive commits (0.201ms)\n  ✔ item property changes invalidate neither other items nor array structure (0.416541ms)\n  ✔ reorder changes index/iteration bindings but not length or item fields (1.025208ms)\n  ✔ net invalidations omit reverted/repeated writes even in a changed transaction (0.1335ms)\n  ✔ adding undefined invalidates existence and keys, not an unchanged value (0.096833ms)\n  ✔ new alias edges and same-shaped replacements are observable identity changes (0.186375ms)\n  ✔ imported object graphs preserve aliases across assignments without freezing callers (0.524666ms)\n  ✔ commit-time cycles roll back, revoke drafts, and allow a next transaction (0.166416ms)\n  ✔ descriptor reads cannot leak raw nodes; prototype/symbol changes reject (0.1585ms)\n  ✔ a current committed reference creates an alias rather than a fresh copy (0.087625ms)\n  ✔ same-shaped distinct items still reorder; splice(start) removes the suffix (0.185667ms)\n  ✔ key order, null prototypes, and a literal __proto__ property survive commits (0.144292ms)\n  ✔ unsupported initial values reject before getters execute or data disappears (0.1415ms)\n  ✔ deleting own properties reveals inherited methods with native semantics (0.293583ms)\n✔ A.2 production identity regressions (7.524417ms)\n▶ A.2 production seeded state/identity/invalidation comparison\n  ✔ seed=1: 160 transitions across production COW/native oracle (89.108583ms)\n  ✔ seed=2: 160 transitions across production COW/native oracle (62.294916ms)\n  ✔ seed=7: 160 transitions across production COW/native oracle (56.626125ms)\n  ✔ seed=42: 160 transitions across production COW/native oracle (39.087417ms)\n  ✔ seed=1234: 160 transitions across production COW/native oracle (47.843625ms)\n  ✔ seed=4096: 160 transitions across production COW/native oracle (52.692541ms)\n  ✔ seed=65535: 160 transitions across production COW/native oracle (60.874167ms)\n  ✔ seed=305419896: 160 transitions across production COW/native oracle (55.3295ms)\n  ✔ seed=2654435769: 160 transitions across production COW/native oracle (52.107334ms)\n  ✔ seed=2882400001: 160 transitions across production COW/native oracle (58.67ms)\n  ✔ seed=4294967294: 160 transitions across production COW/native oracle (38.600792ms)\n  ✔ seed=4294967295: 160 transitions across production COW/native oracle (50.789708ms)\n✔ A.2 production seeded state/identity/invalidation comparison (664.332875ms)\n✔ untouched branches share physical references; changed nodes retain IDs across snapshots (3.112583ms)\n✔ successful no-op commits advance once, share the root and emit no data invalidation (0.789167ms)\n✔ initial nodes and copies belong only to their own store; foreign snapshots import with new identity (0.325167ms)\n✔ historical changed snapshots import as distinct nodes instead of colliding logical IDs (0.193792ms)\n✔ external wrappers containing current drafts/snapshots preserve aliases without leaking raw state (0.224708ms)\n✔ foreign and stale drafts reject direct and nested imports without invoking their bodies (0.219333ms)\n✔ native revocation rejects reads, writes, reflection, arrays and held iterators after every finish path (0.408708ms)\n✔ commit metadata is immutable and prototype-named properties do not change real prototypes (0.14725ms)\n✔ negative zero differs from positive zero and sparse holes differ from explicit undefined (0.190667ms)\n✔ assignment validators memoize a shared DAG and never invoke ordinary value getters (0.375209ms)\n✔ validation memos are local; completed sibling aliases do not hide later cycles or depth (0.437791ms)\n✔ depth growth through existing drafts is validated before materialization and publication (2.926333ms)\n✔ deeper alias grafts cannot evade the completed-height depth check (1.809208ms)\n✔ array length/index growth rejects before expanding the draft; caught errors permit safe recovery (0.3785ms)\n✔ aggregate sparse slots include imported and detached transaction nodes (0.974792ms)\n✔ transaction growth budgets are monotonic across length churn and discarded imports (26.594833ms)\n✔ aggregate property and text growth budgets reject writes and preserve prior snapshots (60.066875ms)\n✔ an oversized import fails before mutation and does not freeze or modify caller data (0.28725ms)\n✔ async/thenable rejection rolls back and observes illegal native Promise rejection (4.140459ms)\n✔ dispose aborts active work, revokes drafts, releases state and makes the store terminal (0.196416ms)\n✔ internal transactions are not a public mutation escape hatch (0.884042ms)\n✔ native array copy/fill/unshift/pop and derived arrays preserve owned alias semantics (0.202209ms)\n✔ invalid native array lengths and throwing comparators never publish partial array work (0.209625ms)\n✔ createTransactionStore: rejected type matrix at initialization and nested assignment (5.731917ms)\n✔ createTransactionStore: original unsupported prototypes/accessors never execute getters (0.711875ms)\n✔ createTransactionStore: adopted values preserve native graph meaning through imports (2.005917ms)\n✔ createTransactionStore: large shared DAG imports/commits without alias expansion (0.555875ms)\n✔ createTransactionStore: memoization does not hide cycles after a completed sibling (0.152375ms)\n▶ A.2 production transaction contract\n  ✔ primitive_update: Updates primitive number, string, boolean, and null properties (1.912ms)\n  ✔ nested_update: Updates nested object properties without modifying siblings (0.243833ms)\n  ✔ property_addition_deletion: Adds new properties and deletes existing properties with delete operator (0.209959ms)\n  ✔ property_undefined_vs_delete: Distinguishes setting property to undefined from deleting property (0.1085ms)\n  ✔ array_push_pop_shift_unshift: Performs array push, pop, shift, and unshift mutations (0.268333ms)\n  ✔ array_splice_and_index_assignment: Splices elements and updates elements via index assignment (0.176ms)\n  ✔ array_sort_and_reverse: Sorts and reverses arrays while preserving element contents (0.140458ms)\n  ✔ array_of_objects_item_mutation: Updates properties on an item within an array without altering array structure (0.16925ms)\n  ✔ alias_shared_object_mutation: Preserves shared object references (aliases) across multiple paths during transaction and commit (0.137ms)\n  ✔ alias_in_array_and_object: Preserves alias shared between an object property and an array element (1.124917ms)\n  ✔ snapshot_reads_isolation: Committed state remains unchanged during active transaction until commit (0.34225ms)\n  ✔ committed_state_immutability: Committed state is frozen and throws on direct mutation attempt outside transaction (0.240583ms)\n  ✔ reject_functions: Rejects storing functions in state draft (0.100083ms)\n  ✔ reject_symbols: Rejects storing symbols in state draft (0.058416ms)\n  ✔ reject_promises: Rejects storing promises or thenables in state draft (0.072875ms)\n  ✔ reject_dom_nodes: Rejects storing DOM nodes in state draft (0.05225ms)\n  ✔ reject_class_instances: Rejects storing class instances (e.g. Date) in state draft (0.889375ms)\n  ✔ reject_circular_references: Rejects circular references assigned to draft (0.235875ms)\n  ✔ reject_async_action_runner: engine.run() rejects Promise-returning action functions (0.260334ms)\n  ✔ noop_no_writes: Committing transaction without any mutations publishes one version with unchanged data (0.129ms)\n  ✔ noop_setting_same_value: Setting property to identical value (Object.is) publishes one version with unchanged data (0.079958ms)\n  ✔ noop_reverted_mutation: Reverting mutated property back to its original value within transaction emits no-op (0.059292ms)\n  ✔ rollback_on_abort: Explicit tx.abort() leaves committed state and version unchanged (0.079917ms)\n  ✔ rollback_on_throw_in_runner: Throwing an exception inside engine.run() rolls back mutations atomically (0.087ms)\n  ✔ single_active_transaction_enforcement: Enforces only one active transaction at a time per engine (0.074125ms)\n  ✔ prevent_double_commit_or_abort: Throws TransactionCompletedError on second commit or abort call (0.060958ms)\n  ✔ leaked_draft_revoked_after_commit: Revokes draft access after commit to prevent leaked draft mutations or reads (0.105667ms)\n  ✔ leaked_draft_revoked_after_abort: Revokes draft access after abort to prevent leaked draft mutations or reads (0.057375ms)\n✔ A.2 production transaction contract (8.512042ms)\nℹ tests 661\nℹ suites 4\nℹ pass 661\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1498.243375\n",
+      "signal": null
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:spikes"
+      ],
+      "exitCode": 0,
+      "output": "\n> mini-framework@0.1.0 test:spikes\n> node scripts/test-node.js spikes\n\n✔ createReferenceEngine: names, wrappers and payload validators work in plain JS (2.144291ms)\n✔ createReferenceEngine: invalid name/arity/shape/serializability publish no version (1.848416ms)\n✔ createReferenceEngine: throw/Promise/thenable rollback and recovery (1.170459ms)\n✔ createReferenceEngine: unsupported assigned state rolls back and leaked drafts revoke (1.003292ms)\n✔ createReferenceEngine: invalid graph/accessor payload fails before guard/action runs (0.517375ms)\n✔ createReferenceEngine: payload ownership, deep freeze, aliases and explicit undefined (1.082167ms)\n✔ createReferenceEngine: payload mutation and throwing/async validators reject before action (1.602708ms)\n✔ createReferenceEngine: snapshot restore preserves aliases/reorders, not runtime versions (1.211791ms)\n✔ createReferenceEngine: explicit mode handles default/rest callbacks without function.length (0.506541ms)\n✔ createReferenceEngine: nested dispatch explicitly remains outside this spike (0.400417ms)\n✔ createReferenceEngine: inherited no-op version policy is not silently changed (0.474166ms)\n✔ createCowEngine: names, wrappers and payload validators work in plain JS (0.327125ms)\n✔ createCowEngine: invalid name/arity/shape/serializability publish no version (0.187375ms)\n✔ createCowEngine: throw/Promise/thenable rollback and recovery (0.108625ms)\n✔ createCowEngine: unsupported assigned state rolls back and leaked drafts revoke (0.145042ms)\n✔ createCowEngine: invalid graph/accessor payload fails before guard/action runs (0.119084ms)\n✔ createCowEngine: payload ownership, deep freeze, aliases and explicit undefined (0.162875ms)\n✔ createCowEngine: payload mutation and throwing/async validators reject before action (0.145958ms)\n✔ createCowEngine: snapshot restore preserves aliases/reorders, not runtime versions (1.583416ms)\n✔ createCowEngine: explicit mode handles default/rest callbacks without function.length (0.268375ms)\n✔ createCowEngine: nested dispatch explicitly remains outside this spike (0.192833ms)\n✔ createCowEngine: inherited no-op version policy is not silently changed (0.120209ms)\n✔ createStagedEngine: names, wrappers and payload validators work in plain JS (0.576833ms)\n✔ createStagedEngine: invalid name/arity/shape/serializability publish no version (0.85525ms)\n✔ createStagedEngine: throw/Promise/thenable rollback and recovery (0.426291ms)\n✔ createStagedEngine: unsupported assigned state rolls back and leaked drafts revoke (0.590166ms)\n✔ createStagedEngine: invalid graph/accessor payload fails before guard/action runs (0.28575ms)\n✔ createStagedEngine: payload ownership, deep freeze, aliases and explicit undefined (0.352292ms)\n✔ createStagedEngine: payload mutation and throwing/async validators reject before action (0.303ms)\n✔ createStagedEngine: snapshot restore preserves aliases/reorders, not runtime versions (0.903209ms)\n✔ createStagedEngine: explicit mode handles default/rest callbacks without function.length (0.393209ms)\n✔ createStagedEngine: nested dispatch explicitly remains outside this spike (0.346834ms)\n✔ createStagedEngine: inherited no-op version policy is not silently changed (0.153625ms)\n✔ prototype-colliding names stay own actions rather than prototype lookups (0.402708ms)\n✔ schemas/specs cannot be forged, expose getters or use invalid builder arguments (0.711666ms)\n✔ state initialization validates and copies without freezing the caller (0.582ms)\n✔ checked JavaScript fixture runs without TypeScript compilation (1.189625ms)\n✔ 0.9 regression: action assignment rejects Array subclasses before normalization (0.363458ms)\n✔ snapshot round trip: null (1.324542ms)\n✔ snapshot round trip: undefined (0.087209ms)\n✔ snapshot round trip: false (0.066583ms)\n✔ snapshot round trip: true (0.054083ms)\n✔ snapshot round trip: empty string (0.072375ms)\n✔ snapshot round trip: unicode/quotes/control/lone surrogate (0.061625ms)\n✔ snapshot round trip: zero (0.047291ms)\n✔ snapshot round trip: negative zero (0.048875ms)\n✔ snapshot round trip: negative fraction (0.056333ms)\n✔ snapshot round trip: maximum finite (0.092541ms)\n✔ snapshot round trip: minimum subnormal (0.050208ms)\n✔ snapshot round trip: already-rounded unsafe integer (0.052ms)\n✔ snapshot round trip: empty object (0.700375ms)\n✔ snapshot round trip: null prototype (0.157541ms)\n✔ snapshot round trip: empty array (0.06625ms)\n✔ snapshot round trip: sparse array (0.12675ms)\n✔ snapshot round trip: undefined own property (0.053583ms)\n✔ snapshot round trip: frozen/sealed data values (2.638916ms)\n✔ preserves aliases, distinct equal-shaped nodes, own __proto__, and key order (0.181666ms)\n✔ preserves sparse length, aliases and custom enumerable array properties (0.115417ms)\n✔ plain JSON loses distinctions that the codec retains (0.102375ms)\n✔ encoding preserves observable property order rather than lexically sorting keys (0.073ms)\n✔ snapshot rejects: NaN (0.115292ms)\n✔ snapshot rejects: Infinity (0.03225ms)\n✔ snapshot rejects: negative Infinity (0.032833ms)\n✔ snapshot rejects: BigInt (0.025917ms)\n✔ snapshot rejects: symbol value (0.028959ms)\n✔ snapshot rejects: function (0.024292ms)\n✔ snapshot rejects: Promise (0.02675ms)\n✔ snapshot rejects: Date (0.022125ms)\n✔ snapshot rejects: Map (0.022583ms)\n✔ snapshot rejects: Set (0.024708ms)\n✔ snapshot rejects: RegExp (0.022292ms)\n✔ snapshot rejects: typed array (0.021125ms)\n✔ snapshot rejects: ArrayBuffer (0.023917ms)\n✔ snapshot rejects: class instance (0.026666ms)\n✔ snapshot rejects: Array subclass (0.023875ms)\n✔ snapshot rejects: custom object prototype (0.021584ms)\n✔ snapshot rejects: symbol key (0.024708ms)\n✔ snapshot rejects: nonenumerable property (0.027916ms)\n✔ snapshot rejects: thenable (0.088541ms)\n✔ snapshot rejects: DOM-shaped object (0.055208ms)\n✔ getters, setters and toJSON are never invoked (0.088334ms)\n✔ rejects object and array cycles while allowing repeated DAG nodes (0.361583ms)\n✔ 0.9 regression: type validation memoizes completed DAG nodes without value gets (0.158917ms)\n✔ snapshot import rejects: wrong format (0.0485ms)\n✔ snapshot import rejects: wrong version (0.026584ms)\n✔ snapshot import rejects: extra field (0.02875ms)\n✔ snapshot import rejects: missing root (0.024959ms)\n✔ snapshot import rejects: wrong node table (0.025458ms)\n✔ snapshot import rejects: unknown tag (0.026583ms)\n✔ snapshot import rejects: extra token field (0.02525ms)\n✔ snapshot import rejects: wrong primitive type (0.023875ms)\n✔ snapshot import rejects: unknown reference (0.025125ms)\n✔ snapshot import rejects: negative reference (0.023709ms)\n✔ snapshot import rejects: fractional reference (0.035375ms)\n✔ snapshot import rejects: unknown node kind (0.025583ms)\n✔ snapshot import rejects: invalid prototype (0.022875ms)\n✔ snapshot import rejects: duplicate property (0.029042ms)\n✔ snapshot import rejects: bad property key (0.026667ms)\n✔ snapshot import rejects: bad property list (0.025ms)\n✔ snapshot import rejects: cycle (0.027667ms)\n✔ snapshot import rejects: unreachable node (0.025333ms)\n✔ snapshot import rejects: negative array length (0.027042ms)\n✔ snapshot import rejects: index beyond length (0.029208ms)\n✔ snapshot import rejects: array length property (0.026958ms)\n✔ snapshot import rejects: noncanonical integer-key order (0.042208ms)\n✔ snapshot import rejects: imported DOM-shaped object (0.035166ms)\n✔ rejects malformed JSON, duplicate envelope keys, pretty printing and nonfinite/negative-zero number tokens (0.174208ms)\n✔ encoding/import enforce byte, node, property, depth and sparse-slot limits (0.304958ms)\n✔ shared node revisited at a deeper path cannot bypass maxDepth (0.085167ms)\n✔ invalid or accessor limits fail without invoking getters (0.222583ms)\n✔ seeded graphs preserve arbitrary alias topology and array/property distinctions (18.019333ms)\n▶ Phase 0.5 reference identity regressions\n  ✔ an unread alias observes a mutation and remains aliased at commit (1.077125ms)\n  ✔ repeated edits through different aliases target the same draft (0.13825ms)\n  ✔ a held item survives reorder and edits follow its identity (0.8065ms)\n  ✔ remove/reinsert retains item identity and revokes the returned draft (0.276459ms)\n  ✔ adding undefined differs from absence; array holes survive commits (0.135166ms)\n  ✔ item property changes invalidate neither other items nor array structure (0.316125ms)\n  ✔ reorder changes index/iteration bindings but not length or item fields (0.200334ms)\n  ✔ net invalidations omit reverted/repeated writes even in a changed transaction (0.449209ms)\n  ✔ adding undefined invalidates existence and keys, not an unchanged value (0.261167ms)\n  ✔ new alias edges and same-shaped replacements are observable identity changes (0.62775ms)\n  ✔ imported object graphs preserve aliases across assignments without freezing callers (0.367916ms)\n  ✔ commit-time cycles roll back, revoke drafts, and allow a next transaction (0.254625ms)\n  ✔ descriptor reads cannot leak raw nodes; prototype/symbol changes reject (0.1635ms)\n  ✔ a current committed reference creates an alias rather than a fresh copy (0.065875ms)\n  ✔ same-shaped distinct items still reorder; splice(start) removes the suffix (0.14275ms)\n  ✔ key order, null prototypes, and a literal __proto__ property survive commits (0.110625ms)\n  ✔ unsupported initial values reject before getters execute or data disappears (0.117542ms)\n  ✔ deleting own properties reveals inherited methods with native semantics (0.258708ms)\n✔ Phase 0.5 reference identity regressions (7.882917ms)\n▶ Phase 0.5 cow identity regressions\n  ✔ an unread alias observes a mutation and remains aliased at commit (0.227834ms)\n  ✔ repeated edits through different aliases target the same draft (0.051458ms)\n  ✔ a held item survives reorder and edits follow its identity (0.093208ms)\n  ✔ remove/reinsert retains item identity and revokes the returned draft (0.084375ms)\n  ✔ adding undefined differs from absence; array holes survive commits (0.054583ms)\n  ✔ item property changes invalidate neither other items nor array structure (0.123333ms)\n  ✔ reorder changes index/iteration bindings but not length or item fields (0.127625ms)\n  ✔ net invalidations omit reverted/repeated writes even in a changed transaction (0.038458ms)\n  ✔ adding undefined invalidates existence and keys, not an unchanged value (0.031083ms)\n  ✔ new alias edges and same-shaped replacements are observable identity changes (0.06475ms)\n  ✔ imported object graphs preserve aliases across assignments without freezing callers (0.056417ms)\n  ✔ commit-time cycles roll back, revoke drafts, and allow a next transaction (0.053208ms)\n  ✔ descriptor reads cannot leak raw nodes; prototype/symbol changes reject (0.081333ms)\n  ✔ a current committed reference creates an alias rather than a fresh copy (0.035458ms)\n  ✔ same-shaped distinct items still reorder; splice(start) removes the suffix (0.095291ms)\n  ✔ key order, null prototypes, and a literal __proto__ property survive commits (0.047458ms)\n  ✔ unsupported initial values reject before getters execute or data disappears (0.075291ms)\n  ✔ deleting own properties reveals inherited methods with native semantics (0.07975ms)\n✔ Phase 0.5 cow identity regressions (1.577542ms)\n▶ Phase 0.5 staged identity regressions\n  ✔ an unread alias observes a mutation and remains aliased at commit (0.234792ms)\n  ✔ repeated edits through different aliases target the same draft (0.043042ms)\n  ✔ a held item survives reorder and edits follow its identity (0.090542ms)\n  ✔ remove/reinsert retains item identity and revokes the returned draft (0.098ms)\n  ✔ adding undefined differs from absence; array holes survive commits (0.057041ms)\n  ✔ item property changes invalidate neither other items nor array structure (0.31575ms)\n  ✔ reorder changes index/iteration bindings but not length or item fields (0.518416ms)\n  ✔ net invalidations omit reverted/repeated writes even in a changed transaction (0.201042ms)\n  ✔ adding undefined invalidates existence and keys, not an unchanged value (0.128458ms)\n  ✔ new alias edges and same-shaped replacements are observable identity changes (0.253458ms)\n  ✔ imported object graphs preserve aliases across assignments without freezing callers (0.518916ms)\n  ✔ commit-time cycles roll back, revoke drafts, and allow a next transaction (0.164167ms)\n  ✔ descriptor reads cannot leak raw nodes; prototype/symbol changes reject (0.109459ms)\n  ✔ a current committed reference creates an alias rather than a fresh copy (0.048333ms)\n  ✔ same-shaped distinct items still reorder; splice(start) removes the suffix (0.125417ms)\n  ✔ key order, null prototypes, and a literal __proto__ property survive commits (0.061333ms)\n  ✔ unsupported initial values reject before getters execute or data disappears (0.086375ms)\n  ✔ deleting own properties reveals inherited methods with native semantics (1.176541ms)\n✔ Phase 0.5 staged identity regressions (4.63275ms)\n▶ Phase 0.5 seeded state/identity/invalidation comparison\n  ✔ seed=1: 160 transitions across reference/COW/staged (151.392334ms)\n  ✔ seed=2: 160 transitions across reference/COW/staged (161.761334ms)\n  ✔ seed=7: 160 transitions across reference/COW/staged (142.933083ms)\n  ✔ seed=42: 160 transitions across reference/COW/staged (104.19575ms)\n  ✔ seed=1234: 160 transitions across reference/COW/staged (145.929584ms)\n  ✔ seed=4096: 160 transitions across reference/COW/staged (154.295292ms)\n  ✔ seed=65535: 160 transitions across reference/COW/staged (165.157333ms)\n  ✔ seed=305419896: 160 transitions across reference/COW/staged (152.69275ms)\n  ✔ seed=2654435769: 160 transitions across reference/COW/staged (148.0465ms)\n  ✔ seed=2882400001: 160 transitions across reference/COW/staged (175.032584ms)\n  ✔ seed=4294967294: 160 transitions across reference/COW/staged (112.51175ms)\n  ✔ seed=4294967295: 160 transitions across reference/COW/staged (151.194666ms)\n✔ Phase 0.5 seeded state/identity/invalidation comparison (1765.488625ms)\n▶ Phase 0.2 Transaction Contract & Reference Evaluator\n  ✔ [primitive] primitive_update: Updates primitive number, string, boolean, and null properties (1.69325ms)\n  ✔ [nested] nested_update: Updates nested object properties without modifying siblings (0.217292ms)\n  ✔ [addition_deletion] property_addition_deletion: Adds new properties and deletes existing properties with delete operator (0.17075ms)\n  ✔ [addition_deletion] property_undefined_vs_delete: Distinguishes setting property to undefined from deleting property (0.091958ms)\n  ✔ [arrays] array_push_pop_shift_unshift: Performs array push, pop, shift, and unshift mutations (0.213ms)\n  ✔ [arrays] array_splice_and_index_assignment: Splices elements and updates elements via index assignment (0.114958ms)\n  ✔ [arrays] array_sort_and_reverse: Sorts and reverses arrays while preserving element contents (0.124583ms)\n  ✔ [arrays] array_of_objects_item_mutation: Updates properties on an item within an array without altering array structure (0.137917ms)\n  ✔ [aliases] alias_shared_object_mutation: Preserves shared object references (aliases) across multiple paths during transaction and commit (0.134708ms)\n  ✔ [aliases] alias_in_array_and_object: Preserves alias shared between an object property and an array element (0.165792ms)\n  ✔ [snapshot_reads] snapshot_reads_isolation: Committed state remains unchanged during active transaction until commit (0.093834ms)\n  ✔ [snapshot_reads] committed_state_immutability: Committed state is frozen and throws on direct mutation attempt outside transaction (0.22725ms)\n  ✔ [unsupported_types] reject_functions: Rejects storing functions in state draft (0.076625ms)\n  ✔ [unsupported_types] reject_symbols: Rejects storing symbols in state draft (0.05675ms)\n  ✔ [unsupported_types] reject_promises: Rejects storing promises or thenables in state draft (0.06825ms)\n  ✔ [unsupported_types] reject_dom_nodes: Rejects storing DOM nodes in state draft (0.056334ms)\n  ✔ [unsupported_types] reject_class_instances: Rejects storing class instances (e.g. Date) in state draft (1.196708ms)\n  ✔ [unsupported_types] reject_circular_references: Rejects circular references assigned to draft (0.145084ms)\n  ✔ [unsupported_types] reject_async_action_runner: engine.run() rejects Promise-returning action functions (0.099ms)\n  ✔ [no_op] noop_no_writes: Committing transaction without any mutations publishes no new version (0.074084ms)\n  ✔ [no_op] noop_setting_same_value: Setting property to identical value (Object.is) publishes no new version (0.586292ms)\n  ✔ [no_op] noop_reverted_mutation: Reverting mutated property back to its original value within transaction emits no-op (0.050125ms)\n  ✔ [rollback] rollback_on_abort: Explicit tx.abort() leaves committed state and version unchanged (0.061ms)\n  ✔ [rollback] rollback_on_throw_in_runner: Throwing an exception inside engine.run() rolls back mutations atomically (0.071417ms)\n  ✔ [lifetime] single_active_transaction_enforcement: Enforces only one active transaction at a time per engine (0.072333ms)\n  ✔ [lifetime] prevent_double_commit_or_abort: Throws TransactionCompletedError on second commit or abort call (0.061917ms)\n  ✔ [lifetime] leaked_draft_revoked_after_commit: Revokes draft access after commit to prevent leaked draft mutations or reads (0.0915ms)\n  ✔ [lifetime] leaked_draft_revoked_after_abort: Revokes draft access after abort to prevent leaked draft mutations or reads (0.050125ms)\n  ✔ reference evaluator handles multiple sequential transactions cleanly (0.047458ms)\n✔ Phase 0.2 Transaction Contract & Reference Evaluator (7.223542ms)\n▶ Phase 0.3 Copy-on-Write (COW) Transaction Engine\n  ✔ [COW Fixture - primitive] primitive_update: Updates primitive number, string, boolean, and null properties (1.693792ms)\n  ✔ [COW Fixture - nested] nested_update: Updates nested object properties without modifying siblings (0.217542ms)\n  ✔ [COW Fixture - addition_deletion] property_addition_deletion: Adds new properties and deletes existing properties with delete operator (0.18625ms)\n  ✔ [COW Fixture - addition_deletion] property_undefined_vs_delete: Distinguishes setting property to undefined from deleting property (0.100167ms)\n  ✔ [COW Fixture - arrays] array_push_pop_shift_unshift: Performs array push, pop, shift, and unshift mutations (0.24475ms)\n  ✔ [COW Fixture - arrays] array_splice_and_index_assignment: Splices elements and updates elements via index assignment (0.116334ms)\n  ✔ [COW Fixture - arrays] array_sort_and_reverse: Sorts and reverses arrays while preserving element contents (0.109833ms)\n  ✔ [COW Fixture - arrays] array_of_objects_item_mutation: Updates properties on an item within an array without altering array structure (0.116291ms)\n  ✔ [COW Fixture - aliases] alias_shared_object_mutation: Preserves shared object references (aliases) across multiple paths during transaction and commit (0.119792ms)\n  ✔ [COW Fixture - aliases] alias_in_array_and_object: Preserves alias shared between an object property and an array element (0.1365ms)\n  ✔ [COW Fixture - snapshot_reads] snapshot_reads_isolation: Committed state remains unchanged during active transaction until commit (0.086584ms)\n  ✔ [COW Fixture - snapshot_reads] committed_state_immutability: Committed state is frozen and throws on direct mutation attempt outside transaction (0.195083ms)\n  ✔ [COW Fixture - unsupported_types] reject_functions: Rejects storing functions in state draft (0.070375ms)\n  ✔ [COW Fixture - unsupported_types] reject_symbols: Rejects storing symbols in state draft (0.050875ms)\n  ✔ [COW Fixture - unsupported_types] reject_promises: Rejects storing promises or thenables in state draft (0.061333ms)\n  ✔ [COW Fixture - unsupported_types] reject_dom_nodes: Rejects storing DOM nodes in state draft (0.418166ms)\n  ✔ [COW Fixture - unsupported_types] reject_class_instances: Rejects storing class instances (e.g. Date) in state draft (2.163708ms)\n  ✔ [COW Fixture - unsupported_types] reject_circular_references: Rejects circular references assigned to draft (0.229417ms)\n  ✔ [COW Fixture - unsupported_types] reject_async_action_runner: engine.run() rejects Promise-returning action functions (1.332709ms)\n  ✔ [COW Fixture - no_op] noop_no_writes: Committing transaction without any mutations publishes no new version (0.089875ms)\n  ✔ [COW Fixture - no_op] noop_setting_same_value: Setting property to identical value (Object.is) publishes no new version (0.0605ms)\n  ✔ [COW Fixture - no_op] noop_reverted_mutation: Reverting mutated property back to its original value within transaction emits no-op (0.046333ms)\n  ✔ [COW Fixture - rollback] rollback_on_abort: Explicit tx.abort() leaves committed state and version unchanged (0.057917ms)\n  ✔ [COW Fixture - rollback] rollback_on_throw_in_runner: Throwing an exception inside engine.run() rolls back mutations atomically (0.068708ms)\n  ✔ [COW Fixture - lifetime] single_active_transaction_enforcement: Enforces only one active transaction at a time per engine (0.072792ms)\n  ✔ [COW Fixture - lifetime] prevent_double_commit_or_abort: Throws TransactionCompletedError on second commit or abort call (0.061166ms)\n  ✔ [COW Fixture - lifetime] leaked_draft_revoked_after_commit: Revokes draft access after commit to prevent leaked draft mutations or reads (0.087875ms)\n  ✔ [COW Fixture - lifetime] leaked_draft_revoked_after_abort: Revokes draft access after abort to prevent leaked draft mutations or reads (0.04725ms)\n  ✔ COW preserves structural sharing for untouched object branches (0.106583ms)\n  ✔ COW preserves structural sharing for untouched array items (0.088542ms)\n  ✔ COW handles sequential transactions across multiple versions with persistent sharing (0.078458ms)\n✔ Phase 0.3 Copy-on-Write (COW) Transaction Engine (9.50075ms)\n▶ Phase 0.4 Staged-Operation Transaction Engine\n  ✔ [Staged Fixture - primitive] primitive_update: Updates primitive number, string, boolean, and null properties (1.809166ms)\n  ✔ [Staged Fixture - nested] nested_update: Updates nested object properties without modifying siblings (0.227792ms)\n  ✔ [Staged Fixture - addition_deletion] property_addition_deletion: Adds new properties and deletes existing properties with delete operator (0.233791ms)\n  ✔ [Staged Fixture - addition_deletion] property_undefined_vs_delete: Distinguishes setting property to undefined from deleting property (0.186333ms)\n  ✔ [Staged Fixture - arrays] array_push_pop_shift_unshift: Performs array push, pop, shift, and unshift mutations (0.250167ms)\n  ✔ [Staged Fixture - arrays] array_splice_and_index_assignment: Splices elements and updates elements via index assignment (0.136042ms)\n  ✔ [Staged Fixture - arrays] array_sort_and_reverse: Sorts and reverses arrays while preserving element contents (0.118917ms)\n  ✔ [Staged Fixture - arrays] array_of_objects_item_mutation: Updates properties on an item within an array without altering array structure (0.162292ms)\n  ✔ [Staged Fixture - aliases] alias_shared_object_mutation: Preserves shared object references (aliases) across multiple paths during transaction and commit (0.783375ms)\n  ✔ [Staged Fixture - aliases] alias_in_array_and_object: Preserves alias shared between an object property and an array element (0.430583ms)\n  ✔ [Staged Fixture - snapshot_reads] snapshot_reads_isolation: Committed state remains unchanged during active transaction until commit (0.271208ms)\n  ✔ [Staged Fixture - snapshot_reads] committed_state_immutability: Committed state is frozen and throws on direct mutation attempt outside transaction (0.617708ms)\n  ✔ [Staged Fixture - unsupported_types] reject_functions: Rejects storing functions in state draft (0.204417ms)\n  ✔ [Staged Fixture - unsupported_types] reject_symbols: Rejects storing symbols in state draft (0.280625ms)\n  ✔ [Staged Fixture - unsupported_types] reject_promises: Rejects storing promises or thenables in state draft (0.190875ms)\n  ✔ [Staged Fixture - unsupported_types] reject_dom_nodes: Rejects storing DOM nodes in state draft (0.144292ms)\n  ✔ [Staged Fixture - unsupported_types] reject_class_instances: Rejects storing class instances (e.g. Date) in state draft (1.661125ms)\n  ✔ [Staged Fixture - unsupported_types] reject_circular_references: Rejects circular references assigned to draft (0.250792ms)\n  ✔ [Staged Fixture - unsupported_types] reject_async_action_runner: engine.run() rejects Promise-returning action functions (0.252625ms)\n  ✔ [Staged Fixture - no_op] noop_no_writes: Committing transaction without any mutations publishes no new version (0.169041ms)\n  ✔ [Staged Fixture - no_op] noop_setting_same_value: Setting property to identical value (Object.is) publishes no new version (0.133917ms)\n  ✔ [Staged Fixture - no_op] noop_reverted_mutation: Reverting mutated property back to its original value within transaction emits no-op (0.119ms)\n  ✔ [Staged Fixture - rollback] rollback_on_abort: Explicit tx.abort() leaves committed state and version unchanged (0.190958ms)\n  ✔ [Staged Fixture - rollback] rollback_on_throw_in_runner: Throwing an exception inside engine.run() rolls back mutations atomically (0.166791ms)\n  ✔ [Staged Fixture - lifetime] single_active_transaction_enforcement: Enforces only one active transaction at a time per engine (0.170709ms)\n  ✔ [Staged Fixture - lifetime] prevent_double_commit_or_abort: Throws TransactionCompletedError on second commit or abort call (0.151625ms)\n  ✔ [Staged Fixture - lifetime] leaked_draft_revoked_after_commit: Revokes draft access after commit to prevent leaked draft mutations or reads (0.226208ms)\n  ✔ [Staged Fixture - lifetime] leaked_draft_revoked_after_abort: Revokes draft access after abort to prevent leaked draft mutations or reads (0.194958ms)\n  ✔ Staged Engine preserves structural sharing for untouched object branches (0.366041ms)\n  ✔ Staged Engine preserves structural sharing for untouched array items (0.253667ms)\n  ✔ Staged Engine handles sequential transactions with persistent sharing (0.200917ms)\n✔ Phase 0.4 Staged-Operation Transaction Engine (13.625334ms)\n✔ createReferenceEngine: rejected type matrix at initialization and nested assignment (5.727875ms)\n✔ createReferenceEngine: original unsupported prototypes/accessors never execute getters (0.265166ms)\n✔ createReferenceEngine: adopted values preserve native graph meaning through imports (2.990584ms)\n✔ createReferenceEngine: large shared DAG imports/commits without alias expansion (0.460458ms)\n✔ createReferenceEngine: memoization does not hide cycles after a completed sibling (0.160333ms)\n✔ createCowEngine: rejected type matrix at initialization and nested assignment (1.745959ms)\n✔ createCowEngine: original unsupported prototypes/accessors never execute getters (0.257625ms)\n✔ createCowEngine: adopted values preserve native graph meaning through imports (0.560625ms)\n✔ createCowEngine: large shared DAG imports/commits without alias expansion (0.450667ms)\n✔ createCowEngine: memoization does not hide cycles after a completed sibling (0.126ms)\n✔ createStagedEngine: rejected type matrix at initialization and nested assignment (4.341875ms)\n✔ createStagedEngine: original unsupported prototypes/accessors never execute getters (0.336709ms)\n✔ createStagedEngine: adopted values preserve native graph meaning through imports (0.699916ms)\n✔ createStagedEngine: large shared DAG imports/commits without alias expansion (0.414917ms)\n✔ createStagedEngine: memoization does not hide cycles after a completed sibling (0.071084ms)\n✔ validator inspects each shared object once and never performs ordinary value gets (0.144875ms)\n✔ active ancestors are cleared on a validation error without marking failed nodes complete (0.068583ms)\n✔ element functions accept no props, flat props, nested descriptors and direct tokens (1.246167ms)\n✔ binding tokens resolve current nested state and do not box primitive state (0.20175ms)\n✔ native template sites have stable identity, different sites do not (0.129125ms)\n✔ eager primitives do not carry their property/expression provenance into a tag (0.084333ms)\n✔ control descriptors remain explicit, without application DOM mutation (0.066333ms)\n✔ inline events, unsupported tags and active URL protocols are rejected (0.214917ms)\n✔ syntax measurements use conventional median and nearest-rank p95 (0.076458ms)\nℹ tests 292\nℹ suites 7\nℹ pass 292\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1893.708125\n",
+      "signal": null
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:benchmarks"
+      ],
+      "exitCode": 0,
+      "output": "\n> mini-framework@0.1.0 test:benchmarks\n> node scripts/test-node.js benchmarks\n\n✔ D.5 fixtures preserve aliases and seeded indices without ambient randomness (1.531667ms)\n✔ D.5 equivalent seeded action/alias/version checkpoints: independent-bindings (86.398709ms)\n✔ D.5 equivalent seeded action/alias/version checkpoints: pre-frame-burst (135.98825ms)\n✔ D.5 equivalent seeded action/alias/version checkpoints: keyed-list-edits (65.245916ms)\n✔ D.5 equivalent seeded action/alias/version checkpoints: moving-elements (67.363792ms)\n✔ D.5 equivalent seeded action/alias/version checkpoints: transaction-churn (68.476542ms)\n✔ D.5 three-variant flat-log replay checks each endpoint and completes at the source hash (88.564708ms)\n✔ D.5 pre-frame bursts commit eight transactions for one selected property (1.415709ms)\n✔ D.5 sampled alias churn rollback never publishes a partially reordered graph (1.431459ms)\n✔ A.2 equivalent changing workload: sparse-nested (11.7835ms)\n✔ A.2 equivalent changing workload: repeated-writes (6.081875ms)\n✔ A.2 equivalent changing workload: dense-updates (8.599375ms)\n✔ A.2 equivalent changing workload: array-insert (5.83875ms)\n✔ A.2 equivalent changing workload: array-reorder (5.685125ms)\n✔ A.2 equivalent changing workload: alias-edits (4.182417ms)\n✔ A.2 equivalent changing workload: rollback (2.406792ms)\n✔ benchmark sparse-nested: equivalent values/identity/invalidations and bounded size (9.264084ms)\n✔ benchmark repeated-writes: equivalent values/identity/invalidations and bounded size (4.315ms)\n✔ benchmark dense-updates: equivalent values/identity/invalidations and bounded size (3.114334ms)\n✔ benchmark array-insert: equivalent values/identity/invalidations and bounded size (3.359625ms)\n✔ benchmark array-reorder: equivalent values/identity/invalidations and bounded size (3.796583ms)\n✔ benchmark alias-edits: equivalent values/identity/invalidations and bounded size (4.683958ms)\n✔ benchmark rollback: equivalent values/identity/invalidations and bounded size (1.287708ms)\n✔ quantiles use median and nearest-rank p95 without mutating raw samples (0.222708ms)\nℹ tests 24\nℹ suites 0\nℹ pass 24\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 598.232875\n",
+      "signal": null
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "smoke"
+      ],
+      "exitCode": 0,
+      "output": "\n> mini-framework@0.1.0 smoke\n> node scripts/smoke.js\n\n[smoke] Starting mini-framework root smoke verification...\n[smoke] 1. Checking public module exports...\n[smoke]    Public exports OK (v0.1.0)\n[smoke] 2. Booting dev server on ephemeral port...\n[smoke]    Server active at http://127.0.0.1:55630\n[smoke] 3. Testing GET / root redirect...\n[smoke]    Root redirect OK\n[smoke] 4. Testing GET /examples/basic/...\n[smoke]    HTML served successfully\n[smoke] 5. Testing GET /examples/basic/main.js...\n[smoke]    main.js served successfully\n[smoke] 6. Testing GET /src/index.js...\n[smoke]    src/index.js served successfully\n[smoke]    Core/events/inputs/priorities/router modules and public-only examples OK\n\n[smoke] ALL SMOKE CHECKS PASSED.\n[smoke] Shutting down dev server...\n[smoke] Server stopped.\n",
+      "signal": null
+    },
+    {
+      "command": [
+        "npm",
+        "ci",
+        "--ignore-scripts",
+        "--offline"
+      ],
+      "exitCode": 0,
+      "output": "\nadded 1 package, and audited 2 packages in 331ms\n\nfound 0 vulnerabilities\n",
+      "signal": null
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:types"
+      ],
+      "exitCode": 0,
+      "output": "\n> mini-framework@0.1.0 test:types\n> node scripts/check-action-types.js\n\nTypeScript 5.9.3: positive TypeScript + checked JavaScript pass; 174 independent negative lines rejected. No files emitted.\n",
+      "signal": null
+    },
+    {
+      "command": [
+        "npm",
+        "ls",
+        "--omit=dev"
+      ],
+      "exitCode": 0,
+      "output": "mini-framework@0.1.0 /private/var/folders/1p/x485r2q97nj3zbvfpvx35z4w0000gn/T/mini-framework-auditor-DDTzpz/checkout\n└── (empty)\n\n",
+      "signal": null
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:browser"
+      ],
+      "exitCode": 0,
+      "output": "\n> mini-framework@0.1.0 test:browser\n> node scripts/check-app-lifecycle.js\n\nPublic lifecycle browser checks: 149 passed\nRESULT tests/results/app-lifecycle-1791370037707-e4addc7e.json\n",
+      "signal": null
+    }
+  ],
+  "browser": {
+    "kind": "app-lifecycle-transactions-and-reactivity",
+    "task": "D.1–D.2",
+    "formatVersion": 1,
+    "recordedAt": "2026-10-07T10:47:17.706Z",
+    "browserVersion": {
+      "protocolVersion": "1.3",
+      "product": "Chrome/154.0.8037.98",
+      "revision": "@b859317bf11f6be47f9b7799ec690a0a42a1fb33",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+      "jsVersion": "15.4.80.20"
+    },
+    "flags": [
+      "--headless=new",
+      "--remote-debugging-pipe",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-extensions"
+    ],
+    "machine": {
+      "cpu": "Apple M4",
+      "cpuCount": 10,
+      "platform": "darwin",
+      "release": "24.6.0",
+      "arch": "arm64",
+      "node": "v26.3.0"
+    },
+    "sourceFiles": [
+      {
+        "file": "src/index.js",
+        "sha256": "26267025d963baa9287477af709243fa58ce79a826f849da08b368e7066b38ce"
+      },
+      {
+        "file": "src/index.d.ts",
+        "sha256": "21e0ad4a555c4b6a4da40ce8e7ceb860498e0b2f855f5ef7d83409405ce00796"
+      },
+      {
+        "file": "src/runtime/app.js",
+        "sha256": "8040514f04b580e5060b28a15de8f1ea0893b19cb805d0f2a40c029c623f3a62"
+      },
+      {
+        "file": "src/runtime/errors.js",
+        "sha256": "28a0d3509157c62f5c731d2d5b49611a2ee678fdd31ab931e5a9b1bc71681da0"
+      },
+      {
+        "file": "src/runtime/records.js",
+        "sha256": "2ab1fdc349a55e10b2042626e01c9209dc52dfbfdcfc7b776d6d757e6b3434a8"
+      },
+      {
+        "file": "src/runtime/state/initial-state.js",
+        "sha256": "691661ed37ad32a78c7bf66fdb26df8b427383ab5cb3ac6b0ad8529d0a84b724"
+      },
+      {
+        "file": "src/runtime/state/transactions.js",
+        "sha256": "64e656e893d630b41bf3eea77da09b377c8dc6cf3ef290cd97756221c404bfa7"
+      },
+      {
+        "file": "src/runtime/state/data.js",
+        "sha256": "0d3cc0f69f05e93c2ce60546ac41c29dccd7f971d534325b141d2276bcb6661a"
+      },
+      {
+        "file": "src/runtime/state/draft.js",
+        "sha256": "4132704ac792c9a2a775a74cfe7cb6f83a45ae4b0c2fcd5534b917d006da6497"
+      },
+      {
+        "file": "src/runtime/state/graph.js",
+        "sha256": "921f9e7a201a258bf8aa42b38d303c7f20b15f5e934298feb66cd9dabb7223b3"
+      },
+      {
+        "file": "src/runtime/reactivity/tracking.js",
+        "sha256": "5520a1c03c57328475c018584e8df002308c33faad21f9fd4ca1363f8643dd57"
+      },
+      {
+        "file": "src/runtime/dom/bindings.js",
+        "sha256": "e2fe508b0836172b48de86902e822cb54e16c8f5c2823463cf6583496e299fb8"
+      },
+      {
+        "file": "src/runtime/dom/nodes.js",
+        "sha256": "1a290cf4eb32a6d8b271601d58eaa6c239debd71b9f022b733850acccebc0f57"
+      },
+      {
+        "file": "src/runtime/dom/properties.js",
+        "sha256": "c01f301f475b32d80c83906e98cfca2b99487a0db9d7e97cea2f8828cef247c9"
+      },
+      {
+        "file": "src/runtime/dom/renderer.js",
+        "sha256": "51bc3bdd22d17b598e3be7a20802b4d46cd6da2118fd5cb20523eee6c52461dd"
+      },
+      {
+        "file": "src/runtime/dom/queue.js",
+        "sha256": "8b0a9f43af06b8a55490c5308f14c47cc2ea231ebfe6fa7f265e7bdcfaf6a1fd"
+      },
+      {
+        "file": "src/runtime/dom/events.js",
+        "sha256": "9410752167e1a015bfbe977eb87205eef9a96cc8c39c909ca1f5f10d411aed2a"
+      },
+      {
+        "file": "src/runtime/diagnostics.js",
+        "sha256": "deb0400265ad0f8f07d295892c3fa63d4613552f768ad27ae742a41d98773c09"
+      },
+      {
+        "file": "src/runtime/actions/schema.js",
+        "sha256": "be68fea174ad25646b8611ca5a88bce7e9703631511b86179f087a1b1301bfe1"
+      },
+      {
+        "file": "src/runtime/actions/dispatch.js",
+        "sha256": "f5762c43f5a5ba5399d6d587634fb3e80c46b5e5b564a95bedab0e197a4c891f"
+      },
+      {
+        "file": "examples/basic/main.js",
+        "sha256": "76bea3a38dc7a71c6c4a12c5fbaf3b212f9b9221453392084250a67948feaebb"
+      },
+      {
+        "file": "examples/basic/index.html",
+        "sha256": "c43f013a8dcac07678145d84d43788e9ff826f33f0bea4152983c79f5df88e89"
+      },
+      {
+        "file": "tests/browser/app-lifecycle.js",
+        "sha256": "996bf970dd8d690fd95584fec549803cb2d589dbd841655ecb58bea96dcdb667"
+      },
+      {
+        "file": "tests/browser/reactivity.js",
+        "sha256": "85902f83111136f54b79bc8a0d6a3d7136edafae14d676584e271a852913e4f9"
+      },
+      {
+        "file": "tests/browser/click.js",
+        "sha256": "c0c48b6cf7536af97c8f8c74bc716ba595bf9ce3d30a907714ca220f7422bdc7"
+      },
+      {
+        "file": "tests/browser/keyed.js",
+        "sha256": "99521f6f97253f5166643aa9afa7a42c194b63f7340602fcdbceeb580ec902ba"
+      },
+      {
+        "file": "tests/browser/dom.js",
+        "sha256": "4bd72a20696aa4dcf893615216bed1fb6880784054830cb0ee28917699c28b7b"
+      },
+      {
+        "file": "tests/browser/render-queue.js",
+        "sha256": "245cf8b28b3e0cf8c90b89cc11a71e40d258a961791d02e35b9676eb72d4c61e"
+      },
+      {
+        "file": "examples/dom/main.js",
+        "sha256": "6ae696c95fc16a74839eab534d8f911a44440e4371a86a9c9aa04a2189b5c792"
+      },
+      {
+        "file": "examples/dom/index.html",
+        "sha256": "97d27795323744a97d74d5c6baff245b26a3f1ab4c85405672e507cb55caa337"
+      },
+      {
+        "file": "examples/keyed/main.js",
+        "sha256": "b03b4625893209ec8cb8d97dd090c2c0fedef0bcbc3c6b247945c84b735f2d16"
+      },
+      {
+        "file": "examples/keyed/index.html",
+        "sha256": "37dc3cddbaaae5f9f226dd567a9ac0fbbb1291c67ee8fa001b1e4626f43017f2"
+      },
+      {
+        "file": "tests/browser/app-lifecycle.html",
+        "sha256": "f905e1428e9a7b84e4ccb494725ede5a507acdf5b7e24b507e0cc4e9017d4e16"
+      },
+      {
+        "file": "scripts/check-app-lifecycle.js",
+        "sha256": "be469a165c99ce6a9230881ef518518c218c1ca94c167fd99dbe50d34c0f523d"
+      },
+      {
+        "file": "scripts/local-browser.js",
+        "sha256": "303794d10b6e9c4b97f570863854e6078452b9c2478a4ff5795091ab7cdca1d7"
+      },
+      {
+        "file": "scripts/dev-server.js",
+        "sha256": "117485a85f01986d3649755821537693d27711a63dd4af7a5cbcd1ba1035939e"
+      },
+      {
+        "file": "tests/browser/core-slice.js",
+        "sha256": "8a870b08e23efdcd39b4ef6314abe46be2ef5c13c125c970bcd914c73e422162"
+      },
+      {
+        "file": "tests/helpers/core-probe.js",
+        "sha256": "99be18d0a016e938483530325e066c736b95cb77a28922f4ca4d0aff25530077"
+      },
+      {
+        "file": "tests/core-slice.test.js",
+        "sha256": "7404a66a1a240299289f8b1292ed4f83a0625d8bc7a0fa20f1fd0f900619620f"
+      },
+      {
+        "file": "examples/core/app.js",
+        "sha256": "0b52f3bca3052972d30974cb34b7c0bae8a12ead3a6cab93a234cbe1224faf4a"
+      },
+      {
+        "file": "examples/core/main.js",
+        "sha256": "b6818a4ce8cb7e966cdaf53d1782fadffcb2a18370264b297473e53288e7928e"
+      },
+      {
+        "file": "examples/core/index.html",
+        "sha256": "3f294dc790652b8f41d6cbb71ddd1f8f2dfacd0bbcf81c80177bb96d8f9cb2bd"
+      },
+      {
+        "file": "src/runtime/dom/inputs.js",
+        "sha256": "cb0fdcec5d298b8eb9ed08c1c528a9b61b6be7da69f168bd7f7d6e355b296181"
+      },
+      {
+        "file": "tests/events-input.test.js",
+        "sha256": "26bae8f9390f304c9f04bba12980b070ddfaa57dfc709d86389ed1fb4f36f833"
+      },
+      {
+        "file": "tests/browser/events-input.js",
+        "sha256": "b5a35108771922aec2ebc002e6015413fb85ddc12d73f56105adc9ff224c76c2"
+      },
+      {
+        "file": "examples/inputs/main.js",
+        "sha256": "3e56e3af2a34699a43ad4d50cc30eba3f8ea5fbf91ff54b0e758391455dd37dc"
+      },
+      {
+        "file": "examples/inputs/index.html",
+        "sha256": "6104476ea2eb928665c45c3a4791311c2a5cb6b051be9c0052a39bf19cf30f86"
+      },
+      {
+        "file": "src/runtime/scheduler.js",
+        "sha256": "ef36dd3a38d2bdede6b1dc0c4f7d7d501d62f7de9b083ff7d2f0a26002987492"
+      },
+      {
+        "file": "src/runtime/routing/router.js",
+        "sha256": "3938ba0f5b554744fd4d935ea94c1eaf15a05253df8930ea8d02774ef8a056ab"
+      },
+      {
+        "file": "tests/scheduler.test.js",
+        "sha256": "c3fde7656df78775a9489b744cd764eecfe53fa0eac6d1576aa1582b486c4f1d"
+      },
+      {
+        "file": "tests/router.test.js",
+        "sha256": "a618e7287e52d948f9d4b78812102daaa2cebff2834aa722a8b8c2ea0b4072c1"
+      },
+      {
+        "file": "tests/helpers/fake-browser.js",
+        "sha256": "d7bf59868895d37c5a766670a5f79482034c0ef6ab5a4f36a12158f59724c1d8"
+      },
+      {
+        "file": "tests/browser/routing-scheduler.js",
+        "sha256": "4e4a3fa210a52dfd8fa2b0feb1713cd48a706869ac0ab69d3cff3395a284ac5d"
+      },
+      {
+        "file": "examples/routes/main.js",
+        "sha256": "1d47c6626296d7d575299142c8b514b8ddeb5bd1550fdb1a62abfbee4e0ed292"
+      },
+      {
+        "file": "examples/routes/index.html",
+        "sha256": "6077d45245e8b3e7194687c2c95b8bef2515072655f9ec02470797644d520aff"
+      },
+      {
+        "file": "src/runtime/persistence/codec.js",
+        "sha256": "15a2c2cc85e14cf94d245d076ebf08af738c293564ac241c9c1ca11ab7e23e3f"
+      },
+      {
+        "file": "src/runtime/persistence/locations.js",
+        "sha256": "9a1ecda61ab8c06958e6b7f16aadb8fef8964b2d33cd5de7dbe00dd7408e9dfa"
+      },
+      {
+        "file": "tests/persistence-codec.test.js",
+        "sha256": "bd34bb00bce0ccb1b05228f63fef5b01767f47fd19498a04c6662ecfec2ee76b"
+      },
+      {
+        "file": "tests/persistence.test.js",
+        "sha256": "b3ebedd52c7d3b807cec75ddaf1595fe02425fcdd31d53ac4fa631e7411795f3"
+      },
+      {
+        "file": "tests/browser/persistence.js",
+        "sha256": "cb4c9856ca55d7923c50697d398daa6742106e9b86aefc0bbcf659037fffae24"
+      },
+      {
+        "file": "examples/persistence/main.js",
+        "sha256": "5789aff40d4a4d16395b84c818cd9846c93574276996e7fa8adcbfc66ba1aab9"
+      },
+      {
+        "file": "examples/persistence/index.html",
+        "sha256": "0d376c17bf325a635adf373015fccc3e8518a9c2837b5cff8b57207ee0dd7f42"
+      },
+      {
+        "file": "src/runtime/inspector/instrumentation.js",
+        "sha256": "3662d82eff167ce2651e4fce52e2697664e0055049a5841b7ddd30ac23235190"
+      },
+      {
+        "file": "src/runtime/inspector/panel.js",
+        "sha256": "cf935bd9640b9ae29659b8bfb5939452579f7ea021c033a0e158c8678f2c0cb8"
+      },
+      {
+        "file": "tests/inspector.test.js",
+        "sha256": "2275eafd13f6f07684be4cab912b94fd2b5d376c2d31ffb599dd418ae132243b"
+      },
+      {
+        "file": "tests/browser/inspector.js",
+        "sha256": "c1685b5e067473804b826dfb2f9a1df4a22adb6d427c3f8bd39e2ed1cf6922ba"
+      },
+      {
+        "file": "examples/inspector/main.js",
+        "sha256": "32199a26e79e8a73a785f75c8d5a271ad9b44187b1b7676872104fff15dc1562"
+      },
+      {
+        "file": "examples/inspector/index.html",
+        "sha256": "8d9969bd6fd613c6d5d1984e8e6279e97877372fa23be5a3e66e80a88d409c71"
+      },
+      {
+        "file": "benchmarks/runtime/workloads.js",
+        "sha256": "5dda9f2e436731afee1efed38297b1bdc6af4ac6fef34976aed2827741f2ac96"
+      },
+      {
+        "file": "benchmarks/runtime/browser.js",
+        "sha256": "ab1747b7bcae150ec24710a5dc57dcaf8fb06935aa743c30909568d5a6dc96cb"
+      },
+      {
+        "file": "benchmarks/runtime/index.html",
+        "sha256": "054dee61d3af66059ddd01fb772fd188ac8d5ebd2c039226025828fef30b290e"
+      },
+      {
+        "file": "benchmarks/runtime/workloads.test.js",
+        "sha256": "3853fe0f676f348bf3bdf1ee757bcad5a100578e9fde4cc94875833296e74b8d"
+      },
+      {
+        "file": "scripts/check-auditor-browser.js",
+        "sha256": "2512e8eb1a2fb4be892e368bf7660e64774bddd04f152c67ddcd86259efb8317"
+      },
+      {
+        "file": "examples/auditor/main.js",
+        "sha256": "22b0bfbbadf56509cd443ca26377c1316088347cc2a684af6f1420e1f6d7dd92"
+      },
+      {
+        "file": "examples/auditor/index.html",
+        "sha256": "2118698a6224944619b712593e65f82e301adec694630282d72ab3895884a514"
+      },
+      {
+        "file": "tests/public-contract.test.js",
+        "sha256": "d3db230f939bc58dfe5c076d613499a83c9d465f656ea08f0d8614e1272965c9"
+      },
+      {
+        "file": "src/runtime/determinism/controls.js",
+        "sha256": "c5e7135379702f941d59ad4a9458766aa1400f72e0f7c63faad2a282340a6822"
+      },
+      {
+        "file": "src/runtime/serialization/graph.js",
+        "sha256": "f71dc694079448591590fef308e25d839e7bfa70b10aa382dfb64802beae3782"
+      },
+      {
+        "file": "src/runtime/serialization/checkpoint.js",
+        "sha256": "a3ad72b514dd88aff09e25a748ede99161b3feebdf46272bf51ce805bd6b71ed"
+      },
+      {
+        "file": "src/runtime/serialization/sha256.js",
+        "sha256": "33ebba2604709a7ddfb0dd5e772667314defdd6292fbb82ec343f841eeb01e26"
+      },
+      {
+        "file": "tests/deterministic-services.test.js",
+        "sha256": "4925e86b41bcfaec54102cbec74a8c52235924db237ae38aa0067bf6e4499988"
+      },
+      {
+        "file": "tests/checkpoint.test.js",
+        "sha256": "0387028c91e500366aa7040fd7c3ed7acb5902d69c1333a6c840a9c43d512a0d"
+      },
+      {
+        "file": "tests/browser/determinism.js",
+        "sha256": "4a5bea157ba0c99f0bc6a74a41d0699e6765eccdac988f9ea78e7344d2e6c218"
+      },
+      {
+        "file": "examples/determinism/main.js",
+        "sha256": "1eca57e636a1126f057139efa63a8164bbf368a92d13ecb6361a1d036be239a4"
+      },
+      {
+        "file": "examples/determinism/index.html",
+        "sha256": "631fda37a93c53f85938204fea88d4adde1f0c6849ec1012732f97b6acbabe16"
+      },
+      {
+        "file": "src/runtime/determinism/ticks.js",
+        "sha256": "977f4c592b4e3fb9c91722a106f518ef1ecb8fa2b925483d45543e689144cb5f"
+      },
+      {
+        "file": "src/runtime/inputs/ownership.js",
+        "sha256": "4ffaef16d8dfa82a02c7310ef5ccb16c0530de17c71095fe1fae46241fc0cd0d"
+      },
+      {
+        "file": "src/runtime/inputs/adapters.js",
+        "sha256": "57350f5c10d75aca432302e831f2d6efd4e791964993aec35e85fe819dc728bc"
+      },
+      {
+        "file": "tests/fixed-ticks.test.js",
+        "sha256": "64e93fd6d694f0771cdae86e9d9f663ebd01ad5a5c4142ab480375966a21e8d8"
+      },
+      {
+        "file": "tests/external-inputs.test.js",
+        "sha256": "239c9a44ea94480f65abef5fc8e3502c32357effdb68f72266bf8b6eb690db5a"
+      },
+      {
+        "file": "tests/browser/ticks-inputs.js",
+        "sha256": "7a0987ee5ec1c1e1a04407e0168dd07467237ed9a4d8cea10617d5f07a52376f"
+      },
+      {
+        "file": "examples/ticks/main.js",
+        "sha256": "4e7fea363bf091634c2b56f353acfacbfc513789382fa9d649186ca73a5425a2"
+      },
+      {
+        "file": "examples/ticks/index.html",
+        "sha256": "659833057d242b68d1b9a182ac6245cac2bf50d203ff41cafdeae4424783a8fa"
+      },
+      {
+        "file": "examples/ticks/sample.json",
+        "sha256": "66364b9ad31c7c224a4a7efdf0bdcd82a21c755783c66f81cf0c05b5d29f9438"
+      },
+      {
+        "file": "src/runtime/inputs/boundary.js",
+        "sha256": "71ad9eeab466b0b732a058b994d12ef2650fef8ae1ae4280b963b728f323bf80"
+      },
+      {
+        "file": "src/runtime/determinism/interpolation.js",
+        "sha256": "3d7e724a0f1fd81a9f91853385c25f809e488da0e88d12951b2c83162eb85a78"
+      },
+      {
+        "file": "tests/semantic-inputs.test.js",
+        "sha256": "3a6c4fc77589e99e60935e8276f70db63d767e7807e38f1b979ebe1d5e022210"
+      },
+      {
+        "file": "tests/interpolation.test.js",
+        "sha256": "02b13db1f55ec5c02d502893fa6bfaf38aa745a9a2779a27174a278ee72a275c"
+      },
+      {
+        "file": "tests/browser/semantic-interpolation.js",
+        "sha256": "6eeaefcf9cdb9e3298794b921cfd3fd2a0b4c7fc3ffb932712ff0d11220febfc"
+      },
+      {
+        "file": "examples/interpolation/main.js",
+        "sha256": "0be2bab549cc888d9a67ef86bed3cc099e90be234999a9888323d45a78836565"
+      },
+      {
+        "file": "examples/interpolation/index.html",
+        "sha256": "91a5fecb0f76b5383055eb224aef5b5de748c122d9545d3717066f04e5bbc396"
+      },
+      {
+        "file": "src/runtime/recording/format.js",
+        "sha256": "f3154bff03e2215643939ac0e2e007192f885d9f12925d5343d92fc50cb6e0a6"
+      },
+      {
+        "file": "src/runtime/recording/recorder.js",
+        "sha256": "e1ff46e034189ae1aa2e553e9aa1439a7683a712be0d8b40ab6bde2b7d53a0fc"
+      },
+      {
+        "file": "tests/recording.test.js",
+        "sha256": "7d368c63e1412b0e675a34ed5295c307bc5be6de045c4f4dce592ee54b913d40"
+      },
+      {
+        "file": "tests/browser/recording.js",
+        "sha256": "12735ad07b156a541e4da8b0dabe0470f1027a557489ee5b280e2fbb21c9d3b6"
+      },
+      {
+        "file": "tests/browser/replay.js",
+        "sha256": "5880494c2437b0c4e4817a9f6bc71f1ba9b12fceca0f65488a91c0932838c4e5"
+      },
+      {
+        "file": "tests/replay.test.js",
+        "sha256": "e821a60a004fafb0a7abd8a9573d57dd513e40ccbb57ff6c7f30e8347c99f74b"
+      },
+      {
+        "file": "src/runtime/recording/replay.js",
+        "sha256": "49ab7569003f5e9cd10a451d48e567ecc8f4e88efab083a8c71f02bbc23cab50"
+      },
+      {
+        "file": "src/runtime/history/controller.js",
+        "sha256": "660fb44d680d052903a6a2544e0425a06d200d4ebe8b47c12e431f9be8c8ea67"
+      },
+      {
+        "file": "tests/history.test.js",
+        "sha256": "15d026b3bcefd476be7df79846c70d74ad823c8642a89b042431031e6f0b7644"
+      },
+      {
+        "file": "tests/browser/history.js",
+        "sha256": "3ebbcceb2b4fd742c4eb524faba473aa6a75f2b40c084b4c2c631cb2d799a54c"
+      },
+      {
+        "file": "examples/history/main.js",
+        "sha256": "dff15d6853f8b22f56d59f247114e60386f54cf04b88134bdaf3c72df53337d9"
+      },
+      {
+        "file": "examples/history/index.html",
+        "sha256": "c2e9eef94675a71159f1220ad1df4ef3218a9d15770d5219004877b08f880b09"
+      },
+      {
+        "file": "examples/recording/main.js",
+        "sha256": "f88c6d4ed76289cc547bd602609b3a7e9887e67df96ad7a279ce333efe61c15f"
+      },
+      {
+        "file": "examples/recording/index.html",
+        "sha256": "e5633bf6c17502ec4f0203c37ce011b1fd07f070b3f0b3e430c85e5d52975c18"
+      }
+    ],
+    "example": {
+      "mounted": true,
+      "disposed": "disposed",
+      "removedOwnedText": true,
+      "report": {
+        "message": "Public application lifecycle is running.",
+        "initializedThroughAction": true,
+        "framework": "mini-framework",
+        "version": "0.1.0",
+        "milestone": "D.3–D.4 - Bounded Diagnostics and Development Inspector",
+        "publicEntry": "/src/index.js",
+        "capabilities": [
+          "Application lifecycle: owned initial state, schema registration, text mount/dispose (implemented A.1)",
+          "Copy-on-write transactions, rollback, stable identity and growth guards (implemented A.2)",
+          "Named actions, owned validated payloads and bounded FIFO dispatch (implemented A.3)",
+          "STATE-3: Lazy computed caching, chained dependencies and cycle detection (implemented A.5)",
+          "DOM-1: Elements, native form properties, conditional and keyed scopes (implemented A.6/A.8)",
+          "DOM-2: Exact frame-batched DOM bindings and explicit flush (implemented A.6/A.7)",
+          "STATE-1: Property-level observers, dynamic dependency tracking and shared state across routes (implemented A.4/B.6)",
+          "ACTION-1: Synchronous transactional named actions (implemented A.3; reactive observers implemented A.4)",
+          "ROUTE-1: History/hash routing, reactive location, native links and shared state (implemented B.5/B.6)",
+          "SCHED-2: Immediate/frame/normal/idle work with bounded cooperative turns (implemented B.4)",
+          "PERSIST-1: Explicit memory/session/local/URL fields, guarded hydration and post-commit writes (implemented B.7/B.8)",
+          "EVENT-1: Scoped native events, options and compatible zero-argument clicks (implemented B.1)",
+          "EVENT-2: Semantic keyboard/text inputs and composition-safe bindings (implemented B.2/B.3; OS/mobile/cross-browser qualification remains open)",
+          "Phase A: Public click/action/binding/list/cleanup acceptance verified (A.10)",
+          "Public declarations, root documentation and routed form/list walkthrough (B.9–B.11; browser qualification remains limited)",
+          "C.1/C.2: Versioned checkpoints, SHA-256 comparison, manual logical clock and transactional seeded randomness",
+          "TIME-1: Fixed simulation ticks, ordered inputs, pause/hidden policy and bounded catch-up (implemented C.3)",
+          "INPUT-1: Scoped serializable measurements, storage, timer and async effect results (implemented C.4; bounded recording C.7/C.8; isolated replay C.9/C.10)",
+          "C.5: Owned semantic key/text/navigation/location/hydration packets and execution observation",
+          "C.6: Optional display interpolation from frozen tick states; authoritative checkpoints unchanged",
+          "RECORD-1: Ordered root/action/input traces, explicit versioned export/import and bounded baseline/keyframe retention (implemented C.7/C.8)",
+          "INSPECT-1: Optional bounded transition diagnostics and declarative keyboard-accessible inspector (implemented D.3/D.4)",
+          "HISTORY-1: Retained root seeking, declared reversible groups, undo/redo and explicit live branching (implemented D.1/D.2)",
+          "REPLAY-1: Isolated root replay, first divergence and live-source suppression (implemented C.9/C.10; ambient globals remain application responsibility)"
+        ]
+      }
+    },
+    "tests": {
+      "passed": 149,
+      "results": [
+        {
+          "name": "default mount resolves #app only at mount time and preserves host children",
+          "passed": true
+        },
+        {
+          "name": "missing default target fails before view invocation and retries when #app appears",
+          "passed": true
+        },
+        {
+          "name": "explicit invalid/custom targets never silently use available #app",
+          "passed": true
+        },
+        {
+          "name": "default mount preserves exclusive ownership and lifecycle errors without a target",
+          "passed": true
+        },
+        {
+          "name": "public browser-native module exports current lifecycle metadata",
+          "passed": true
+        },
+        {
+          "name": "lazy create, explicit mount, terminal/idempotent dispose",
+          "passed": true
+        },
+        {
+          "name": "configured target mounts automatically with immutable context",
+          "passed": true
+        },
+        {
+          "name": "owned initial state is deep read-only without freezing caller data",
+          "passed": true
+        },
+        {
+          "name": "aliases, holes and null prototypes preserve meaning in native JS",
+          "passed": true
+        },
+        {
+          "name": "dynamic text cannot inject HTML",
+          "passed": true
+        },
+        {
+          "name": "host children, native focus and selection survive mount/dispose",
+          "passed": true
+        },
+        {
+          "name": "target claim is exclusive and released after disposal",
+          "passed": true
+        },
+        {
+          "name": "invalid DOM-like targets/documents/shadow roots reject",
+          "passed": true
+        },
+        {
+          "name": "same app cannot double-mount or move to another target",
+          "passed": true
+        },
+        {
+          "name": "failed view unwinds its scope and permits retry on the same target",
+          "passed": true
+        },
+        {
+          "name": "cleanup is reverse-order and repeated disposal does not rerun it",
+          "passed": true
+        },
+        {
+          "name": "cleanup errors do not block later cleanup/DOM removal/claim release",
+          "passed": true
+        },
+        {
+          "name": "owned node removal follows a moved node but does not remove unrelated nodes",
+          "passed": true
+        },
+        {
+          "name": "registered action wrappers execute synchronous commits and names are owned",
+          "passed": true
+        },
+        {
+          "name": "schema shared by apps does not share stores or disposal",
+          "passed": true
+        },
+        {
+          "name": "public action rollback preserves committed snapshots, text, native focus and selection",
+          "passed": true
+        },
+        {
+          "name": "public payload admission copies aliases and sparse arrays without invoking unsupported getters",
+          "passed": true
+        },
+        {
+          "name": "public FIFO dispatch commits parent before children and runs grandchildren after siblings",
+          "passed": true
+        },
+        {
+          "name": "failed public children discard descendants, continue siblings and report after draining",
+          "passed": true
+        },
+        {
+          "name": "public illegal async actions reject atomically and revoke post-await mutation",
+          "passed": true
+        },
+        {
+          "name": "public self-dispatch has a batch bound and recovers for a later call",
+          "passed": true
+        },
+        {
+          "name": "view mutation fails before publishing text",
+          "passed": true
+        },
+        {
+          "name": "Promise-returning views reject with cleanup and no unhandled native rejection",
+          "passed": true
+        },
+        {
+          "name": "DOM state and unsupported Array prototypes reject",
+          "passed": true
+        },
+        {
+          "name": "iframe DOM targets work while foreign-realm state is not normalized",
+          "passed": true
+        },
+        {
+          "name": "detached DOM targets can mount and dispose without a connected page",
+          "passed": true
+        },
+        {
+          "name": "A.2 transactions publish atomically and throwing bodies roll back",
+          "passed": true
+        },
+        {
+          "name": "A.2 aliases, moved item identity and untouched branches survive native array operations",
+          "passed": true
+        },
+        {
+          "name": "A.2 committed metadata is exact and freezes supported data",
+          "passed": true
+        },
+        {
+          "name": "A.2 successful no-op advances a version and native revocation also blocks reflection",
+          "passed": true
+        },
+        {
+          "name": "A.2 array and depth growth limits reject without partial publication",
+          "passed": true
+        },
+        {
+          "name": "A.2 illegal native async work is rejected and its late draft mutation is observed",
+          "passed": true
+        },
+        {
+          "name": "100 cycles return owned nodes, cleanup counts and target claims to baseline",
+          "passed": true
+        },
+        {
+          "name": "A.4 browser: aliases and independent nested fields invalidate exactly",
+          "passed": true
+        },
+        {
+          "name": "A.4 browser: presence/key reads and sparse array reflection follow native behavior",
+          "passed": true
+        },
+        {
+          "name": "A.4 browser: dynamic branch reads replace stale dependencies",
+          "passed": true
+        },
+        {
+          "name": "A.4 browser: captured items retain identity across reorder and reject after detach",
+          "passed": true
+        },
+        {
+          "name": "A.5 browser: lazy caches and diamonds recompute once when observed",
+          "passed": true
+        },
+        {
+          "name": "A.5 browser: cached object facades preserve downstream COW reads",
+          "passed": true
+        },
+        {
+          "name": "A.5 browser: indirect cycles report the chain and can recover",
+          "passed": true
+        },
+        {
+          "name": "A.4/A.5 browser: rollback and no-op actions do not dirty dependencies or alter focus/text",
+          "passed": true
+        },
+        {
+          "name": "A.4/A.5 browser: failed mount and terminal app disposal release reactive scopes",
+          "passed": true
+        },
+        {
+          "name": "A.4/A.5 browser: async computations reject without native unhandled rejections",
+          "passed": true
+        },
+        {
+          "name": "A.9 native clicks invoke direct action wrappers once and write only dependent text",
+          "passed": true
+        },
+        {
+          "name": "A.9 bubbling handlers preserve native link/form defaults and disabled controls",
+          "passed": true
+        },
+        {
+          "name": "A.9 stale removed/disposing handlers cannot run and native keyed handlers follow current items",
+          "passed": true
+        },
+        {
+          "name": "A.9 native action failure reports once, rolls back and does not change bound DOM",
+          "passed": true
+        },
+        {
+          "name": "A.9 repeated native app/conditional cycles return all resource counts to baseline",
+          "passed": true
+        },
+        {
+          "name": "A.9 failed native mounts leave no handlers/listeners and can retry",
+          "passed": true
+        },
+        {
+          "name": "A.8 keyed permutations preserve focused inputs, selection and node identity without blur",
+          "passed": true
+        },
+        {
+          "name": "A.8 native same-key replacement keeps DOM and retargets bindings/positions",
+          "passed": true
+        },
+        {
+          "name": "A.8 non-key edits leave key reads and unrelated native text writes untouched",
+          "passed": true
+        },
+        {
+          "name": "A.8 removed scopes skip queued reads and clean native DOM/resources",
+          "passed": true
+        },
+        {
+          "name": "A.8 duplicate key render failures preserve prior native list and recover",
+          "passed": true
+        },
+        {
+          "name": "A.6 public form/conditional bindings preserve native focus, labels, defaults and unrelated node identity",
+          "passed": true
+        },
+        {
+          "name": "A.6 native attributes, class/style maps and text escape safely through public exports",
+          "passed": true
+        },
+        {
+          "name": "A.6 conditional branch disposal removes resources and rejects stale scoped registration",
+          "passed": true
+        },
+        {
+          "name": "A.6 DOM computations forbid state mutation/dispatch and clean failed native mounts",
+          "passed": true
+        },
+        {
+          "name": "A.6 native inline handlers, active URLs, unsafe tags and file-value assignments reject",
+          "passed": true
+        },
+        {
+          "name": "A.7 native frame burst writes latest text once and preserves unrelated control focus/selection",
+          "passed": true
+        },
+        {
+          "name": "A.7 native explicit flush cancels its scheduled duplicate write",
+          "passed": true
+        },
+        {
+          "name": "A.7 native CSS normalization and equal form values avoid redundant setters",
+          "passed": true
+        },
+        {
+          "name": "A.7 native disposal and conditional removal cancel queued descendant reads/writes",
+          "passed": true
+        },
+        {
+          "name": "A.7 native failed render leaves committed state intact and allows explicit recovery",
+          "passed": true
+        },
+        {
+          "name": "A.10 native click commits one version, evaluates one binding and mutates exactly its text",
+          "passed": true
+        },
+        {
+          "name": "A.10 native throwing action publishes no version, evaluations, setters or mutations",
+          "passed": true
+        },
+        {
+          "name": "A.10 native nested/item updates skip independent bindings and list structure",
+          "passed": true
+        },
+        {
+          "name": "A.10 native keyed reorder preserves focus/selection and add/remove restores resources",
+          "passed": true
+        },
+        {
+          "name": "A.10 native conditional removal cancels descendant reads and handler ownership",
+          "passed": true
+        },
+        {
+          "name": "A.10 native click burst writes latest once and disposal cancels queued work",
+          "passed": true
+        },
+        {
+          "name": "B.1 native capture, delegated targets, once and propagation cancellation",
+          "passed": true
+        },
+        {
+          "name": "B.1 nonbubbling scroll is scoped; native submit is canceled only on request",
+          "passed": true
+        },
+        {
+          "name": "B.2 native KeyboardEvent normalization handles held keys, repeat, releases, focus and window blur",
+          "passed": true
+        },
+        {
+          "name": "B.3 native InputEvent snapshots preserve paste values, selection, deletion and textarea semantics",
+          "passed": true
+        },
+        {
+          "name": "B.3 composition defers writes across real render frames and reconciles latest committed acceptance",
+          "passed": true
+        },
+        {
+          "name": "B.3 active selection survives differing bound values and composition protects controls without callbacks",
+          "passed": true
+        },
+        {
+          "name": "B.3 static initial values do not dispatch spurious text changes and canceled composition reconciles once",
+          "passed": true
+        },
+        {
+          "name": "B.1–B.3 removed scopes disable direct input/scroll listeners, root delegates and global resets",
+          "passed": true
+        },
+        {
+          "name": "B.4 native task queue runs FIFO, lets timers progress and writes visuals before frame callbacks",
+          "passed": true
+        },
+        {
+          "name": "B.4 actual idle host runs a callback after normal work while cancellation removes its sibling",
+          "passed": true
+        },
+        {
+          "name": "B.4 disposed apps cancel actual timers, idle and animation-frame callbacks",
+          "passed": true
+        },
+        {
+          "name": "B.6 native History back/forward retains shared state and the persistent shell",
+          "passed": true
+        },
+        {
+          "name": "B.6 query changes retain native input/focus/selection; route changes release scoped work and handlers",
+          "passed": true
+        },
+        {
+          "name": "B.6 action rollback keeps actual browser URL/history and committed state unchanged",
+          "passed": true
+        },
+        {
+          "name": "B.6 native link default cancellation/modifiers and route ownership preserve browser semantics",
+          "passed": true
+        },
+        {
+          "name": "B.6 actual hash traversal deduplicates popstate/hashchange and preserves document query",
+          "passed": true
+        },
+        {
+          "name": "B.8 real Storage restores before first view, retains only selected fields and deduplicates writes",
+          "passed": true
+        },
+        {
+          "name": "B.8 native History restores URL fields once with synchronized route/state and no feedback writes",
+          "passed": true
+        },
+        {
+          "name": "B.8 invalid external wire falls back before first view and explicit flush reports recoverable persistence errors",
+          "passed": true
+        },
+        {
+          "name": "C.1 checkpoint graph/control continuation and SHA-256 match native browser crypto",
+          "passed": true
+        },
+        {
+          "name": "C.2 browser actions roll back draws and revoke leaked services",
+          "passed": true
+        },
+        {
+          "name": "C.1/C.2 manual inputs and restored draws match with different render-frame boundaries",
+          "passed": true
+        },
+        {
+          "name": "C.3 fixed tick states and restored continuation match with different native render boundaries",
+          "passed": true
+        },
+        {
+          "name": "C.3 native frame driver advances logical ticks and pause cancels further sampling",
+          "passed": true
+        },
+        {
+          "name": "C.4 native viewport/layout/scroll/storage and normalized network values enter owned inputs",
+          "passed": true
+        },
+        {
+          "name": "C.4 native timer and removed view scopes abort/suppress effects and queued inputs",
+          "passed": true
+        },
+        {
+          "name": "C.5 native semantic keyboard/text packets reproduce values without browser Events",
+          "passed": true
+        },
+        {
+          "name": "C.5 native navigation produces root/derived packets while shared state stays committed",
+          "passed": true
+        },
+        {
+          "name": "C.6 native fractional bindings differ while authoritative state/hash/text/forms stay identical",
+          "passed": true
+        },
+        {
+          "name": "C.6 interpolation callbacks are immutable and cannot dispatch during native rendering",
+          "passed": true
+        },
+        {
+          "name": "C.7 native semantic text records owned execution traces and frozen versioned continuation",
+          "passed": true
+        },
+        {
+          "name": "C.7 browser tick recording preserves nested failure/child ownership and authoritative state versions",
+          "passed": true
+        },
+        {
+          "name": "C.8 browser retention advances whole keyframe baselines and session limits remain visible",
+          "passed": true
+        },
+        {
+          "name": "C.7 browser recording validation rejects incompatible input without changing History or live state",
+          "passed": true
+        },
+        {
+          "name": "C.9 native key/text/paste/composition packets replay in a separate mounted app with native handlers inert",
+          "passed": true
+        },
+        {
+          "name": "C.9 virtual routing can coexist with a live router without History writes or native route listeners",
+          "passed": true
+        },
+        {
+          "name": "C.9 recorded measured/async results replay without readers, effects, timers or current browser values",
+          "passed": true
+        },
+        {
+          "name": "C.10 fixed tick hashes survive varied render schedules and interpolation is display-only in replay",
+          "passed": true
+        },
+        {
+          "name": "C.9 first divergence preserves the inspectable root and stops before later work",
+          "passed": true
+        },
+        {
+          "name": "D.2 seeking retains the inspection app/keyed DOM/focus/selection and matches recorded checkpoints",
+          "passed": true
+        },
+        {
+          "name": "D.1 reversible roots enforce barriers and undo/redo cannot partially cross a disallowed batch",
+          "passed": true
+        },
+        {
+          "name": "D.2 history inspection leaves browser URL/storage untouched; branch mount restores the selected URL without hydration",
+          "passed": true
+        },
+        {
+          "name": "D.2 branching after undo preserves seeded fixed-clock continuation and starts fresh paused queues",
+          "passed": true
+        },
+        {
+          "name": "D.3 native frame diagnostics link coalesced causes to one exact text write and dependency target",
+          "passed": true
+        },
+        {
+          "name": "D.4 native inspector select/refresh/export keeps source state and displays included values",
+          "passed": true
+        },
+        {
+          "name": "D.3 native structural/property writes match instrumented setters and retain keyed focus",
+          "passed": true
+        },
+        {
+          "name": "D.4 inspector history buttons seek/undo/redo explicitly and clean up without taking source ownership",
+          "passed": true
+        },
+        {
+          "name": "root public-import example uses default mount and public disposal without DOM patching",
+          "passed": true
+        },
+        {
+          "name": "public declarative example renders native form, bound greeting and conditional disposal",
+          "passed": true
+        },
+        {
+          "name": "native Enter/Space activation dispatches public click actions",
+          "passed": true
+        },
+        {
+          "name": "public keyed/click example preserves identity, edits and selection; actions and disposal work",
+          "passed": true
+        },
+        {
+          "name": "public core example mounts from the root and runs counter, nested, conditional, keyed and disposal behavior",
+          "passed": true
+        },
+        {
+          "name": "B.2 trusted keyboard edits, repeat and release update public semantic inputs",
+          "passed": true
+        },
+        {
+          "name": "B.3 trusted replacement editing preserves Arabic/emoji and the native selection after rendering",
+          "passed": true
+        },
+        {
+          "name": "B.3 Chrome composition engine protects active text from external commits and accepts the latest native value",
+          "passed": true
+        },
+        {
+          "name": "B.1–B.3 public form, Ctrl+Enter shortcut, keyboard scrolling and disposal work without app-managed listeners",
+          "passed": true
+        },
+        {
+          "name": "B.4–B.6 public routes example supports trusted Enter links, shared state, query focus, back/forward, post-commit forms, rollback and scheduled work",
+          "passed": true
+        },
+        {
+          "name": "B.6 root server supports direct route URLs and reload while fresh memory state resets",
+          "passed": true
+        },
+        {
+          "name": "B.8 public state-location example restores real local/session/URL fields after reload, resets memory, accepts native text, rolls back and follows back history",
+          "passed": true
+        },
+        {
+          "name": "B.11 auditor: README app creates nested elements, attributes and two keyed rows",
+          "passed": true
+        },
+        {
+          "name": "B.11 auditor: native required-field validation prevents an empty submit",
+          "passed": true
+        },
+        {
+          "name": "B.11 auditor: semantic Escape updates shared state without replacing the focused field",
+          "passed": true
+        },
+        {
+          "name": "B.11 auditor: trusted Unicode editing and native Enter submit commit shared state before navigation",
+          "passed": true
+        },
+        {
+          "name": "B.11 auditor: click toggles one item; reorder retains its node and keyboard focus",
+          "passed": true
+        },
+        {
+          "name": "B.11 auditor: native scroll reads outside an action and dispatches a scalar input",
+          "passed": true
+        },
+        {
+          "name": "B.11 auditor: query changes retain editing focus; browser back/forward retain shared state",
+          "passed": true
+        },
+        {
+          "name": "B.11 auditor: reload restores local board/session draft, resets memory, and disposal releases resources",
+          "passed": true
+        },
+        {
+          "name": "C.1/C.2 public example accepts native Enter samples, rolls back draws, advances manual time and compares a restored continuation",
+          "passed": true
+        },
+        {
+          "name": "C.3/C.4 public example advances ticks and queues viewport/local network results",
+          "passed": true
+        },
+        {
+          "name": "C.5/C.6 public example accepts trusted native Unicode editing at a tick and renders paused committed values",
+          "passed": true
+        },
+        {
+          "name": "C.7–C.10 public example exports/validates bounded histories and replays the limited session end",
+          "passed": true
+        },
+        {
+          "name": "D.1/D.2 public history example seeks/undoes/redoes and branches deterministic state",
+          "passed": true
+        },
+        {
+          "name": "D.4 native Enter activates the public inspector; burst attribution, explicit full export and cleanup pass",
+          "passed": true
+        },
+        {
+          "name": "D.5 seven seeded benchmark fixtures match three-variant hashes, native writes/key identity and cleanup",
+          "passed": true
+        }
+      ],
+      "coreSlice": {
+        "counter": {
+          "beforeVersion": 1,
+          "afterVersion": 2,
+          "reads": {
+            "root.count": 1
+          },
+          "writes": {
+            "text:core-count": 1
+          },
+          "mutationTypes": [
+            "characterData"
+          ],
+          "unrelatedNodeRetained": true
+        },
+        "rollback": {
+          "version": 1,
+          "afterVersion": 1,
+          "snapshotRetained": true,
+          "nodesRetained": true,
+          "reads": {},
+          "writes": {},
+          "mutations": 0,
+          "errorReports": 1
+        },
+        "exactFields": {
+          "nested": {
+            "reads": {
+              "root.profileName": 1
+            },
+            "writes": {
+              "text:core-name": 1
+            }
+          },
+          "item": {
+            "reads": {
+              "root.row1.itemName": 1,
+              "root.row1.editValue": 1
+            },
+            "writes": {
+              "text:core-item-1": 1,
+              "value:core-input-1": 1
+            }
+          }
+        },
+        "keyed": {
+          "reorderReads": {
+            "root.items": 1,
+            "root.key": 2,
+            "root.row1.position": 1,
+            "root.row2.position": 1
+          },
+          "retainedNodes": true,
+          "retainedFocusAndSelection": true,
+          "blurEvents": 0,
+          "resourcesRestored": true,
+          "staleHandlerInert": true
+        },
+        "conditional": {
+          "removedBindingEvaluations": 0,
+          "removedTextWrites": 0,
+          "staleHandlerInert": true,
+          "freshScopeReadsLatestState": true
+        },
+        "burst": {
+          "commits": 3,
+          "reads": {
+            "root.count": 1
+          },
+          "writes": {
+            "text:core-count": 1
+          }
+        },
+        "disposal": {
+          "laterBindingReads": 0,
+          "laterBindingWrites": 0,
+          "resources": {
+            "diagnosticEntries": 0,
+            "diagnosticBytes": 0,
+            "diagnosticScratch": 0,
+            "observers": 0,
+            "computed": 0,
+            "cells": 0,
+            "subscriptions": 0,
+            "tickInputs": 0,
+            "tickFrames": 0,
+            "tickListeners": 0,
+            "externalEffects": 0,
+            "inputResources": 0,
+            "inputObservers": 0,
+            "replayTrace": 0,
+            "recordingRecords": 0,
+            "recordingBytes": 0,
+            "recordingScratch": 0,
+            "scheduledWork": 0,
+            "normalTasks": 0,
+            "idleTasks": 0,
+            "frameTasks": 0,
+            "persistenceTasks": 0,
+            "routeListeners": 0,
+            "scopes": 0,
+            "bindings": 0,
+            "ownedNodes": 0,
+            "queuedBindings": 0,
+            "frames": 0,
+            "handlers": 0,
+            "listeners": 0
+          }
+        }
+      }
+    },
+    "nativeInputs": {
+      "name": "日本",
+      "saves": 2,
+      "scrollTop": 72,
+      "events": [
+        {
+          "type": "input",
+          "trusted": true,
+          "inputType": "insertText",
+          "isComposing": false,
+          "value": "a"
+        },
+        {
+          "type": "input",
+          "trusted": true,
+          "inputType": "insertText",
+          "isComposing": false,
+          "value": "aa"
+        },
+        {
+          "type": "input",
+          "trusted": true,
+          "inputType": "insertText",
+          "isComposing": false,
+          "value": "مرحبا 😀"
+        },
+        {
+          "type": "compositionstart",
+          "trusted": true,
+          "inputType": null,
+          "isComposing": null,
+          "value": "مرحبا 😀"
+        },
+        {
+          "type": "compositionupdate",
+          "trusted": true,
+          "inputType": null,
+          "isComposing": null,
+          "value": "مرحبا 😀"
+        },
+        {
+          "type": "input",
+          "trusted": true,
+          "inputType": "insertCompositionText",
+          "isComposing": true,
+          "value": "に"
+        },
+        {
+          "type": "compositionupdate",
+          "trusted": true,
+          "inputType": null,
+          "isComposing": null,
+          "value": "に"
+        },
+        {
+          "type": "input",
+          "trusted": true,
+          "inputType": "insertCompositionText",
+          "isComposing": true,
+          "value": "日本"
+        },
+        {
+          "type": "compositionupdate",
+          "trusted": true,
+          "inputType": null,
+          "isComposing": null,
+          "value": "日本"
+        },
+        {
+          "type": "input",
+          "trusted": true,
+          "inputType": "insertCompositionText",
+          "isComposing": true,
+          "value": "日本"
+        },
+        {
+          "type": "compositionend",
+          "trusted": false,
+          "inputType": null,
+          "isComposing": null,
+          "value": "日本"
+        }
+      ],
+      "disposed": true
+    },
+    "limitations": "Chrome native events, trusted keyboard/Unicode editing and composition-engine automation (CDP final compositionend is untrusted); synthetic paste/composition fixtures. No OS IME, system clipboard paste, mobile or cross-browser qualification. History/hash routing and cooperative priorities covered; memory/session/local/URL hydration and writes covered; controlled manual time/draws, checkpoints and restored continuation covered; fixed ticks, scoped external measurements/timers/network and cancellation covered; semantic packet forwarding and display interpolation covered; ordered bounded recording/export/import covered; isolated replay, first divergence, live-source suppression and replay checkpoint/render fixtures covered; retained seek/undo/redo, stable inspection/focus and explicit live branching, bounded optional diagnostics and native inspector controls/exports covered. Resource counters are not a heap-leak proof."
+  },
+  "machine": {
+    "node": "v26.3.0",
+    "platform": "darwin",
+    "release": "24.6.0",
+    "arch": "arm64",
+    "cpu": "Apple M4"
+  },
+  "limitations": "Clean checkout of a temporary local candidate commit, not a published release or the source repository HEAD. Chrome desktop automation only; OS IME, system clipboard, mobile and cross-browser qualification remain open. All feature fixtures, declarations, README/root startup and benchmark correctness probes covered. Full timing/GC campaigns are separate linked artifacts; this audit makes no performance or heap-leak claim."
+}

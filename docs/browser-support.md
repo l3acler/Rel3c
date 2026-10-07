@@ -91,4 +91,6 @@ output, keyed identity and owned disposal. This is callback scripting evidence,
 not paint/input latency or a browser support matrix. Natural browser GC pauses and
 allocated bytes are unavailable; detached nodes may remain in CDP counts after
 owned cleanup. See the [technical report](reports/task-D.5-D.6-performance.md) and
-[commands](api/benchmarks.md). D.7 release review remains next.
+[commands](api/benchmarks.md). The [D.7 acceptance review](reports/task-D.7-acceptance-release.md)
+adds a local clean Git checkout and re-runs feature/startup/type/browser gates;
+its experimental release notes preserve all OS/mobile/cross-browser limits above.

@@ -8,6 +8,8 @@ The public API is experimental (`0.1.0`). The Phase B frontend walkthrough is
 qualified in desktop Chrome; OS IMEs, system clipboard paste, mobile and other
 browsers remain unverified. See [browser support](docs/browser-support.md) and the
 [public guide](DOCUMENTATION.md) for the exact contracts and limits.
+The [acceptance release notes](RELEASE_NOTES.md) list completed phases, compatibility
+and remaining qualification limits.
 
 ## Run from the root
 
@@ -394,13 +396,14 @@ for schema/runtime versions, supported data, import limits, errors and cleanup.
 | Reproducible workloads and technical report | D.5/D.6; measured costs, exact write/hash checks and explicit memory limits |
 
 [Compatibility and versioning](docs/adr/0015-public-frontend-compatibility.md)
-explain how the experimental frontend can evolve into Phase C without treating
+explain how the frontend and deterministic runtime coexist without treating
 persisted data as a recording format. The assignment's separate demonstration
 app is a later integration task; this walkthrough validates the framework API.
 
 ## Verification
 
-Node tests and the root smoke test need no dependencies:
+Node tests and the root smoke test need no npm dependencies. The checkout regression
+test uses installed Git; application startup needs neither Git nor an installation:
 
 ```sh
 npm test
@@ -434,6 +437,13 @@ The command removes only its own temporary folder and writes a report under
 `tests/results/`; failed checks exit nonzero. Neither command verifies OS IMEs or
 system clipboard paste. See [the Batch 4 report](docs/reports/task-B.9-B.11-auditor.md).
 
+For the final acceptance walkthrough, add `-- --checkout` (optionally combined
+with `--offline`). Git commits the copied candidate only in a temporary local
+repository and clones a clean checkout before the same checks. It records the
+local revision/tree and verifies tracked sources stay unchanged. The source
+repository and remotes are untouched. Only `--checkout` and `--offline` are
+accepted. See [D.7 evidence](docs/reports/task-D.7-acceptance-release.md).
+
 Benchmarks are separate from the acceptance suite:
 
 ```sh
@@ -453,7 +463,8 @@ separately. See the [public guide](DOCUMENTATION.md#reproducible-benchmarks),
 [methodology](benchmarks/runtime/README.md) and
 [measured report](docs/reports/task-D.5-D.6-performance.md). Architecture spike
 comparisons remain [separate](benchmarks/README.md). No universal speedup or leak
-guarantee is claimed; product acceptance/release review remains D.7.
+guarantee is claimed; [D.7](docs/reports/task-D.7-acceptance-release.md) records
+experimental product acceptance and remaining release limits.
 
 ## Folder map and tooling
 

@@ -1,12 +1,12 @@
 # Framework development plan
 
-**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C.1–C.10 are implemented and fixture-qualified. D.1–D.6 are implemented and verified. D.7 product acceptance/release review remains next.
+**Status:** Phase 0 and Phase A complete. B.1–B.11 frontend implementation and auditor verification complete; broad native-input/browser release qualification remains open. C.1–C.10 are implemented and fixture-qualified. D.1–D.7 are implemented/reviewed and fixture-qualified. The experimental framework implementation backlog is complete; broad stable qualification remains open.
 
 **Created:** 30 September 2026.
 
-**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.22, and [AGENTS.md](AGENTS.md).
+**Source:** [Framework_PRD.md](Framework_PRD.md), version 2.23, and [AGENTS.md](AGENTS.md).
 
-**Current milestone:** D.5/D.6 reproducible benchmarks and technical report complete. Next: D.7 product acceptance/release review. Broad native qualification remains open.
+**Current milestone:** D.7 acceptance/release review complete in the experimental fixture scope. Batch 12 committed as 809bce9; Batch 13 acceptance review is included in this commit; no push. Next work is broader native/browser qualification or the separately scoped assignment integration.
 
 ## 1. Purpose and scope
 
@@ -198,7 +198,7 @@ Deliver the tick runtime, controlled services, input adapters, optional interpol
 - [x] **D.4 — Build the development inspector.** Dependencies: D.2, D.3. Display transition selection, inputs, state changes, dependency-to-binding relationships, scheduling, resource counts, and performance. Show included recording values and explicit export controls. Acceptance: a developer can select a transition and explain its inputs and affected bindings; inspector cleanup works and its controls are keyboard accessible.
 - [x] **D.5 — Establish reproducible benchmark workloads.** Dependencies: D.3. Measure independent bindings, pre-frame bursts, keyed-list edits, moving elements, repeated mount/unmount, transaction churn, and replay throughput. Preserve equivalent-work reference baselines and deterministic workload seeds. Acceptance: scripts record environment, browser/version, machine, warmup, run count, workload source, raw samples, and checkpoint results.
 - [x] **D.6 — Measure and publish the technical report.** Dependencies: D.4, D.5. Report DOM writes, listeners, median/p95 frame scripting and update time, memory/GC observations, replay throughput, and hash correctness. Compare instrumented/uninstrumented runs where relevant. Choose numeric regression budgets only after measured baselines. Acceptance: every performance claim links to reproducible evidence; unavailable metrics, variance, strengths, and limitations are explicit.
-- [ ] **D.7 — Complete product acceptance and release review.** Dependencies: D.6. Re-run all feature gates and the clean-checkout walkthrough. Review PRD coverage, API/docs/declarations, migrations, dependency disclosure, browser/input support, and resource cleanup. Acceptance: all required features have passing evidence; release notes list completed phases and remaining limitations without presenting future work as shipped.
+- [x] **D.7 — Complete product acceptance and release review.** Dependencies: D.6. Re-run all feature gates and the clean-checkout walkthrough. Review PRD coverage, API/docs/declarations, migrations, dependency disclosure, browser/input support, and resource cleanup. Acceptance: all required features have passing evidence; release notes list completed phases and remaining limitations without presenting future work as shipped.
 
 ### Exit gate and artifacts
 
@@ -717,7 +717,7 @@ Remaining limitations / blocking dependency: A.4 next. Text views still render
 - [x] Implemented frontend capabilities are independent; development dependencies and limitations are disclosed (B.11).
 - [ ] Release notes distinguish implemented features from future extensions and make only evidenced performance claims.
 
-**Current batch:** Batch 11 committed as 0eb88ca at user request; no push. Batch 12 D.5/D.6 complete and uncommitted; no push. Next: D.7. Frontend/native browser qualification remains limited.
+**Current batch:** Batch 11 committed as 0eb88ca at user request; no push. Batch 12 committed as 809bce9; no push. Batch 13 D.7 acceptance/release review complete and included in this commit; no push. Frontend/native browser qualification remains limited.
 
 ### A.6/A.7 implementation batch — complete (3 October 2026)
 
@@ -1026,5 +1026,41 @@ benchmark correctness tests, positive TS/checked JS and 174 rejected independent
 negative lines, 149 Chrome checks, root startup/README reconstruction and empty
 runtime dependencies. All 190 candidate fingerprints match; Markdown targets and
 diff checks pass. See [report](docs/reports/task-D.5-D.6-performance.md) for full
-measurement/audit artifacts and limitations. Batch 12 remains uncommitted; no push.
+measurement/audit artifacts and limitations. Batch 12 committed as 809bce9 at user request; no push.
 Next: D.7 product acceptance/release review. Broad native/browser qualification is open.
+
+
+### D.7 product acceptance and release review — complete (7 October 2026)
+
+Owner: Codex. Baseline: Batch 12 commit 809bce9, committed at user request before
+this batch; no push. Mapped all 24 functional PRD IDs to public contracts, focused
+Node tests and native/integration gates. Reviewed architecture/syntax selection,
+declarations, compatibility/schema migrations, dependency/source ownership, package
+contents and cleanup. Root RELEASE_NOTES.md lists completed implementation phases
+and experimental/native-browser limits. Guide/README/PRD v2.23, current API references
+and ADR 0015 remove stale future-feature/heap-budget wording. No runtime APIs,
+semantics, declarations, package or data versions changed.
+
+Added optional `audit:frontend -- --checkout`: copied/reconstructed candidate is
+committed only in a temporary local repository and cloned into a clean actual Git
+checkout. Hooks/signing/global Git config are isolated; no source-repository index,
+branch, commit or remote is touched. Clone revision/tree and unchanged tracked
+sources are checked. One focused tooling regression test covers isolation, ignored
+installs, existing-repository refusal and tracked mutation detection. Git supports
+development auditing only; startup remains install/Git-free.
+
+Final checkout audit passes all eight commands: 661 Node checks (660 runtime plus
+one audit-tooling test), 292 spike and 24 benchmark correctness tests, positive
+TS/checked JS and 174 rejected independent negative lines, 149 Chrome checks,
+root startup/README reconstruction and empty runtime dependencies. All 195 final
+fingerprints match. Syntax quick smoke passes 40 browser correctness checks;
+packed consumer passes public package import/actions/seed/rollback/recording/replay/
+readonly/disposal, with all 40 source/declaration files matching. Local Markdown
+links and diff checks pass; measured runtime fingerprints remain unchanged.
+
+See [acceptance record](docs/reports/task-D.7-acceptance-release.md) for exact
+checkout revision/tree, artifacts, matrix, archive metrics and remaining limits.
+D.7 and the experimental implementation backlog are complete; Batch 13 is
+included in this commit at user request. No push. Next work is wider OS/browser/IME/system clipboard qualification or
+the separately scoped assignment integration. No stable release/publication,
+API freeze, heap/paint/latency guarantee or final product name is implied.

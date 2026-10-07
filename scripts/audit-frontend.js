@@ -1,4 +1,4 @@
-// Clean-candidate walkthrough. No signed-in browser, deployment, or Git mutation.
+// Clean-candidate walkthrough. No signed-in browser, deployment, or source-repository Git mutation.
 import assert from 'node:assert/strict';
 import { cp, readdir, readFile, writeFile, mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
@@ -7,11 +7,15 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import path from 'node:path';
+import { createAuditCheckout, assertAuditCheckoutUnchanged } from './audit-checkout.js';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
-assert.ok(args.every(arg => arg === '--offline'), 'Only --offline is supported.');
+assert.ok(args.every(arg => ['--offline', '--checkout'].includes(arg)), 'Only --offline and --checkout are supported.');
 const offline = args.includes('--offline');
-const temporary = await mkdtemp(path.join(os.tmpdir(), 'mini-framework-auditor-'));
+const checkoutMode = args.includes('--checkout');
+const workspace = await mkdtemp(path.join(os.tmpdir(), 'mini-framework-auditor-'));
+let temporary = path.join(workspace, 'candidate');
+await mkdir(temporary);
 const commands = [], checks = [], sourceFiles = [];
 const hash = value => createHash('sha256').update(value).digest('hex');
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
@@ -45,10 +49,11 @@ async function run(arguments_) {
     });
   });
 }
-let browser = null, passed = false, failure;
+let browser = null, checkout = null, passed = false, failure;
 try {
   for (const name of ['src', 'scripts', 'tests', 'examples', 'spikes', 'benchmarks', 'docs',
-    'package.json', 'package-lock.json', 'README.md', 'DOCUMENTATION.md', 'Framework_PRD.md', 'AGENTS.md']) {
+    'package.json', 'package-lock.json', 'README.md', 'DOCUMENTATION.md', 'Framework_PRD.md', 'AGENTS.md', '.gitignore',
+    'RELEASE_NOTES.md', 'DEVELOPMENT_PLAN.md']) {
     await cp(path.join(root, name), path.join(temporary, name), {
       recursive: true, filter: file => !excluded(file),
     });
@@ -71,8 +76,15 @@ try {
       sourceFiles.push({ file: path.relative(temporary, file), sha256: hash(await readFile(file)) });
     }
   }
-  for (const file of ['README.md', 'DOCUMENTATION.md', 'Framework_PRD.md', 'package.json', 'package-lock.json', 'docs/browser-support.md'])
+  for (const file of ['README.md', 'DOCUMENTATION.md', 'Framework_PRD.md', 'package.json', 'package-lock.json',
+    '.gitignore', 'RELEASE_NOTES.md', 'docs/browser-support.md', 'docs/adr/0015-public-frontend-compatibility.md'])
     sourceFiles.push({ file, sha256: hash(await readFile(path.join(temporary, file))) });
+  if (checkoutMode) {
+    const destination = path.join(workspace, 'checkout');
+    checkout = await createAuditCheckout(temporary, destination);
+    temporary = destination;
+    checks.push('Candidate committed only in a temporary local repository and cloned into a clean Git checkout; no source repository mutation or remote access.');
+  }
   // Startup and runtime verification precede installation: no hidden dependency.
   await run(['test']);
   await run(['run', 'test:spikes']);
@@ -114,19 +126,21 @@ try {
   assert.ok(browser.tests.results.every(item => item.passed));
   for (const entry of sourceFiles) assert.equal(hash(await readFile(path.join(temporary, entry.file))), entry.sha256,
     'Checks must not modify candidate sources: ' + entry.file);
+  if (checkout) { await assertAuditCheckoutUnchanged(temporary, checkout.revision); checkout.trackedSourcesUnchanged = true; }
   checks.push('All candidate sources retain their original hashes after setup and verification.');
   passed = true;
 } catch (error) {
   failure = { message: error.message }; console.error('[auditor] FAILED: ' + error.message);
   process.exitCode = 1;
 } finally {
-  await rm(temporary, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
+  await rm(workspace, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
   const directory = path.join(root, 'tests/results'); await mkdir(directory, { recursive: true });
   const file = path.join(directory, 'auditor-' + Date.now() + '-' + randomUUID().slice(0, 8) + '.json');
-  await writeFile(file, JSON.stringify({ kind: 'clean-candidate-frontend-auditor', task: 'D.5–D.6', formatVersion: 1,
-    recordedAt: new Date().toISOString(), passed, offline, checks, sourceFiles, commands, browser, failure,
+  await writeFile(file, JSON.stringify({ kind: 'clean-candidate-frontend-auditor', task: 'D.7', formatVersion: 1,
+    recordedAt: new Date().toISOString(), passed, offline, checkout, checks, sourceFiles, commands, browser, failure,
     machine: { node: process.version, platform: os.platform(), release: os.release(), arch: os.arch(), cpu: os.cpus()[0]?.model },
-    limitations: 'Temporary candidate copy, not a committed Git checkout. Chrome desktop automation only; OS IME, system clipboard, mobile and cross-browser qualification remain open. Controlled checkpoint/service continuation covered, fixed ticks/external inputs, semantic packets and display interpolation covered; ordered bounded recording, isolated replay, first divergence and live-source suppression, retained seeking/undo/redo and explicit branching, bounded optional diagnostics, inspector and explicit exports, seeded benchmark correctness/native-write/hash/cleanup probes covered. Full timing/GC campaigns are separate linked artifacts; this audit makes no performance or heap-leak claim.' }, null, 2) + '\n', { flag: 'wx' });
+    limitations: (checkout ? 'Clean checkout of a temporary local candidate commit, not a published release or the source repository HEAD. ' : 'Temporary candidate copy, not a committed Git checkout. ')
+      + 'Chrome desktop automation only; OS IME, system clipboard, mobile and cross-browser qualification remain open. All feature fixtures, declarations, README/root startup and benchmark correctness probes covered. Full timing/GC campaigns are separate linked artifacts; this audit makes no performance or heap-leak claim.' }, null, 2) + '\n', { flag: 'wx' });
   console.log('[auditor] RESULT ' + path.relative(root, file));
   if (passed) console.log('[auditor] CLEAN-CANDIDATE WALKTHROUGH PASSED.');
 }
