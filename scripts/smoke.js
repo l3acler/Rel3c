@@ -139,6 +139,11 @@ async function runSmoke() {
     assert.equal(unrelatedMissing.statusCode, 404, 'History fallback must remain scoped');
     const escapedFallback = await fetchUrl(`${base}/examples/routes/..%2fother-route`);
     assert.equal(escapedFallback.statusCode, 404, 'Decoded path traversal must not expand the fallback');
+    for (const file of ['index.html', 'main.js', 'game.js', 'view.js', 'styles.css']) {
+      const response = await fetchUrl(`${base}/examples/game-replay/${file}`);
+      assert.equal(response.statusCode, 200, 'Game replay asset must load: ' + file);
+      assert.ok(response.headers['content-type']?.includes(file.endsWith('.css') ? 'text/css' : file.endsWith('.html') ? 'text/html' : 'javascript'));
+    }
     console.log('[smoke]    Core/events/inputs/priorities/router modules and public-only examples OK');
 
     console.log('\n[smoke] ALL SMOKE CHECKS PASSED.');

@@ -2,5 +2,5 @@
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bounded recording and replay</title>
 <style>body{font:17px system-ui;max-width:56rem;margin:3rem auto;padding:0 1rem}button{font:inherit;margin:.3rem;padding:.5rem}textarea{width:100%;min-height:15rem}p{line-height:1.5}</style></head>
-<body><h1>Bounded recording and replay</h1><p>Start a recent-history or session recording, sample controlled state, then explicitly export and validate the captured prefix. Recent history evicts whole checkpoint segments; session capture stops visibly at its limit. Replay the exported prefix in a second view and compare its committed checkpoints.</p><div id="app"></div><script type="module" src="./main.js"></script></body>
+<body><h1>Bounded recording and replay</h1><p>Start a recent-history or session recording, sample controlled state, then export and validate it. Replay shows one recorded step every half-second. Pause to inspect the current state, or advance with Step once. Recent history drops old segments; session capture stops at its limit.</p><div id="app"></div><script type="module" src="./main.js"></script></body>
 </html>

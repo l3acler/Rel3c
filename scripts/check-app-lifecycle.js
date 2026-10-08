@@ -1,6 +1,8 @@
 import { withLocalBrowser } from './local-browser.js';
 import { checkAuditorBrowser } from './check-auditor-browser.js';
 import { checkTodoMVCBrowser } from './check-todomvc-browser.js';
+import { checkRecordingBrowser } from './check-recording-browser.js';
+import { checkGameReplayBrowser } from './check-game-replay-browser.js';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -280,28 +282,8 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
   })()`);
   if(!interpolationExample)throw Error('Public semantic/interpolation example failed');
   tests.results.push({name:'C.5/C.6 public example accepts trusted native Unicode editing at a tick and renders paused committed values',passed:true});tests.passed++;
-  const recordingPage = await open('examples/recording/');
-  await recordingPage.waitFor('document.getElementById("recent") !== null');
-  const recordingExample = await recordingPage.evaluate(`(async () => {
-    const module=await import('/examples/recording/main.js');const {app}=module;
-    const {readRecording}=await import('/src/index.js');
-    const {resourceCounts}=await import('/src/runtime/diagnostics.js');
-    document.getElementById('recent').click();
-    for(let i=0;i<25;i++)document.getElementById('sample').click();
-    document.getElementById('export').click();app.flush();
-    const recent=readRecording(document.getElementById('recording-export').value);
-    const evicted=recent.evictedRecords>0 && recent.end.sequence===25;
-    document.getElementById('session').click();
-    for(let i=0;i<25;i++)document.getElementById('sample').click();
-    document.getElementById('export').click();app.flush();
-    const session=readRecording(document.getElementById('recording-export').value);
-    const limited=session.status==='limit-reached' && session.reason==='action-limit' && session.records.length===20;
-    document.getElementById('replay').click();app.flush();
-    const replayed=module.replay.status.status==='complete'&&module.replay.app.snapshot()===session.end.snapshot;
-    app.dispose();return evicted && limited && replayed && Object.values(resourceCounts(app)).every(n=>n===0);
-  })()`);
-  if(!recordingExample)throw Error('Public bounded recording example failed');
-  tests.results.push({name:'C.7–C.10 public example exports/validates bounded histories and replays the limited session end',passed:true});tests.passed++;
+  await checkRecordingBrowser({ open }, tests);
+  await checkGameReplayBrowser({ open }, tests);
   const historyPage=await open('examples/history/');
   await historyPage.waitFor('document.getElementById("seek-end") !== null');
   const historyExample=await historyPage.evaluate(`(async()=>{
@@ -368,6 +350,9 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
     'tests/semantic-inputs.test.js', 'tests/interpolation.test.js', 'tests/browser/semantic-interpolation.js',
     'examples/interpolation/main.js', 'examples/interpolation/index.html');
   paths.push('src/runtime/recording/format.js', 'src/runtime/recording/recorder.js', 'tests/recording.test.js',
+    'scripts/check-recording-browser.js',
+    'scripts/check-game-replay-browser.js', 'examples/game-replay/game.js', 'examples/game-replay/main.js',
+    'examples/game-replay/view.js', 'examples/game-replay/index.html', 'examples/game-replay/styles.css', 'tests/game-replay.test.js',
     'tests/browser/recording.js', 'tests/browser/replay.js', 'tests/replay.test.js', 'src/runtime/recording/replay.js', 'src/runtime/history/controller.js', 'tests/history.test.js', 'tests/browser/history.js', 'examples/history/main.js', 'examples/history/index.html', 'examples/recording/main.js', 'examples/recording/index.html');
   const sourceFiles = await Promise.all(paths.map(async file => ({ file,
     sha256: createHash('sha256').update(await readFile(path.join(root, file))).digest('hex') })));

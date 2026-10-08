@@ -1475,9 +1475,50 @@ state replay guarantees. Matching hashes verify the recorded fixture, not code
 identity, authenticity, every ambient read, performance or universal browser support.
 
 The [recording example](examples/recording/README.md) lets you export and replay the
-captured prefix in a second view. See [replay API](docs/api/replay.md),
+captured prefix in a second view. Its replay button displays the baseline, then
+calls `replay.step()` once every 500 ms and flushes the replay view, giving the
+browser time to paint intermediate states. Pause/Resume controls pacing; Step once
+advances one complete root and pauses. Progress shows completed/total steps, and
+completion/divergence stops playback. Starting a new recording, re-exporting,
+restarting replay or disposing the example cancels its timer and releases the old
+replay. An empty log completes immediately; a recent log starts at its retained
+baseline. The delay controls presentation only, without changing recorded logical
+time or inputs. Playback UI uses example schema `recording-example/2`, so exports
+from the old version-1 example are incompatible; public APIs and wire versions
+are unchanged. See [replay API](docs/api/replay.md),
 [ADR 0020](docs/adr/0020-isolated-replay-divergence.md) and
 [C.9/C.10 qualification](docs/reports/task-C.9-C.10-replay-determinism.md).
+
+## Game replay example
+
+Run `npm run dev` and open [the game arena](examples/game-replay/README.md) at
+`http://localhost:3000/examples/game-replay/`. Start a match, hold WASD/arrows to
+move, Space to dash and E to emote. Three local simulated players collect coins,
+dash and send messages alongside you. On-screen movement/action buttons are also
+available. Pause live/Advance one tick support inspection. Stop & capture exports
+the executed match, or the demo stops when its 12-second world finishes.
+
+Replay match mounts a second arena and steps the recorded world at Slow/Normal/Fast
+speed. Pause/Resume and Step once expose intermediate positions, scores, coin
+spawns and messages, with verification at each execution root. Game state, seeded
+randomness and fixed 100,000-microsecond ticks are separate from the control UI
+and playback delays. The original game is not changed by replay. CSS movement
+transitions affect display only and respect reduced-motion preferences.
+
+The [example guide](examples/game-replay/README.md#how-it-works) includes copyable
+public-import recording, `enqueueAt` and `createReplay` code. Its action schema is
+`replay-arena/1`; one store contains all player IDs and world objects. Local bot
+decisions run in the same seeded tick action. This example does not implement a
+network/server synchronization protocol; real multiplayer must normalize/order
+accepted inputs and handle authority and late arrivals at the application boundary.
+
+Session capture is bounded to 600 charged action slots/8,000,000 accounted wire
+bytes, with a 20-slot keyframe interval. A limited export may stop before the live
+world; replay targets the captured end. Exported JSON is local and memory-only.
+Stopping drains already queued commands in one closing tick. Reset/unmount cancel
+native presentation timers and dispose the live/replay apps. The replay is stepped
+at whole roots, so a tick's nested work appears together. Native timer throttling
+can slow hidden-tab playback. Qualification remains desktop Chrome only.
 
 ## Retained history and branching
 

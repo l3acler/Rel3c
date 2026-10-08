@@ -49,6 +49,12 @@ See [implementation notes and reference differences](examples/todomvc/README.md)
 The [documentation homepage](docs/index.md) links the full guide and API references;
 [publishing instructions](docs/publishing.md) explain the GitHub Pages workflow.
 
+For an interactive game example, open
+[http://localhost:3000/examples/game-replay/](http://localhost:3000/examples/game-replay/).
+Control one of four players, capture a match, and replay it in a second arena with
+pause, speed and step controls. The other three players are local simulations.
+See [the game replay guide](examples/game-replay/README.md) for the code and limits.
+
 ## Build the walkthrough using public imports
 
 Create `examples/auditor/index.html` with the following content. These are the
