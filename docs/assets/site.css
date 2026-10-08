@@ -1,0 +1,39 @@
+:root { color-scheme: light; --ink: #242b38; --muted: #5c6473; --accent: #5b39a5; --paper: #fffefa; }
+* { box-sizing: border-box; }
+html { scroll-padding-top: 1.5rem; }
+body { margin: 0; color: var(--ink); background: var(--paper); font: 17px/1.7 system-ui, sans-serif; }
+a { color: var(--accent); text-underline-offset: .18em; }
+a:hover { color: #342163; }
+:focus-visible { outline: 3px solid #d77620; outline-offset: 4px; }
+.skip-link { position: absolute; top: -6rem; left: 1rem; padding: .6rem 1rem; background: white; z-index: 2; }
+.skip-link:focus { top: .5rem; }
+.site-header { max-width: 1140px; margin: auto; padding: 1.4rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid #e2dfd7; }
+.brand { font-size: 1.7rem; font-weight: 800; text-decoration: none; letter-spacing: -.07em; color: var(--ink); }
+.brand span { color: var(--accent); }
+nav { display: flex; flex-wrap: wrap; gap: .5rem 1.3rem; font-size: .9rem; }
+nav a { text-decoration: none; }
+.document { max-width: 920px; margin: auto; padding: 3.5rem 2rem; overflow-wrap: anywhere; }
+h1, h2, h3 { line-height: 1.2; letter-spacing: -.03em; }
+h1 { font-size: clamp(2.1rem, 6vw, 3.1rem); margin: 0 0 1.5rem; max-width: 780px; }
+h2 { font-size: 1.6rem; margin: 2.5rem 0 1rem; }
+h3 { font-size: 1.2rem; margin-top: 2rem; }
+p, ul, ol { margin: 1rem 0; }
+li { margin: .4rem 0; }
+code { font: .86em/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; background: #f0edf4; border-radius: 4px; padding: .1rem .3rem; }
+pre { padding: 1.2rem; background: #f0edf4; border: 1px solid #e2dce9; border-radius: 8px; overflow: auto; white-space: pre; }
+pre code { padding: 0; background: transparent; }
+.highlight { margin: 1rem 0; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; margin: 1.6rem 0; }
+th, td { text-align: left; vertical-align: top; padding: .85rem; border: 1px solid #e2dfd7; }
+th { background: #f2f0e9; }
+blockquote { border-left: 3px solid var(--accent); margin-left: 0; padding-left: 1.2rem; color: var(--muted); }
+img { max-width: 100%; }
+.site-footer { max-width: 1140px; margin: auto; padding: 1.5rem 2rem 2rem; border-top: 1px solid #e2dfd7; color: var(--muted); font-size: .85rem; }
+.site-footer p { margin: .5rem 0; }
+@media (max-width: 650px) {
+  body { font-size: 16px; }
+  .site-header { align-items: flex-start; flex-direction: column; padding: 1rem 1.25rem; }
+  .document { padding: 2.5rem 1.25rem; }
+  th, td { padding: .5rem; }
+  .site-footer { padding: 1.5rem 1.25rem; }
+}

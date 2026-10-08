@@ -1,4 +1,4 @@
-# mini-framework
+# Rel3c
 
 A JavaScript frontend framework built here, with no third-party runtime dependencies.
 It provides transactional state, precise DOM bindings, native events, keyed lists,
@@ -11,6 +11,11 @@ browsers remain unverified. See [browser support](docs/browser-support.md) and t
 The [acceptance release notes](RELEASE_NOTES.md) list completed phases, compatibility
 and remaining qualification limits.
 
+Rel3c's original code is available under the [MIT License](LICENSE).
+Bundled TodoMVC styles retain their [upstream license notices](examples/todomvc/css/NOTICE.md).
+
+**[Quick start](docs/quickstart.md)** · **[Documentation home](docs/index.md)**
+
 ## Run from the root
 
 Use Node.js 18 or later (verified with Node 26). From this folder:
@@ -19,7 +24,7 @@ Use Node.js 18 or later (verified with Node 26). From this folder:
 npm run dev
 ```
 
-Open [http://localhost:3000/](http://localhost:3000/) for the basic example, or
+Open [http://localhost:3000/](http://localhost:3000/) for TodoMVC, or
 [http://localhost:3000/examples/auditor/](http://localhost:3000/examples/auditor/)
 for the routed form/list walkthrough below. Startup needs no install or build.
 If port 3000 is busy, use `npm run dev -- --port 3001` and open the same path on
@@ -28,6 +33,21 @@ port 3001. Stop the server with Ctrl+C.
 Browser modules import `../../src/index.js` from an example folder. Package
 consumers import `mini-framework`; `package.json` exposes `src/index.js` and its
 TypeScript declarations. Only the public entry is supported for application use.
+Rel3c is the project name; the package identifier remains `mini-framework`.
+
+## TodoMVC: your first application
+
+The root now opens a complete TodoMVC app using Rel3c's DOM, named transactions,
+keyed rows, native events, hash routing and guarded local persistence. Add tasks
+with Enter, toggle completion, double-click to edit, save with Enter/blur or cancel
+with Escape, delete blank edits, remove rows, and filter All/Active/Completed.
+Reload restores tasks and the hash filter. No React or third-party frontend
+runtime is used. The original lifecycle report remains at `/examples/basic/`.
+
+Follow the [quick start](docs/quickstart.md) to clone, run and customize the app.
+See [implementation notes and reference differences](examples/todomvc/README.md).
+The [documentation homepage](docs/index.md) links the full guide and API references;
+[publishing instructions](docs/publishing.md) explain the GitHub Pages workflow.
 
 ## Build the walkthrough using public imports
 

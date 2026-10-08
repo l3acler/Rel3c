@@ -1,5 +1,6 @@
 import { withLocalBrowser } from './local-browser.js';
 import { checkAuditorBrowser } from './check-auditor-browser.js';
+import { checkTodoMVCBrowser } from './check-todomvc-browser.js';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -225,6 +226,7 @@ await withLocalBrowser(async ({ open, browserVersion, flags }) => {
   if (!persistenceExample) throw Error('Public persistence reload/history example failed');
   tests.results.push({ name: 'B.8 public state-location example restores real local/session/URL fields after reload, resets memory, accepts native text, rolls back and follows back history', passed: true }); tests.passed++;
   await checkAuditorBrowser({ open }, tests);
+  await checkTodoMVCBrowser({ open }, tests);
   const deterministic = await open('examples/determinism/');
   await deterministic.waitFor('document.getElementById("sample-count")?.textContent === "0"');
   await deterministic.evaluate('document.getElementById("sample").focus(); true');

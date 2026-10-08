@@ -14,6 +14,8 @@
   },
   "scripts": {
     "dev": "node scripts/dev-server.js",
+    "docs:prepare": "node scripts/prepare-docs.js",
+    "docs:check": "node scripts/check-docs-site.js",
     "test": "node scripts/test-node.js tests",
     "test:browser": "node scripts/check-app-lifecycle.js",
     "test:spikes": "node scripts/test-node.js spikes",

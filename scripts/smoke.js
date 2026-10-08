@@ -6,7 +6,7 @@
  * Verifies that:
  * 1. The public entry point (src/index.js) is importable and exports required primitives.
  * 2. The dev server boots without error.
- * 3. The root route correctly directs to the basic example.
+ * 3. The root route correctly directs to the TodoMVC example.
  * 4. The browser HTML, example JS, and framework src modules are served with proper MIME types.
  */
 
@@ -72,7 +72,7 @@ async function runSmoke() {
     console.log('[smoke] 3. Testing GET / root redirect...');
     const rootRes = await fetchUrl(`${base}/`);
     assert.equal(rootRes.statusCode, 302, 'GET / should return 302 redirect');
-    assert.equal(rootRes.headers.location, '/examples/basic/', 'GET / should redirect to /examples/basic/');
+    assert.equal(rootRes.headers.location, '/examples/todomvc/', 'GET / should redirect to /examples/todomvc/');
     console.log('[smoke]    Root redirect OK');
 
     // 4. Test basic example HTML
@@ -128,7 +128,7 @@ async function runSmoke() {
       assert.equal(response.statusCode, 200, 'Public DOM example must be served');
       assert.ok(!response.body.includes('addEventListener') && !response.body.includes('innerHTML'));
     }
-    for (const [file, mime] of [['examples/core/', 'text/html'], ['examples/core/app.js', 'application/javascript'], ['examples/core/main.js', 'application/javascript']]) {
+    for (const [file, mime] of [['examples/core/', 'text/html'], ['examples/core/app.js', 'application/javascript'], ['examples/core/main.js', 'application/javascript'], ['examples/todomvc/', 'text/html'], ['examples/todomvc/app.js', 'application/javascript'], ['examples/todomvc/main.js', 'application/javascript'], ['examples/todomvc/css/todomvc.css', 'text/css']]) {
       const response = await fetchUrl(`${base}/${file}`);
       assert.equal(response.statusCode, 200, 'Core example must be served: ' + file);
       assert.ok(response.headers['content-type']?.includes(mime));

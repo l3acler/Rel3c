@@ -11,6 +11,7 @@ const publicDirectory = path.join(root, 'tests/types');
 const files = [...['positive.ts', 'negative.ts', 'javascript.js'].map(file => path.join(directory, file)),
   ...['positive.ts', 'negative.ts'].map(file => path.join(publicDirectory, file)),
   ...['examples/basic/main.js', 'examples/core/app.js', 'examples/core/main.js', 'examples/inputs/main.js', 'examples/routes/main.js', 'examples/persistence/main.js', 'examples/auditor/main.js', 'examples/determinism/main.js', 'examples/ticks/main.js', 'examples/interpolation/main.js', 'examples/recording/main.js', 'examples/history/main.js', 'examples/inspector/main.js'].map(file => path.join(root, file))];
+files.push(path.join(root, 'examples/todomvc/app.js'), path.join(root, 'examples/todomvc/main.js'));
 const negatives = new Map([directory, publicDirectory].map(dir => {
   const file = path.join(dir, 'negative.ts'); return [file, fs.readFileSync(file, 'utf8')];
 }));

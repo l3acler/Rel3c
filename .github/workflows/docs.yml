@@ -1,0 +1,58 @@
+name: Publish documentation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Verify TodoMVC state actions
+        run: node --test tests/todomvc.test.js
+      - name: Verify root startup
+        run: npm run smoke
+      - name: Prepare public documentation
+        run: npm run docs:prepare
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Build documentation
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: build/pages-source
+          destination: build/docs-site
+      - name: Check published paths
+        run: npm run docs:check
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/docs-site
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy documentation
+        id: deployment
+        uses: actions/deploy-pages@v4

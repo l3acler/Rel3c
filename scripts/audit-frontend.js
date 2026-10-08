@@ -53,7 +53,7 @@ let browser = null, checkout = null, passed = false, failure;
 try {
   for (const name of ['src', 'scripts', 'tests', 'examples', 'spikes', 'benchmarks', 'docs',
     'package.json', 'package-lock.json', 'README.md', 'DOCUMENTATION.md', 'Framework_PRD.md', 'AGENTS.md', '.gitignore',
-    'RELEASE_NOTES.md', 'DEVELOPMENT_PLAN.md']) {
+    'RELEASE_NOTES.md', 'DEVELOPMENT_PLAN.md', 'LICENSE', '.github']) {
     await cp(path.join(root, name), path.join(temporary, name), {
       recursive: true, filter: file => !excluded(file),
     });
@@ -77,7 +77,9 @@ try {
     }
   }
   for (const file of ['README.md', 'DOCUMENTATION.md', 'Framework_PRD.md', 'package.json', 'package-lock.json',
-    '.gitignore', 'RELEASE_NOTES.md', 'docs/browser-support.md', 'docs/adr/0015-public-frontend-compatibility.md'])
+    '.gitignore', 'RELEASE_NOTES.md', 'LICENSE', 'docs/browser-support.md', 'docs/adr/0015-public-frontend-compatibility.md',
+    'docs/index.md', 'docs/quickstart.md', 'docs/publishing.md', 'docs/_config.yml', 'docs/Gemfile',
+    'docs/assets/site.css', 'docs/_layouts/default.html', '.github/workflows/docs.yml'])
     sourceFiles.push({ file, sha256: hash(await readFile(path.join(temporary, file))) });
   if (checkoutMode) {
     const destination = path.join(workspace, 'checkout');

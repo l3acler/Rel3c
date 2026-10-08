@@ -1,4 +1,4 @@
-# mini-framework public documentation
+# Rel3c public documentation
 
 This guide describes the framework's implemented public API and is updated with
 every framework addition or change. Current functionality is experimental:
@@ -9,6 +9,12 @@ D.3/D.4 add optional bounded diagnostics and a separate development inspector.
 D.5/D.6 add reproducible Node/Chrome workloads and a measured technical report.
 D.7 records experimental product acceptance, compatibility and release limits.
 Import from `src/index.js`; applications do not need runtime internals.
+
+Begin with the [TodoMVC quick start](docs/quickstart.md) or the
+[documentation homepage](docs/index.md). Rel3c is the project name; the package
+identifier remains `mini-framework`. Source-based startup does not require an npm
+registry release. [Publishing instructions](docs/publishing.md) cover the separate
+Jekyll/GitHub Pages documentation tooling.
 
 ## What works today
 
@@ -52,9 +58,10 @@ installation, compiler or bundler is needed for browser startup.
 npm run dev
 ```
 
-Open [http://localhost:3000/](http://localhost:3000/). The root redirects to the
-basic example, which initializes state through a named action and then mounts a
-text report. The package has zero third-party runtime dependencies. Development
+Open [http://localhost:3000/](http://localhost:3000/). The root redirects to
+`/examples/todomvc/`, the complete TodoMVC integration described below. The original
+lifecycle text report remains at `/examples/basic/`. The package has zero
+third-party JavaScript runtime dependencies. Development
 tools are the built-in Node test runner/server, installed Chrome for browser
 checks, and TypeScript 5.9.3 for type checks. Visit
 [http://localhost:3000/examples/dom/](http://localhost:3000/examples/dom/) for a
@@ -98,6 +105,47 @@ For your own page, save this as `guide.html` at the repository root and open
 
 The `div` is a native HTML mount container. Plain snapshot text is static; use
 explicit bindings below for updates.
+
+## TodoMVC integration example
+
+The root application is [TodoMVC](examples/todomvc/README.md), built entirely with
+public imports from `src/index.js`. Its HTML mount is `.todoapp#root`; descriptors
+preserve the reference header/main/footer classes, `#toggle-all`, row classes,
+native labels and `data-testid` hooks. It also supplies `#main`/`#footer` and a
+`strong` active counter. Use the [quick start](docs/quickstart.md) for a complete
+clone/run/customize walkthrough and [source](examples/todomvc/app.js) for the app.
+
+Named actions add trimmed tasks, toggle/remove by stable ID, apply completion to
+the whole store, clear completed tasks and manage one transient edit session.
+Enter/blur commits an edit once; Escape cancels, and a blank committed edit deletes
+its task. `onText` observes native text outside transactions; `onKey` protects
+composition. `keyed` preserves retained row nodes; `derive` filters by the router's
+current path and updates counters. Native `#/`, `#/active` and `#/completed` links
+are observed by the framework's hash router, preserving browser history and one
+shared store. Hidden main/footer and clear-completed controls retain native semantics.
+
+The registered double-click handler dispatches `beginEdit`, calls `app.flush()`
+to construct the editor, then uses native `focus()`/selection outside the action.
+This changes presentation only. Framework descriptors and listeners still own
+the DOM and normal event behavior; native nodes/events never enter state. Initial
+focus uses the `autofocus` attribute. This app adds no runtime APIs or semantics.
+
+Only `board` persists, using namespace `todos-rel3c`, version `1`, and local bucket
+`mini-framework:todos-rel3c:local`. Persisting tasks and `nextId` together prevents
+ID reuse after reload; guards reject malformed tasks, sparse lists and duplicate
+or out-of-range IDs. New-task text and edit sessions stay in memory; filters
+survive in the URL. Storage uses the framework's graph envelope, not plain TodoMVC
+JSON. Storage restrictions/errors use the existing fallback/reporting contracts;
+inspect `app.persistence` for diagnostics. Remove the bucket and reload to reset.
+Explicit teardown can flush storage before `app.dispose()`.
+
+The example bundles upstream CSS with [separate notices](examples/todomvc/css/NOTICE.md),
+including CC BY 4.0 for TodoMVC's application stylesheet and MIT for common/React
+reference CSS. Its original application logic and the framework use MIT. No React
+or reference JavaScript supplies framework capabilities. Development adds Jekyll
+and jekyll-relative-links only for publishing the documentation; application startup
+still needs no install/build. Chrome checks cover the app; broader browser/native
+input qualification remains open as described in the [support matrix](docs/browser-support.md).
 
 ## Public exports
 
@@ -2060,6 +2108,15 @@ see [C.7/C.8 recording evidence](docs/reports/task-C.7-C.8-recording-retention.m
 verification commands; the [PRD](Framework_PRD.md) defines acceptance requirements.
 
 ## Compatibility and browser qualification
+
+Rel3c's original code is available under the [MIT License](LICENSE), matching the `MIT` identifier
+in `package.json`. You may use, modify and redistribute it, including in commercial
+applications, while retaining the copyright and license notices in copies or
+substantial portions of the software. It is provided without warranty; the license
+file contains the full terms.
+
+Bundled third-party TodoMVC styles retain their own licenses and
+[copyright notices](examples/todomvc/css/NOTICE.md).
 
 The public import boundary is `src/index.js` and its declarations; runtime,
 spikes and test tooling are internal. `0.1.0` is experimental. Pin a candidate

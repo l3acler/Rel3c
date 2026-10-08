@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title | escape }} · Rel3c</title>
+  <meta name="description" content="{{ site.description | escape }}">
+  <link rel="stylesheet" href="{{ '/docs/assets/site.css' | relative_url }}">
+</head>
+
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="{{ '/' | relative_url }}">Rel<span>3</span>c</a>
+    <nav aria-label="Main navigation">
+      <a href="{{ '/docs/quickstart.html' | relative_url }}">Quick start</a>
+      <a href="{{ '/DOCUMENTATION.html' | relative_url }}">Guide</a>
+      <a href="{{ '/docs/api/application.html' | relative_url }}">API</a>
+      <a href="{{ '/examples/todomvc/' | relative_url }}">TodoMVC</a>
+      <a href="{{ site.repository_url }}">GitHub</a>
+    </nav>
+  </header>
+  <main id="content" class="document" tabindex="-1">{{ content }}</main>
+  <footer class="site-footer">
+    <p>Rel3c · Experimental 0.1.0 · Browser-native JavaScript</p>
+    <p><a href="{{ '/docs/browser-support.html' | relative_url }}">Browser support</a>
+      · <a href="{{ '/LICENSE' | relative_url }}">MIT License</a>
+      · <a href="{{ '/examples/todomvc/css/NOTICE.html' | relative_url }}">Style notices</a></p>
+  </footer>
+</body>
+
+</html>

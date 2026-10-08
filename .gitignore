@@ -64,3 +64,10 @@ Desktop.ini
 tmp/
 temp/
 scratch/
+
+# Documentation builds and local Ruby tooling
+.bundle/
+vendor/bundle/
+docs/Gemfile.lock
+.jekyll-cache/
+.jekyll-metadata

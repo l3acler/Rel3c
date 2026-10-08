@@ -26,9 +26,10 @@ only its dependent text on a frame; rollback publishes no version or UI change.
 npm run dev
 ```
 
-Open http://localhost:3000/ (redirects to `/examples/basic/`). The example imports
-only `src/index.js`; no compiler/install is needed. The framework creates/removes
-its text nodes. Applications do not patch DOM nodes or install normal listeners.
+Open http://localhost:3000/ (redirects to `/examples/todomvc/`). The TodoMVC app
+uses only public framework exports; no compiler/install is needed. The original
+lifecycle text example remains at `/examples/basic/`. Framework descriptors own
+application DOM and normal listeners. See the [quick start](../quickstart.md).
 
 With `<div id="app"></div>` in an HTML page, put the following in a browser module
 at the repository root:

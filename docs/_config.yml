@@ -1,0 +1,21 @@
+title: Rel3c
+description: A JavaScript framework with transactional state and a declarative DOM.
+url: https://l3acler.github.io
+baseurl: /Rel3c
+repository_url: https://github.com/l3acler/Rel3c
+markdown: kramdown
+highlighter: rouge
+layouts_dir: _layouts
+plugins:
+  - jekyll-relative-links
+exclude:
+  - docs/Gemfile
+  - docs/Gemfile.lock
+  - docs/_config.yml
+  - docs/_layouts
+defaults:
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: default

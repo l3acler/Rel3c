@@ -47,9 +47,9 @@ export function createServer(options = {}) {
       const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
       let reqPath = decodeURIComponent(parsedUrl.pathname);
 
-      // Root path redirect to default basic example
+      // Root path redirect to the TodoMVC public-API demonstration.
       if (reqPath === '/' || reqPath === '') {
-        res.writeHead(302, { Location: '/examples/basic/' });
+        res.writeHead(302, { Location: '/examples/todomvc/' });
         res.end();
         return;
       }
