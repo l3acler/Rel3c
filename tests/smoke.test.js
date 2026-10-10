@@ -25,7 +25,7 @@ describe("Phase 0.1 Root Scaffold & Public Entry Smoke Tests", () => {
       "object",
       "FRAMEWORK_INFO should be an object",
     );
-    assert.equal(FRAMEWORK_INFO.name, "mini-framework");
+    assert.equal(FRAMEWORK_INFO.name, "Rel3c");
     assert.equal(FRAMEWORK_INFO.version, VERSION);
     assert.ok(
       Array.isArray(FRAMEWORK_INFO.capabilities),

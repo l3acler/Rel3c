@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createTransactionStore } from '../src/runtime/state/transactions.js';
 import { inspectGraph, STATE_LIMITS } from '../src/runtime/state/data.js';
-import * as publicApi from 'mini-framework';
+import * as publicApi from 'Rel3c';
 
 const code = expected => error => error.code === expected;
 const revoked = error => error instanceof TypeError && /revoked/.test(error.message);

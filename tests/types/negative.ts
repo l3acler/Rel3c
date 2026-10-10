@@ -1,4 +1,4 @@
-import { createApp, createActionSchema, type Draft } from 'mini-framework';
+import { createApp, createActionSchema, type Draft } from 'Rel3c';
 interface State { count: number; name: string; rows: { id: string }[] }
 const schema = createActionSchema<State>()(({ action }) => ({
   increment: action(draft => { draft.count++; }),
@@ -68,7 +68,7 @@ const observed = app.observe(state => state.name);
 const number: number = observed.read();
 // @ts-expect-error dirty is read-only
 observed.dirty = false;
-import { div, input, derive, when } from 'mini-framework';
+import { div, input, derive, when } from 'Rel3c';
 // @ts-expect-error functions must be explicit binding tokens
 createApp({ view: () => div(() => 'text') });
 // @ts-expect-error click handlers cannot be strings
@@ -95,7 +95,7 @@ when(true, async () => div('text'));
 // @ts-expect-error flush takes no arguments
 app.flush(1);
 
-import { keyed } from 'mini-framework';
+import { keyed } from 'Rel3c';
 // @ts-expect-error list sources require binding tokens
 keyed([], (row: string) => row, () => div());
 // @ts-expect-error missing keys must not typecheck
@@ -208,7 +208,7 @@ createActionSchema<State>()(({ action }) => ({ bad: action((draft, services) => 
 createActionSchema<State>()(({ action }) => ({ bad: action((draft, services) => { services.setLogicalTime(1); }) }));
 // @ts-expect-error Async action bodies remain forbidden when using services.
 createActionSchema<State>()(({ action }) => ({ bad: action(async (draft, services) => { draft.count = services.random(); }) }));
-import { hashSnapshot } from 'mini-framework';
+import { hashSnapshot } from 'Rel3c';
 
 // C.3/C.4 queue arity and adapter callback contracts remain strict.
 // @ts-expect-error Missing payload remains invalid at queue admission.
@@ -268,7 +268,7 @@ readRecording('').baseline.snapshot='changed';
 // @ts-expect-error Only recording values have the serialization shape.
 serializeRecording({});
 
-import { createReplay } from 'mini-framework';
+import { createReplay } from 'Rel3c';
 // @ts-expect-error A recording is required.
 createReplay({});
 // @ts-expect-error Replay creates its own app; an existing target is not configuration.
@@ -288,7 +288,7 @@ createReplay({recording:'',schema}).app.actions.rename(2);
 // @ts-expect-error Replay app state remains read-only.
 createReplay({recording:'',schema}).app.state.count=3;
 
-import { createHistory } from 'mini-framework';
+import { createHistory } from 'Rel3c';
 // @ts-expect-error A recording is required.
 createHistory({});
 // @ts-expect-error Reversible action names must be registered.
@@ -310,7 +310,7 @@ createHistory({recording:'',schema}).branch().actions.rename(2);
 // @ts-expect-error History views must be synchronous.
 createHistory({recording:'',view:async()=>div()});
 
-import {createDiagnostics,createInspector} from 'mini-framework';
+import {createDiagnostics,createInspector} from 'Rel3c';
 // @ts-expect-error Requires a framework application.
 createDiagnostics({});
 // @ts-expect-error Numeric retention budget.

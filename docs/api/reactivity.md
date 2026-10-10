@@ -1,7 +1,7 @@
 # Exact observers and lazy computed values — A.4/A.5
 
 Experimental API, available on applications and their view contexts. Import
-`createApp` and `createActionSchema` from `src/index.js` (or `mini-framework` when
+`createApp` and `createActionSchema` from `src/index.js` (or `Rel3c` when
 consuming the package). No internal imports or external reactive library are
 needed. See [the public guide](../../DOCUMENTATION.md#exact-reactive-observers)
 for complete copyable examples.

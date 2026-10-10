@@ -1,4 +1,4 @@
-import { createApp, createActionSchema, FrameworkError, type DeepReadonly, type Draft } from 'mini-framework';
+import { createApp, createActionSchema, FrameworkError, type DeepReadonly, type Draft } from 'Rel3c';
 interface State { count: number; name: string; rows: { id: string }[] }
 const namePayload = (value: unknown): value is { name: string } =>
   !!value && typeof value === 'object' && typeof (value as { name?: unknown }).name === 'string';
@@ -16,7 +16,7 @@ const app = createApp({ schema, initialState,
     onDispose(() => {}); void noPayload; void payload; void named;
     return String(count);
   },
-  onError(error, info) { const phase: import('mini-framework').ErrorPhase = info.phase; void phase; void error; },
+  onError(error, info) { const phase: import('Rel3c').ErrorPhase = info.phase; void phase; void error; },
 });
 const detached: typeof app.mount = app.mount;
 const defaultMounted: typeof app = detached();
@@ -61,7 +61,7 @@ type ComputedInference = Expect<Equal<typeof score.value, number>>;
 type ObserverInference = Expect<Equal<ReturnType<typeof watched.read>, string[]>>;
 void scoreValue; void ids; void dirty; void chainValue;
 
-import { div, span, form, input, label as labelElement, textarea, select, option, when, derive, element as htmlElement, type Child } from 'mini-framework';
+import { div, span, form, input, label as labelElement, textarea, select, option, when, derive, element as htmlElement, type Child } from 'Rel3c';
 const domApp = createApp({ initialState: { name: 'Ada', shown: true, color: 'red', checked: false },
   view({ bind, derive, when }) {
     return div({ id: 'card', class: { active: bind.shown }, style: { color: bind.color }, 'data-name': bind.name },
@@ -76,10 +76,10 @@ const reusable: Child = when(true, () => htmlElement('main', derive(() => domApp
 void reusable;
 
 domApp.flush();
-const renderPhase: import('mini-framework').ErrorPhase = 'render';
+const renderPhase: import('Rel3c').ErrorPhase = 'render';
 void renderPhase;
 
-import { keyed, li, ul } from 'mini-framework';
+import { keyed, li, ul } from 'Rel3c';
 const listApp = createApp({ initialState: { rows: [{ id: 'a', name: 'Ada' }] },
   view({ bind, keyed }) { return ul(keyed(bind.rows, row => row.id, context => {
     const name: string = context.value.name;
@@ -92,7 +92,7 @@ const listApp = createApp({ initialState: { rows: [{ id: 'a', name: 'Ada' }] },
 const standalone = keyed(listApp.bind.rows, row => row.id, ({ item }) => li(item.name));
 void standalone;
 
-import { button } from 'mini-framework';
+import { button } from 'Rel3c';
 const clickButton = button({ type: 'button', onClick: app.actions.increment }, 'Go');
 const payloadButton = button({ onClick: () => app.actions.rename({ name: 'Grace' }) }, 'Rename');
 void clickButton; void payloadButton;
@@ -106,7 +106,7 @@ input({ on: { keydown: event => { const key: string = event.nativeEvent.key; eve
 });
 
 // B.4–B.6: priority work and routed contexts preserve state/action inference.
-import { outlet, type RouteSnapshot } from 'mini-framework';
+import { outlet, type RouteSnapshot } from 'Rel3c';
 const routed = createApp({ schema, initialState, router: { base: '/app', routes: [
   { path: '/people/:id', view(context) {
     const route: RouteSnapshot = context.route;
@@ -130,13 +130,13 @@ const persisted = createApp({ initialState: { count: 0, filter: '' }, router: { 
   } } });
 persisted.flushPersistence();
 const pending: boolean = persisted.persistence.pending;
-const issues: readonly import('mini-framework').PersistenceIssue[] = persisted.persistence.errors;
+const issues: readonly import('Rel3c').PersistenceIssue[] = persisted.persistence.errors;
 void pending; void issues;
 
 // B.9: inferred state survives a contextually typed synchronous error hook.
 const withErrorHook = createApp({ initialState: { ready: true }, onError(error, info) {
   const message: string = error.message;
-  const phase: import('mini-framework').ErrorPhase = info.phase;
+  const phase: import('Rel3c').ErrorPhase = info.phase;
   if (error instanceof FrameworkError) { const code: string = error.code; void code; }
   void message; void phase; return 1;
 } });
@@ -146,7 +146,7 @@ type ErrorHookActions = Expect<Equal<Parameters<typeof withSchemaHook.actions.re
 withSchemaHook.actions.rename({ name: 'Checked' });
 
 // C.1/C.2: services add no dispatch payload and preserve schema inference on restore.
-import { hashSnapshot, type ActionServices, type ControlSnapshot } from 'mini-framework';
+import { hashSnapshot, type ActionServices, type ControlSnapshot } from 'Rel3c';
 const controlledSchema = createActionSchema<{ n: number; time: number }>()(({ action }) => ({
   draw: action((draft, services) => { const api: ActionServices = services; draft.n = api.random(); draft.time = api.now(); }),
   scale: action((value: unknown): value is number => typeof value === 'number',
@@ -163,7 +163,7 @@ type ServicePayloadArgs = Expect<Equal<Parameters<typeof fork.actions.scale>, [p
 void hash; void control;
 
 // C.3/C.4 preserve action arity, tick names and the external envelope boundary.
-import type { ExternalInput, EffectTask, InputTicket } from 'mini-framework';
+import type { ExternalInput, EffectTask, InputTicket } from 'Rel3c';
 const ticked = createApp({ schema: controlledSchema, initialState: { n:0,time:0 },
   simulation: { tickDuration:10000, action:'draw', maxCatchUp:4 } });
 const queued: InputTicket = ticked.enqueue('scale', 2);
@@ -185,7 +185,7 @@ void task; void consumed;
 // C.5/C.6 adapters preserve native callback types and interpolation state inference.
 input({onKey:externalApp.inputs.keyboard('keys','result'),onText:externalApp.inputs.text('text','result')});
 const inputStop:()=>void=externalApp.observeInputs(event=>{
-  const observed:import('mini-framework').InputExecution=event;
+  const observed:import('Rel3c').InputExecution=event;
   if(event.packet.kind==='action'){const name:string=event.packet.name;void name;}
   void observed;
 });inputStop();
@@ -210,7 +210,7 @@ app.stopRecording();app.clearRecording();void [recordingStatus,baselineText];
 const roundTripRecording:string=serializeRecording(recording);void roundTripRecording;
 
 // C.9 replay preserves schema state and action inference on its isolated app.
-import { createReplay, type ReplayStatus } from 'mini-framework';
+import { createReplay, type ReplayStatus } from 'Rel3c';
 const replay=createReplay({recording:roundTripRecording,schema:controlledSchema,
   view:({bind})=>div(bind.n)});
 type ReplayStateInference=Expect<Equal<typeof replay.app.state.n,number>>;
@@ -219,7 +219,7 @@ const replayStatus:ReplayStatus=replay.step(2);replay.run();replay.dispose();voi
 createReplay({recording,view:()=>div('headless optional view')});
 
 // D.1/D.2 inferred reversible names, stable inspection state and typed live branch.
-import { createHistory, type HistoryStatus } from 'mini-framework';
+import { createHistory, type HistoryStatus } from 'Rel3c';
 const history=createHistory({recording:roundTripRecording,schema:controlledSchema,reversible:['draw','scale'],
   view:({bind})=>div(bind.n)});
 type HistoryStateInference=Expect<Equal<typeof history.app.state.n,number>>;
@@ -227,7 +227,7 @@ const historyStatus:HistoryStatus=history.seek(3);history.undo();history.redo();
 const branch=history.branch();branch.actions.scale(2);history.dispose();void historyStatus;
 
 // D.3/D.4 optional diagnostics and a separate owned developer panel.
-import { createDiagnostics, createInspector, type DiagnosticsSnapshot } from 'mini-framework';
+import { createDiagnostics, createInspector, type DiagnosticsSnapshot } from 'Rel3c';
 const diagnostics=createDiagnostics(app,{maxEntries:16,maxBytes:64000});
 const diagnosticSnapshot:DiagnosticsSnapshot=diagnostics.snapshot();
 const panel=createInspector({diagnostics,target:document.body,onExport:(text,kind)=>{const wire:string=text;const format:'diagnostics'|'recording'=kind;void [wire,format];}});

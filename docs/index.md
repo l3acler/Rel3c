@@ -31,8 +31,8 @@ the familiar TodoMVC structure and locally bundled reference styles.
 
 ## Release status
 
-The public API is experimental at `0.1.0`. Rel3c is the project name; the current
-package identifier is `mini-framework`. The quick start uses the checked-out source
+The public API is experimental at `0.1.0`. Rel3c is the project name and
+package identifier (`Rel3c`). The quick start uses the checked-out source
 and does not assume an npm registry release.
 
 Desktop Chrome automation covers the framework and TodoMVC example. Other browsers,

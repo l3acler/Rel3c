@@ -31,9 +31,9 @@ If port 3000 is busy, use `npm run dev -- --port 3001` and open the same path on
 port 3001. Stop the server with Ctrl+C.
 
 Browser modules import `../../src/index.js` from an example folder. Package
-consumers import `mini-framework`; `package.json` exposes `src/index.js` and its
+consumers import `Rel3c`; `package.json` exposes `src/index.js` and its
 TypeScript declarations. Only the public entry is supported for application use.
-Rel3c is the project name; the package identifier remains `mini-framework`.
+Rel3c is the project name and package identifier.
 
 ## TodoMVC: your first application
 

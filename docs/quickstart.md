@@ -63,8 +63,7 @@ app.mount(document.getElementById('root'));
 ```
 
 `app.js` imports only `../../src/index.js` for framework behavior. The package name
-is currently `mini-framework`; this guide uses source imports rather than assuming
-that either `rel3c` or `mini-framework` is published on npm.
+is `Rel3c`; this guide uses source imports rather than assuming that `Rel3c` is published on npm.
 
 ## 4. Understand one update
 

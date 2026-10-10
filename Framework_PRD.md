@@ -117,7 +117,7 @@ application/action registration using createActionSchema and the documented publ
 
 **Candidate A: Native Tagged Template Literals (Evaluated; Public Adoption Deferred)**
 ```js
-import { createApp, html } from 'mini-framework';
+import { createApp, html } from 'Rel3c';
 
 const app = createApp({
   target: document.querySelector("#app"),
@@ -139,7 +139,7 @@ const app = createApp({
 
 **Candidate B: Ergonomic Element Functions (Selected for Phase A)**
 ```js
-import { createApp, div, button, span } from 'mini-framework';
+import { createApp, div, button, span } from 'Rel3c';
 
 const app = createApp({
   target: document.querySelector("#app"),

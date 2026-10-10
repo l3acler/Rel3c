@@ -34,7 +34,7 @@ async function fetchUrl(url) {
 }
 
 async function runSmoke() {
-  console.log('[smoke] Starting mini-framework root smoke verification...');
+  console.log('[smoke] Starting Rel3c root smoke verification...');
 
   // 1. Verify public module imports
   console.log('[smoke] 1. Checking public module exports...');

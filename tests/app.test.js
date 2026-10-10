@@ -9,7 +9,7 @@ import {
   createActionSchema,
   FrameworkError,
   VERSION,
-} from "mini-framework";
+} from "Rel3c";
 import { fakeDocument } from "./helpers/fake-dom.js";
 const code = (expected) => (error) =>
   error instanceof FrameworkError && error.code === expected;

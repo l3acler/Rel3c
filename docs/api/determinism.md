@@ -30,7 +30,7 @@ app.dispose(); fork.dispose();
 ```
 
 The relative import is for a module in an `examples/*` folder; package consumers
-import `mini-framework`. Plain JavaScript runs directly. TypeScript users specify
+import `Rel3c`. Plain JavaScript runs directly. TypeScript users specify
 schema state with `createActionSchema<State>()` and type-predicate payload guards.
 
 No-payload callbacks now receive `(draft, services)`. Payload callbacks receive

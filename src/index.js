@@ -1,5 +1,5 @@
 /**
- * mini-framework - Deterministic Reactive Frontend Framework
+ * Rel3c - Deterministic Reactive Frontend Framework
  *
  * Public Entry Point
  *
@@ -49,7 +49,7 @@ export const VERSION = "0.1.0";
  * Implemented core and planned later capabilities; public APIs remain experimental.
  */
 export const FRAMEWORK_INFO = Object.freeze({
-  name: "mini-framework",
+  name: "Rel3c",
   version: VERSION,
   phase: "D.3–D.4 - Bounded Diagnostics and Development Inspector",
   capabilities: Object.freeze([

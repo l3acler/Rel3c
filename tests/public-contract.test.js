@@ -1,7 +1,7 @@
 // Consumer contract checks use the package entry; fixtures supply only a browser double.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as framework from 'mini-framework';
+import * as framework from 'Rel3c';
 import { fakeBrowser } from './helpers/fake-browser.js';
 const { createApp, createActionSchema, FrameworkError, div, keyed } = framework;
 const code = name => error => error instanceof FrameworkError && error.code === name && error.message.includes(name);

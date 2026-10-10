@@ -11,8 +11,8 @@ D.7 records experimental product acceptance, compatibility and release limits.
 Import from `src/index.js`; applications do not need runtime internals.
 
 Begin with the [TodoMVC quick start](docs/quickstart.md) or the
-[documentation homepage](docs/index.md). Rel3c is the project name; the package
-identifier remains `mini-framework`. Source-based startup does not require an npm
+[documentation homepage](docs/index.md). Rel3c is the project name and
+package identifier (`Rel3c`). Source-based startup does not require an npm
 registry release. [Publishing instructions](docs/publishing.md) cover the separate
 Jekyll/GitHub Pages documentation tooling.
 
