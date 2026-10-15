@@ -405,7 +405,9 @@ div({ style: { height: '100px', overflow: 'auto' }, on: {
 
 `onKey(value, event)` supplies frozen serializable data: keydown/keyup/reset type,
 key, code, location, repeat, isComposing, modifier booleans, ordered held-key
-records, and reset reason. Repeats keep one held entry; release uses code/location.
+records, and reset reason. Repeats keep one held entry; release uses code/location,
+falling back to key/location when code is empty or `Unidentified`. This keeps
+unidentified physical keys distinct so releases cannot suppress a later reset.
 Focus leaving the element's subtree, window blur or a hidden document clears a
 nonempty held set and emits one reset; focus inside the subtree retains it.
 Disposal clears held state silently. At most 256 held keys are retained per scope.

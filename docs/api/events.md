@@ -77,7 +77,7 @@ bypasses the framework's per-entry passive/immediate bookkeeping. Use context me
 `isComposing`, `altKey`, `ctrlKey`, `metaKey`, `shiftKey`, `held`, and `reason`.
 `held` is an ordered frozen array of `{ key, code, location }` records after the
 current transition. Identity uses code/location, falling back to key/location when
-code is empty. Repeats do not add another held key; release removes it even when
+code is empty or `Unidentified`. Repeats do not add another held key; release removes it even when
 modifiers changed the logical key. These are observed keys, not OS-global key state.
 A scope allows at most 256 held keys; overflow clears the set and rejects
 `EVENT_INPUT_LIMIT`. Keyboard events preserve normal native activation/editing.

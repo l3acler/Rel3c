@@ -237,3 +237,23 @@ test('B.1–B.3 failing native listener removal attempts all cleanup and leaves 
   node.value = 'stale'; fire(node, 'input'); fire(node, 'compositionstart'); fire(node, 'keydown'); fire(document.defaultView, 'blur');
   assert.equal(calls, 0);
 });
+
+for (const codeValue of ['', 'Unidentified']) {
+  test(`B.2 unavailable code ${JSON.stringify(codeValue)} retains distinct fallback keys through release and reset`, () => {
+    const values = [];
+    const { app, document, node } = setup(() => input({ onKey: value => values.push(value) }));
+    for (const reason of ['window-blur', 'hidden']) {
+      fire(node, 'keydown', { key: 'w', code: codeValue });
+      fire(node, 'keydown', { key: 'ArrowRight', code: codeValue });
+      assert.equal(values.at(-1).held.length, 2);
+      fire(node, 'keyup', { key: 'ArrowRight', code: codeValue });
+      assert.deepEqual(values.at(-1).held.map(value => value.key), ['w']);
+      if (reason === 'window-blur') fire(document.defaultView, 'blur', { bubbles: false });
+      else { document.visibilityState = 'hidden'; fire(document, 'visibilitychange'); }
+      assert.equal(values.at(-1).reason, reason);
+      assert.deepEqual(values.at(-1).held, []);
+      document.visibilityState = 'visible';
+    }
+    app.dispose(); empty(app);
+  });
+}

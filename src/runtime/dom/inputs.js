@@ -71,7 +71,7 @@ export function keyboardInput(node, handler, active, events) {
         const key = String(event.key ?? ""),
           code = String(event.code ?? ""),
           location = Number(event.location ?? 0);
-        const identity = JSON.stringify([code || key, location]);
+        const identity = JSON.stringify([code && code !== "Unidentified" ? code : key, location]);
         if (type === "keydown") {
           if (!held.has(identity) && held.size >= 256) {
             held.clear();
