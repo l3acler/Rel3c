@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {createApp,createActionSchema,readRecording,serializeRecording,div} from '../src/index.js';
+import {createRecorder} from '../src/runtime/recording/recorder.js';
 import {resourceCounts} from '../src/runtime/diagnostics.js';
-import {recordCodec} from '../src/runtime/recording/format.js';
+import {recordCodec,STATUS_RESERVE} from '../src/runtime/recording/format.js';
 import {fakeBrowser} from './helpers/fake-browser.js';
 const code=name=>error=>error.code===name;
 const hash=text=>createHash('sha256').update(text).digest('hex');
@@ -23,7 +24,15 @@ function make(options={}) {
   app=createApp({schema,initialState:{n:0,draws:[],order:[],time:0,payload:null,external:null},controls:{seed:7},...options});
   return app;
 }
-const imported=app=>readRecording(app.exportRecording(),{schemaVersion:'recording/1'});
+function accounting(app) {
+  const text=app.exportRecording(),wire=JSON.parse(text);
+  const expected=Buffer.byteLength(JSON.stringify({...wire,status:'active',reason:null}))+STATUS_RESERVE;
+  assert.equal(app.recording.bytes,expected);
+  assert.equal(app.recording.actions,wire.records.reduce((sum,r)=>sum+Math.max(1,r.actions),0));
+  assert.equal(resourceCounts(app).recordingBytes,expected);
+  return text;
+}
+const imported=app=>readRecording(accounting(app),{schemaVersion:'recording/1'});
 // Independent state-only reference harness; public replay is tested in replay.test.js.
 function reproduce(recording, options={}) {
   const app=make({initialState:undefined,controls:undefined,snapshot:recording.baseline.snapshot,...options});
@@ -320,4 +329,91 @@ test('C.7 malformed decoded trace scalars and nonlocal hash routes fail with rec
   }
   const wire=structuredClone(original);wire.baseline.route={mode:'hash',base:'/',url:'/doc#https://external.test/'};
   assert.throws(()=>readRecording(JSON.stringify(wire)),code('RECORDING_INVALID'));app.dispose();
+});
+
+
+test('incremental accounting agrees with the full wire across digit boundaries and lifecycle',()=>{
+  for(const mode of ['session','recent']) {
+    const app=make();app.startRecording({mode,maxActions:mode==='recent'?7:2000,keyframeInterval:3});
+    for(let i=0;i<1010;i++) {
+      if(i%23===0)assert.throws(app.actions.abort,/rollback/);
+      else if(i%7===0)app.setLogicalTime(i*1000);
+      else app.actions.payload('日本😀\\"\n\t\u0000\ud800'+i);
+      accounting(app);
+    }
+    app.stopRecording();accounting(app);reproduce(imported(app));
+    app.startRecording();accounting(app);app.actions.noOp();accounting(app);
+    app.clearRecording();assert.equal(app.recording.bytes,0);
+    app.startRecording();accounting(app);app.dispose();
+    assert.equal(resourceCounts(app).recordingBytes,0);
+  }
+});
+
+test('exact byte and action boundaries retain the prefix atomically',()=>{
+  const probe=make();probe.startRecording({mode:'session',maxActions:2,maxBytes:9999999,keyframeInterval:1});
+  probe.actions.noOp();probe.actions.noOp();const wire=JSON.parse(probe.exportRecording());probe.dispose();
+  let budget=9999999;
+  for(let i=0;i<5;i++) {wire.policy.maxBytes=budget;budget=Buffer.byteLength(JSON.stringify(wire))+STATUS_RESERVE;}
+  for(const delta of [-1,0,1]) {
+    const app=make();app.startRecording({...wire.policy,maxBytes:budget+delta});
+    app.actions.noOp();accounting(app);app.actions.noOp();accounting(app);
+    assert.equal(app.recording.records,delta<0?1:2);
+    assert.equal(app.recording.reason,delta<0?'byte-limit':null);
+    const prefix=app.exportRecording();app.actions.noOp();accounting(app);
+    if(delta>=0)assert.equal(app.recording.reason,'action-limit');
+    else assert.equal(app.exportRecording(),prefix);
+    reproduce(imported(app));app.dispose();
+  }
+});
+
+test('status/count reads serialize nothing; ordinary admission never serializes retained records',()=>{
+  const app=make();app.startRecording({mode:'recent',maxActions:2000});
+  for(let i=0;i<100;i++)app.actions.noOp();
+  const stringify=JSON.stringify,reduce=Array.prototype.reduce;
+  try {
+    JSON.stringify=()=>{throw Error('status serialized');};
+    Array.prototype.reduce=function(...args){assert.ok(!this[0]?.events,'status scanned history');return reduce.apply(this,args);};
+    for(let i=0;i<1000;i++){assert.equal(app.recording.records,100);resourceCounts(app);}
+    JSON.stringify=function(value,...args) {
+      assert.ok(!value?.records?.length,'serialized retained history');
+      return stringify(value,...args);
+    };
+    app.actions.noOp();assert.equal(app.recording.status,'active');
+  } finally {JSON.stringify=stringify;Array.prototype.reduce=reduce;}
+  accounting(app);app.dispose();
+});
+
+
+test('capture errors and oversized roots preserve exact accounting',()=>{
+  const source=make(),point={snapshot:source.snapshot(),route:null};
+  for(const mode of ['session','recent'])for(const failure of ['capture','codec','oversized']) {
+    let broken=false;
+    const recorder=createRecorder({mode,maxBytes:4000},()=>{
+      if(broken&&failure==='capture')throw Error('capture');
+      return point;
+    },'recording/1');
+    recorder.run({kind:'time',time:0},()=>{});
+    const before=JSON.parse(recorder.export());broken=true;
+    const root=failure==='codec'?(()=>{const x={};x.self=x;return x;})():
+      failure==='oversized'?{text:'😀'.repeat(8000)}:{kind:'time',time:0};
+    recorder.run(root,()=>{});
+    const wire=JSON.parse(recorder.export());
+    assert.equal(recorder.status.bytes,Buffer.byteLength(JSON.stringify({...wire,status:'active',reason:null}))+STATUS_RESERVE);
+    assert.equal(recorder.status.actions,wire.records.reduce((n,r)=>n+Math.max(1,r.actions),0));
+    if(mode==='recent'&&failure==='oversized') {
+      assert.equal(wire.records.length,0);assert.equal(wire.evictedRecords,2);assert.equal(wire.evictedActions,2);
+    } else {assert.deepEqual(wire.records,before.records);assert.equal(wire.status,'limit-reached');}
+    recorder.stop();recorder.dispose();assert.equal(recorder.status.bytes,0);assert.equal(recorder.status.actions,0);
+  }
+  source.dispose();
+});
+
+test('recent ordinary-record baseline rejection restores byte/action totals and eviction counters',()=>{
+  const schema=createActionSchema()(({action})=>({grow:action(draft=>{draft.text='界'.repeat(3000);}),noOp:action(()=>{})}));
+  const app=createApp({schema,initialState:{text:''}});app.startRecording({maxBytes:5000,keyframeInterval:1});
+  app.actions.noOp();const prefix=JSON.parse(accounting(app));
+  app.actions.grow();const wire=JSON.parse(accounting(app));
+  assert.equal(app.recording.reason,'baseline-limit');assert.equal(app.recording.evictedRecords,0);
+  assert.equal(app.recording.evictedActions,0);assert.deepEqual(wire.records,prefix.records);
+  assert.deepEqual(wire.baseline,prefix.baseline);assert.deepEqual(wire.end,prefix.end);app.dispose();
 });

@@ -1,0 +1,61 @@
+{
+  "environment": {
+    "node": "v26.3.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M4"
+  },
+  "updates": 1200,
+  "simulatedSeconds": 60,
+  "windows": {
+    "early": {
+      "withoutRecordingMs": {
+        "median": 0.5443339999999921,
+        "p95": 0.6042919999999867
+      },
+      "withRecordingMs": {
+        "median": 1.1719590000000153,
+        "p95": 1.3949169999998503
+      },
+      "recordingCostMs": {
+        "median": 0.6276250000000232,
+        "p95": 0.7906249999998636
+      },
+      "retainedBytes": 4476958
+    },
+    "middle": {
+      "withoutRecordingMs": {
+        "median": 0.5374160000000074,
+        "p95": 0.5951250000000528
+      },
+      "withRecordingMs": {
+        "median": 1.1647080000000187,
+        "p95": 1.3503330000000915
+      },
+      "recordingCostMs": {
+        "median": 0.6272920000000113,
+        "p95": 0.7552080000000387
+      },
+      "retainedBytes": 15638300
+    },
+    "late": {
+      "withoutRecordingMs": {
+        "median": 0.5345829999999978,
+        "p95": 0.5882500000000164
+      },
+      "withRecordingMs": {
+        "median": 1.160584000000199,
+        "p95": 1.2860420000001795
+      },
+      "recordingCostMs": {
+        "median": 0.6260010000002012,
+        "p95": 0.6977920000001632
+      },
+      "retainedBytes": 26811883
+    }
+  },
+  "statusReadUs": 0.04443750000000364,
+  "statusReads": 10000,
+  "baselineRevision": "c7ad9e2b90a2a9b727673e2cab2f8cdb0885e5be",
+  "variant": "incremental accounting"
+}

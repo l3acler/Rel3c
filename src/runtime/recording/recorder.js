@@ -37,11 +37,43 @@ export function createRecorder(options, capture, schemaVersion) {
     records,
     end,
   });
-  const bytes = () =>
-    byteLength(JSON.stringify({ ...wire(), status: "active", reason: null })) +
-    STATUS_RESERVE;
-  const slots = () =>
-    records.reduce((sum, record) => sum + Math.max(1, record.actions), 0);
+  // Immutable wire fragments are measured once. Keep commas separate: an empty
+  // records array contributes no fragment bytes and n records need n - 1 commas.
+  const sizes = new WeakMap();
+  const sizeOf = (value) => {
+    if (!sizes.has(value)) sizes.set(value, byteLength(JSON.stringify(value)));
+    return sizes.get(value);
+  };
+  let recordBytes = 0,
+    chargedActions = 0,
+    retainedBytes = 0;
+  function refreshBytes() {
+    // Only metadata is serialized here, including counter digit changes. Normalize
+    // status/reason exactly as import validation does and reserve terminal status.
+    retainedBytes =
+      byteLength(JSON.stringify({
+        ...wire(),
+        status: "active",
+        reason: null,
+        baseline: null,
+        records: [],
+        end: null,
+      })) - 8 + sizeOf(baseline) + sizeOf(end) + recordBytes +
+      Math.max(0, records.length - 1) + STATUS_RESERVE;
+  }
+  const bytes = () => retainedBytes;
+  const slots = () => chargedActions;
+  function add(record) {
+    recordBytes += sizeOf(record);
+    chargedActions += Math.max(1, record.actions);
+    records.push(record);
+  }
+  function pop() {
+    const record = records.pop();
+    recordBytes -= sizeOf(record);
+    chargedActions -= Math.max(1, record.actions);
+  }
+  refreshBytes();
   if (bytes() > policy.maxBytes)
     fail(
       "RECORDING_LIMIT",
@@ -70,10 +102,13 @@ export function createRecorder(options, capture, schemaVersion) {
   }
   function evict(count, point) {
     for (const record of records.splice(0, count)) {
+      recordBytes -= sizeOf(record);
+      chargedActions -= Math.max(1, record.actions);
       evictedRecords++;
       evictedActions += Math.max(1, record.actions);
     }
     baseline = point;
+    refreshBytes();
   }
   function accept(work, next, outcome, error) {
     const point = { sequence: ++sequence, ...next },
@@ -89,14 +124,19 @@ export function createRecorder(options, capture, schemaVersion) {
         records: [...records],
         evictedRecords,
         evictedActions,
+        recordBytes,
+        chargedActions,
       };
       evict(records.length, point);
       evictedRecords++;
       evictedActions += Math.max(1, work.actions);
       end = point;
       sinceKeyframe = 0;
+      refreshBytes();
       if (bytes() > policy.maxBytes) {
-        ({ baseline, end, records, evictedRecords, evictedActions } = saved);
+        ({ baseline, end, records, evictedRecords, evictedActions,
+          recordBytes, chargedActions } = saved);
+        refreshBytes();
         limit("baseline-limit");
       }
       return;
@@ -115,8 +155,9 @@ export function createRecorder(options, capture, schemaVersion) {
       error: outcome === "failed" ? errorSummary(error) : null,
     };
     const oldEnd = end;
-    records.push(record);
+    add(record);
     end = point;
+    refreshBytes();
     if (policy.mode === "session") {
       const why =
         slots() > policy.maxActions
@@ -125,17 +166,20 @@ export function createRecorder(options, capture, schemaVersion) {
             ? "byte-limit"
             : null;
       if (why) {
-        records.pop();
+        pop();
         end = oldEnd;
+        refreshBytes();
         limit(why);
         return;
       }
-    } else {
+    } else if (slots() > policy.maxActions || bytes() > policy.maxBytes) {
       const saved = {
         baseline,
         records: [...records],
         evictedRecords,
         evictedActions,
+        recordBytes,
+        chargedActions,
       };
       while (slots() > policy.maxActions || bytes() > policy.maxBytes) {
         const index = records.findIndex((item) => item.checkpoint !== null);
@@ -151,9 +195,11 @@ export function createRecorder(options, capture, schemaVersion) {
         });
       }
       if (bytes() > policy.maxBytes) {
-        ({ baseline, records, evictedRecords, evictedActions } = saved);
-        records.pop();
+        ({ baseline, records, evictedRecords, evictedActions,
+          recordBytes, chargedActions } = saved);
+        pop();
         end = oldEnd;
+        refreshBytes();
         limit("baseline-limit");
         return;
       }
@@ -296,6 +342,7 @@ export function createRecorder(options, capture, schemaVersion) {
       status = "stopped";
       working = null;
       records = [];
+      recordBytes = chargedActions = retainedBytes = 0;
       baseline = end = null;
     },
   });

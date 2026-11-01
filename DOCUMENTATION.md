@@ -1294,7 +1294,25 @@ the actual export fits within this amount. This measures retained wire data,
 not JavaScript heap bytes. Authoritative state, one bounded in-progress root,
 serialization temporaries and caller copies are separate. Scratch encoding is
 capped by the same byte/action policy; a single transient encode can still allocate
-before being rejected. No performance or heap-collection claim is made.
+before being rejected. Heap collection is not guaranteed by wire accounting.
+
+Retained byte and charged-action totals are incremental. Status/resource-count
+reads use cached totals without serializing or scanning retained history; explicit
+`exportRecording()` still serializes the complete wire. Ordinary admission measures
+only new records/snapshots and metadata, including UTF-8 escaping and counter digit
+changes. Snapshot capture, hashing and payload encoding still cost time proportional
+to current data; recent-mode eviction/rollback preparation can traverse retained
+records. This does not promise constant time for growing application state or eviction.
+
+Run `node scripts/bench-recording.js` for 1,200 four-player authoritative updates
+(60 simulated seconds at 20 Hz), including export round-trip and public replay
+verification. On Node 26.3.0, macOS arm64 / Apple M4, recording overhead medians
+were 0.628 / 0.627 / 0.626 ms in early/middle/late windows while retained wire grew
+from 4.48 to 26.81 MB; p95 overhead estimates were 0.791 / 0.755 / 0.698 ms.
+These are differences between recorded and unrecorded timing quantiles, not
+paired overhead latency percentiles. The workload uses a compact 225-tile grid,
+four player objects and twelve bombs; it is synthetic, not game integration.
+See [measurement details and limitations](docs/reports/recorder-accounting-performance.md).
 
 Recent history eviction moves the baseline to a retained keyframe and removes all
 preceding records/checkpoints together. If there is no intermediate keyframe,
